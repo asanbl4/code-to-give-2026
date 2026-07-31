@@ -24,7 +24,7 @@ export function PostCard({ post }: { post: InstagramPost }) {
   const alt = post.caption?.slice(0, 120) || "Instagram post";
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <article className="flex flex-col overflow-hidden rounded-lg border border-transparent bg-zinc-200">
       <div className="relative aspect-square bg-zinc-100">
         {isCarousel ? (
           <PostCarousel media={post.media} alt={alt} />

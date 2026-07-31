@@ -43,7 +43,7 @@ export function InstagramSection({
 
   return (
     <section aria-labelledby={headingId} className={`w-full py-12 ${className}`}>
-      <div className="mx-auto w-full max-w-5xl px-6">
+      <div className="mx-auto w-full max-w-5xl rounded-xl bg-zinc-100 p-6 sm:p-8">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-2">
           <div>
             <Heading id={headingId} className="text-2xl font-semibold text-zinc-900">

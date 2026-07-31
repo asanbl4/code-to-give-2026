@@ -9,10 +9,7 @@ export const metadata = {
 export default function InstagramPage() {
   return (
     <main className="flex-1 font-sans">
-      <InstagramSection
-        headingLevel={1}
-        subtitle="Posts pulled live from the Instagram Graph API."
-      />
+      <InstagramSection headingLevel={1} />
     </main>
   );
 }
