@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type JSX } from "react";
+import { useEffect, useMemo, useRef, useState, type JSX } from "react";
 
 import { buildGoogleCalendarUrl, buildIcsFile } from "./calendar";
 import { EventSignupForm } from "./event-signup-form";
@@ -17,8 +17,15 @@ function formatSubmittedAt(submittedAt: string): string {
 export function EventSignupFlow({ session }: { session: EventSession }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [result, setResult] = useState<EventSignupResult | null>(null);
+  const successRef = useRef<HTMLElement | null>(null);
   const googleUrl = useMemo(() => buildGoogleCalendarUrl(session), [session]);
   const icsFile = useMemo(() => buildIcsFile(session), [session]);
+
+  useEffect(() => {
+    if (result) {
+      successRef.current?.focus();
+    }
+  }, [result]);
 
   function handleSuccess(nextResult: EventSignupResult): void {
     setResult(nextResult);
@@ -39,11 +46,20 @@ export function EventSignupFlow({ session }: { session: EventSession }): JSX.Ele
 
   if (result) {
     return (
-      <section className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 ring-1 ring-emerald-950/5 sm:p-6">
+      <section
+        ref={successRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        aria-labelledby={`event-signup-success-${session.id}`}
+        className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 ring-1 ring-emerald-950/5 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 sm:p-6"
+      >
         <p className="text-sm font-medium uppercase tracking-[0.22em] text-emerald-700">
           Signup confirmed
         </p>
-        <h3 className="mt-3 text-xl font-semibold text-slate-950">You are signed up</h3>
+        <h3 id={`event-signup-success-${session.id}`} className="mt-3 text-xl font-semibold text-slate-950">
+          You are signed up
+        </h3>
         <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base">
           We&apos;ve saved your spot for {session.title}. Your confirmation reference is{" "}
           <span className="font-semibold text-slate-900">{result.confirmationId}</span>.

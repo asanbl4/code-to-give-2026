@@ -3,7 +3,13 @@
 import { useState, type FormEvent, type JSX } from "react";
 
 import { submitEventSignup } from "./signup";
-import type { EventSession, EventSignupResult } from "./events.types";
+import type { EventSession, EventSignupInput, EventSignupResult } from "./events.types";
+
+function isParticipationType(
+  value: FormDataEntryValue | null,
+): value is EventSignupInput["participationType"] {
+  return value === "volunteer" || value === "family" || value === "supporter";
+}
 
 export function EventSignupForm({
   session,
@@ -20,16 +26,21 @@ export function EventSignupForm({
 
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const participationType = formData.get("participationType");
 
     setSubmitError(null);
     setIsSubmitting(true);
 
     try {
+      if (!isParticipationType(participationType)) {
+        throw new Error("Missing participation type");
+      }
+
       const result = await submitEventSignup({
         sessionId: session.id,
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
-        participationType: "volunteer",
+        participationType,
         note: String(formData.get("note") ?? ""),
       });
 
@@ -77,6 +88,21 @@ export function EventSignupForm({
           />
         </label>
       </div>
+
+      <label className="block text-sm font-medium text-slate-800">
+        Participation type
+        <select
+          required
+          name="participationType"
+          defaultValue="volunteer"
+          disabled={isSubmitting}
+          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200/70 disabled:cursor-wait disabled:bg-slate-100"
+        >
+          <option value="volunteer">Volunteer</option>
+          <option value="family">Family member</option>
+          <option value="supporter">Supporter</option>
+        </select>
+      </label>
 
       <label className="block text-sm font-medium text-slate-800">
         Note
