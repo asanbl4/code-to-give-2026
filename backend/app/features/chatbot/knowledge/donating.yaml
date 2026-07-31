@@ -1,0 +1,71 @@
+# Donation answers. Non-negotiable #7: person -> programme -> money.
+# Never frame a gift as supporting a named individual.
+
+- id: donate-what-500-funds
+  tags: [donating]
+  triggers_en:
+    - "where does my money go"
+    - "what does my donation pay for"
+    - "how much should I give"
+    - "what will my donation do"
+  triggers_zh:
+    - "捐款用在哪裡"
+    - "我的捐款如何運用"
+    - "應該捐多少"
+  answer_en: >
+    HK${{ hkd_per_class }} funds one class for up to {{ class_capacity }}
+    members — the coach, the space and the equipment. Every Love 21 programme is
+    free to members, so your gift goes to the programme rather than to any one
+    person.
+  answer_zh: >
+    港幣{{ hkd_per_class }}元可資助一堂課，最多{{ class_capacity }}位成員參與——
+    包括教練、場地和器材。愛21所有課程對成員均為免費，因此你的捐款支持的是整個
+    課程，而非任何個別人士。
+  easy_read_en: >
+    HK${{ hkd_per_class }} pays for one class.
+    Up to {{ class_capacity }} people can join that class.
+    Classes are free for our members.
+  easy_read_zh: >
+    港幣{{ hkd_per_class }}元可以支付一堂課。
+    最多{{ class_capacity }}人可以參加。
+    課程對我們的成員是免費的。
+  action:
+    label_en: "See what your gift funds"
+    label_zh: "看看你的捐款可以做甚麼"
+    href: "/donate?amount=500&frequency=monthly"
+  followups: [donate-monthly-or-one-off]
+  source: client-provided
+
+- id: donate-monthly-or-one-off
+  tags: [donating]
+  triggers_en:
+    - "monthly or one off"
+    - "can I give every month"
+    - "regular giving"
+  triggers_zh:
+    - "每月捐款還是單次捐款"
+    - "可以每月捐款嗎"
+    - "定期捐款"
+  answer_en: >
+    Both work. A monthly gift helps most, because programmes run every week and
+    steady income lets staff plan a term ahead rather than month to month. You
+    can change or stop a monthly gift whenever you like.
+  answer_zh: >
+    兩者都可以。每月捐款的幫助最大，因為課程每週進行，穩定的收入讓職員能夠提前規劃
+    整個學期，而不只是逐月安排。你可以隨時更改或停止每月捐款。
+  easy_read_en: >
+    You can give money one time.
+    You can also give a small amount every month.
+    Giving every month helps us plan.
+    You can stop any time.
+  easy_read_zh: >
+    你可以捐款一次。
+    你也可以每月捐少少。
+    每月捐款幫助我們計劃。
+    你可以隨時停止。
+  action:
+    label_en: "Go to monthly giving"
+    label_zh: "前往每月捐款"
+    href: "/donate?frequency=monthly"
+  followups: [donate-what-500-funds]
+  source: client-provided

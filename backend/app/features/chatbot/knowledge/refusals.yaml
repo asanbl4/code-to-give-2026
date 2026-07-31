@@ -1,0 +1,75 @@
+# Handoffs, not answers.
+#
+# These are ordinary corpus entries, so they retrieve at high confidence and
+# short-circuit the model entirely (service.answer_question checks is_refusal
+# before any generation). Retrieval as the safety filter is stronger than
+# asking a 4B model to police itself.
+
+- id: refuse-medical-advice
+  tags: [refusal]
+  is_refusal: true
+  triggers_en:
+    - "is my child autistic"
+    - "what therapy should we try"
+    - "should my child take medication"
+    - "how do I get a diagnosis"
+    - "what treatment do you recommend"
+  triggers_zh:
+    - "我的孩子是否自閉症"
+    - "應該接受甚麼治療"
+    - "應該吃藥嗎"
+    - "如何取得診斷"
+  answer_en: >
+    That is not something I can help with — questions about diagnosis, therapy
+    or treatment need a person who knows your situation. Our team talks with
+    families about this often and can point you in the right direction.
+  answer_zh: >
+    這方面我幫不上忙——有關診斷、治療或療程的問題，需要由了解你情況的專業人士解答。
+    我們的團隊經常與家庭討論這些事情，可以為你指引方向。
+  easy_read_en: >
+    I cannot answer questions about health or therapy.
+    A person from our team can help you.
+    Please contact us.
+  easy_read_zh: >
+    我不能回答健康或治療的問題。
+    我們團隊的同事可以幫你。
+    請聯絡我們。
+  action:
+    label_en: "Contact our team"
+    label_zh: "聯絡我們的團隊"
+    href: "/contact"
+  source: staff-confirmed
+
+- id: refuse-distress
+  tags: [refusal, safeguarding]
+  is_refusal: true
+  triggers_en:
+    - "I want to hurt myself"
+    - "I am in crisis"
+    - "I feel unsafe"
+    - "someone is being hurt"
+  triggers_zh:
+    - "我想傷害自己"
+    - "我很危險"
+    - "我感到不安全"
+    - "有人受到傷害"
+  answer_en: >
+    I am not the right help for this, and I do not want to leave you with a
+    chatbot. Please speak to a person now. In Hong Kong you can call 999 in an
+    emergency, or reach our team directly on the contact page.
+  answer_zh: >
+    這件事我幫不了你，我也不想讓你只面對一個聊天機械人。請立即與真人聯絡。在香港，
+    緊急情況可致電999，或透過聯絡頁面直接聯繫我們的團隊。
+  easy_read_en: >
+    I cannot help with this.
+    Please talk to a person now.
+    In an emergency call 999.
+  easy_read_zh: >
+    這件事我幫不到你。
+    請立即與人傾談。
+    緊急時請致電999。
+  action:
+    label_en: "Contact a person"
+    label_zh: "聯絡真人"
+    href: "/contact"
+  source: staff-confirmed
