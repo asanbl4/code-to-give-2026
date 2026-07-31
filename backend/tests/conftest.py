@@ -115,3 +115,9 @@ def client(fake_db: FakeDb) -> Any:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def anyio_backend() -> str:
+    """Async tests run on asyncio only; we have no trio dependency."""
+    return "asyncio"

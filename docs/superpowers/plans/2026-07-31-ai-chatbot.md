@@ -3223,6 +3223,12 @@ answer without it and add the question to `CONTEXT.md` §9's list for staff.
 
 - [ ] **Step 3: Write `volunteering.yaml`**
 
+When this file adds a "how do I start volunteering" entry, give it the id
+`volunteer-how-to-start` and restore it to `about-what-is-love21`'s `followups`.
+Task 2 had to drop that reference because the target did not exist yet — the
+corpus validator rejected the dangling id, which is the validator working.
+
+
 Cover: how to start, the known real roles (class assistant, lead a class, event
 helper), corporate/CSR groups, time commitment, whether training is given, and
 the HandsOn Hong Kong / Time Auction links.
