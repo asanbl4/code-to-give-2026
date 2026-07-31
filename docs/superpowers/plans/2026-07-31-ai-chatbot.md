@@ -2239,18 +2239,37 @@ async def chat(request: ChatRequest) -> ChatResponse:
 Append to `backend/tests/test_chatbot_api.py`:
 
 ```python
-def test_importing_the_router_validates_the_corpus() -> None:
+def test_router_import_fails_on_a_bad_corpus(monkeypatch, tmp_path) -> None:
     """A bad entry must stop the app, not surface as a 500 on a visitor.
 
-    `app.main` imports the router, so this import-time call is what turns a
-    content error into a refusal to boot.
+    `app.main` imports the router, so the router's import-time `load_corpus()`
+    is what turns a content error into a refusal to boot. Reloading the module
+    against a deliberately broken knowledge directory exercises exactly that.
     """
-    import inspect
+    import importlib
 
-    source = inspect.getsource(chatbot_router)
+    from app.features.chatbot import corpus
 
-    assert "load_corpus()" in source, "router must validate the corpus at import"
+    broken = tmp_path / "knowledge"
+    broken.mkdir()
+    # Missing answer_zh, easy_read_*, triggers, source -- invalid many times over.
+    (broken / "bad.yaml").write_text("- id: bad\n  answer_en: x\n", encoding="utf-8")
+
+    monkeypatch.setattr(corpus, "KNOWLEDGE_DIR", broken)
+    corpus.load_corpus.cache_clear()
+    try:
+        with pytest.raises(corpus.CorpusError):
+            importlib.reload(chatbot_router)
+    finally:
+        # Leave the module and the cache as we found them for later tests.
+        corpus.load_corpus.cache_clear()
+        monkeypatch.undo()
+        importlib.reload(chatbot_router)
 ```
+
+Note: this test reloads a module, so it must not run in parallel with others
+that hold a reference to `chatbot_router`. The suite is serial; if that ever
+changes, mark this test `serial`.
 
 - [ ] **Step 5: Register the router**
 
@@ -3159,6 +3178,13 @@ git commit -m "feat(chatbot): conversation, suggested questions, and bilingual c
 ---
 
 ## Task 11: Fill out the corpus
+
+**Not for a subagent.** Decided 2026-08-01: Tasks 1–10 are executed by
+implementer subagents and execution stops here. This task produces factual
+claims about a real charity, and `CONTEXT.md` §12 forbids inventing statistics,
+schedules, quotes or testimonials — so the answers are written by the team, with
+staff confirming anything unsourced. The deliverable handed over is the
+scaffolding: entry ids, trigger phrases, and the list of what staff must confirm.
 
 The engineering is done at this point. This task is content, and it is the critical path — see the risk section of the spec.
 
