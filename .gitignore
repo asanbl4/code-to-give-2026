@@ -25,3 +25,6 @@ next-env.d.ts
 
 local/
 .claude/skills/grill-me.md
+
+*.egg-info/
+*.egg
