@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.features.chatbot.router import router as chatbot_router
 from app.features.instagram.router import router as instagram_router
 from app.routers import participants
 
@@ -23,6 +24,7 @@ app.add_middleware(
 # and register them here.
 app.include_router(instagram_router)
 app.include_router(participants.router)
+app.include_router(chatbot_router)
 
 
 @app.get("/health")
