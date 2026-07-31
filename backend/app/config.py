@@ -37,6 +37,24 @@ class Settings(BaseSettings):
     # How many posts to pull per live fetch.
     instagram_fetch_count: int = 25
 
+    # --- Chatbot feature ---------------------------------------------------
+    # false hides the launcher and makes /api/chat return 503. The rest of the
+    # site is unaffected -- the same "a fresh clone still runs" shape as the
+    # blank Supabase variables above.
+    chatbot_enabled: bool = True
+    # 127.0.0.1 rather than localhost: Node and Python may resolve localhost to
+    # ::1, which Ollama does not bind by default.
+    ollama_host: str = "http://127.0.0.1:11434"
+    chatbot_model: str = "qwen3:4b"
+    chatbot_embed_model: str = "bge-m3"
+    # Cosine score at or above which a curated answer is returned verbatim.
+    chatbot_high_confidence: float = 0.75
+    # Below this, we refuse rather than guess. Tune both against real scores --
+    # see build_index.py --scores.
+    chatbot_low_confidence: float = 0.45
+    # A demo must never hang: abandon generation past this and fall back.
+    chatbot_timeout_seconds: float = 20.0
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
