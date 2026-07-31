@@ -1,11 +1,10 @@
 # AGENTS.md
 
-FastAPI + Supabase auth template. Next.js owns the session; FastAPI is
-stateless and verifies JWTs. Auth and database wiring only — **no demo
-features.** Keep it that way unless asked.
+Next.js frontend + FastAPI backend, wired together and nothing else. No
+database, no auth, no demo domain models. A starting point — build on it.
 
-`frontend/AGENTS.md` also applies inside `frontend/`. Read it: Next.js 16
-renamed several conventions and your training data is likely stale.
+`frontend/AGENTS.md` also applies inside `frontend/`. Read it: this is Next.js
+16, which renamed several conventions, and your training data is likely stale.
 
 ## Commands
 
@@ -13,7 +12,6 @@ renamed several conventions and your training data is likely stale.
 # Backend (from backend/)
 uv sync
 uv run uvicorn app.main:app --reload --port 8000
-uv run pytest                 # 15 tests, fully offline
 uv run ruff check . && uv run ruff format .
 
 # Frontend (from frontend/)
@@ -21,82 +19,64 @@ npm install
 npm run dev                   # port 3000
 npm run build                 # includes typecheck
 npm run lint
+npx tsc --noEmit              # typecheck alone, faster than a full build
 ```
 
-Node 20 works but `@supabase/supabase-js` warns; 22+ preferred. The `npm audit`
-findings are in Next 16's own `postcss`/`sharp` deps — the only offered "fix"
-downgrades to Next 9. Leave them.
+Both must be running for the page to render anything but an error.
 
-## Invariants
-
-Break these and you get a security hole, not a bug.
-
-1. **Authorization lives in Postgres.** `get_db` forwards the caller's JWT so
-   `auth.uid()` resolves and RLS filters the query. Do not add `WHERE user_id =
-   ...` in Python and do not reimplement authorization there.
-2. **Every new table needs `enable row level security` plus policies.** Without
-   RLS, a table is readable by anyone holding the publishable key — which ships
-   in the browser bundle.
-3. **`get_admin_db` bypasses RLS.** Use it only for genuine admin work, never to
-   route around a policy that is inconvenient.
-4. **Revoke `EXECUTE` on new database functions.** A `SECURITY DEFINER` function
-   in `public` is callable at `/rest/v1/rpc/<name>` by anon. This repo already
-   had that hole once.
-5. **Run `get_advisors(project_id, type="security")` after any DDL.** It catches
-   1, 2, and 4. Treat findings as blocking.
-6. **FastAPI never sets a cookie or stores a session.** It verifies a token and
-   forwards it. Session state belongs to Next.js.
-
-## Conventions
+## Layout
 
 | Path | Holds |
 |---|---|
-| `app/core/config.py` | Settings. Add env vars here, and to both `.env.example` files. |
-| `app/core/security.py` | JWT verification. Rarely needs changing. |
-| `app/core/errors.py` | `postgrest_errors()` — wrap every PostgREST call in it, or an RLS denial becomes a 500. |
-| `app/deps.py` | `CurrentUser`, `Db`, `AdminDb`. |
-| `app/routers/` | One module per resource; register it in `main.py`. |
-| `supabase/migrations/` | `<timestamp>_<description>.sql`. Apply via `apply_migration`. |
-| `lib/supabase/` | Three clients: `client` (browser), `server` (RSC/actions), `proxy` (session refresh). |
+| `backend/app/main.py` | The whole API: CORS, `/health`, `/api/hello`. |
+| `backend/pyproject.toml` | Dependencies and ruff config. |
+| `frontend/app/` | App Router pages. |
+| `backend/.env` | Gitignored. `CORS_ORIGINS`. |
+| `frontend/.env.local` | Gitignored. `NEXT_PUBLIC_API_URL`. |
+| `docs/superpowers/specs/` | Dated design docs. History, not current state. |
 
-Write RLS policies as `(select auth.uid())`, not bare `auth.uid()` — the
-subquery is evaluated once per statement rather than once per row.
+As this grows, split `app/main.py` into `app/routers/<resource>.py` and register
+each router in `main.py` — one module per resource.
 
-When an update or delete returns no rows, respond 404, not 403. A 403 confirms
-the row exists and belongs to someone else.
+## How the two connect
 
-## Two things that break silently
+`frontend/app/page.tsx` is a Server Component. It fetches
+`${NEXT_PUBLIC_API_URL}/api/hello` at request time and renders either the
+response or a red box naming the failure. That red box is the connection status:
+break the wiring and the page says so.
 
-**`lib/supabase/proxy.ts`**: nothing may run between `createServerClient` and
-`getClaims()`, and `supabaseResponse` must be returned as-is. Violating either
-logs users out at random, with no error.
-
-**Redirect allow-list**: if `http://localhost:3000/**` is not listed under
-Authentication → URL Configuration, Supabase discards `emailRedirectTo` and
-sends users to the Site URL instead. No error is raised anywhere.
-
-## Testing
-
-`tests/` runs with no network and no Supabase project: a locally generated EC
-keypair is injected into `TokenVerifier`, and `get_verifier`/`get_db` are
-replaced via `dependency_overrides`. Keep it that way — never point a test at
-the live project.
-
-These tests cover routing, auth, and serialization. **They do not exercise RLS
-policies** — `FakeDb` has no policy engine. Verify policies against a real
-project or `supabase start`.
+Because that fetch runs server-side in Node rather than in the browser, CORS is
+not involved in it. CORS *is* involved the moment you fetch from a Client
+Component, so keep `CORS_ORIGINS` correct regardless.
 
 ## Environment
 
-`backend/.env` and `frontend/.env.local` are gitignored and must stay that way;
-only the `.example` files are tracked. `SUPABASE_URL` and
-`NEXT_PUBLIC_SUPABASE_URL` must point at the same project or the issuer check
-fails with a 401.
+`backend/.env` and `frontend/.env.local` are gitignored and must stay that way.
+Only the `.example` files are tracked — add every new variable to the matching
+`.example` file in the same commit.
 
-Use `127.0.0.1` rather than `localhost` in `NEXT_PUBLIC_API_URL`: Node may
-resolve `localhost` to `::1`, which uvicorn does not bind by default.
+Use `127.0.0.1`, not `localhost`, in `NEXT_PUBLIC_API_URL`. Node may resolve
+`localhost` to `::1`, which uvicorn does not bind by default; you get a
+connection refused that looks like the backend is down when it isn't.
+
+`NEXT_PUBLIC_` is a real prefix with real consequences — those values are inlined
+into the browser bundle. Never put a secret behind one.
+
+## Tests
+
+There are none yet. If you add behavior worth trusting, add `backend/tests/`
+with pytest and wire it into `pyproject.toml`. Don't let the backend grow a
+second real endpoint without one.
+
+## Known noise
+
+- **Node 20.13.1** is below the 20.19+ that `eslint-visitor-keys` asks for.
+  Everything works; npm warns on install. Node 22 silences it.
+- **`npm audit` reports 12 high-severity findings**, all inside Next 16's own
+  dependency tree. The only fix npm offers downgrades Next several major
+  versions. Leave them until upstream patches.
 
 ## Scope
 
-This is a starter other projects are cloned from. Prefer deleting over adding.
-If you need a demo endpoint to verify something, delete it before you finish.
+Prefer deleting over adding. If you add a demo endpoint to verify something,
+delete it before you finish.
