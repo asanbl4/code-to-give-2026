@@ -1,8 +1,3 @@
-# Next.js + FastAPI Starter
-
-A Next.js frontend and a FastAPI backend, connected, over a Supabase/Postgres
-database with row-level security. No auth yet.
-
 ## Architecture
 
 ```
@@ -75,29 +70,6 @@ both halves are talking. A red box names what went wrong.
 <http://127.0.0.1:8000/docs> has interactive docs, generated from the route
 signatures.
 
-## Adding an endpoint
-
-While the API is this small, add routes directly to `app/main.py`:
-
-```python
-@app.get("/api/items")
-def list_items() -> list[dict]:
-    return []
-```
-
-Once there are more than a handful, split them into `app/routers/items.py` and
-register the router:
-
-```python
-from app.routers import items
-
-app.include_router(items.router)
-```
-
-Call it from a Server Component the way `app/page.tsx` does. If you call it from
-a Client Component instead (`'use client'`), the request comes from the browser
-and CORS applies — that origin must be in `CORS_ORIGINS`.
-
 ## Database
 
 The `participants` table holds featured member stories for the `/stories` page.
@@ -130,21 +102,3 @@ bundle.
 
 Anything prefixed `NEXT_PUBLIC_` is inlined into the browser bundle. Never put a
 secret behind one.
-
-## Things that will bite you
-
-**Use `127.0.0.1`, not `localhost`, in `NEXT_PUBLIC_API_URL`.** Node may resolve
-`localhost` to `::1`, which uvicorn does not bind by default. The frontend then
-reports a connection refused that looks exactly like a backend that isn't
-running.
-
-**Node 20 works but warns.** `eslint-visitor-keys` wants Node 20.19+; this
-machine has 20.13.1. It only affects install-time warnings. Node 22 silences it.
-
-**`npm audit` reports 12 high-severity findings**, all inside Next 16's own
-dependency tree. The only fix npm offers downgrades Next several major versions,
-so leave them until upstream patches.
-
-**Tests don't cover RLS.** `uv run pytest` runs offline against a fake
-PostgREST, which has no policy engine. A passing suite says nothing about
-whether your policies are right — check those against a real project.
