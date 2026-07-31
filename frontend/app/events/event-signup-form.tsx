@@ -13,6 +13,7 @@ export function EventSignupForm({
   onSuccess(result: EventSignupResult): void;
 }): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -20,6 +21,7 @@ export function EventSignupForm({
     const form = event.currentTarget;
     const formData = new FormData(form);
 
+    setSubmitError(null);
     setIsSubmitting(true);
 
     try {
@@ -33,13 +35,23 @@ export function EventSignupForm({
 
       form.reset();
       onSuccess(result);
+    } catch {
+      setSubmitError("We couldn't save your signup just now. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form
+      className="space-y-4"
+      onSubmit={handleSubmit}
+      onChange={() => {
+        if (submitError) {
+          setSubmitError(null);
+        }
+      }}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-medium text-slate-800">
           Name
@@ -78,10 +90,14 @@ export function EventSignupForm({
       </label>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-6 text-slate-500" aria-live="polite">
-          {isSubmitting
-            ? "Saving your place..."
-            : "This demo saves through a mock signup flow and returns an instant confirmation."}
+        <p
+          className={`text-sm leading-6 ${submitError ? "text-rose-700" : "text-slate-500"}`}
+          aria-live="polite"
+        >
+          {submitError ??
+            (isSubmitting
+              ? "Saving your place..."
+              : "This demo saves through a mock signup flow and returns an instant confirmation.")}
         </p>
         <button
           type="submit"
