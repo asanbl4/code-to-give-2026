@@ -1,4 +1,5 @@
 import type { InstagramPost } from "../types";
+import { PostCarousel } from "./PostCarousel";
 
 // MVP note: we use a plain <img>, not next/image, on purpose. Instagram media
 // URLs are signed and expire within hours, which breaks next/image's optimizer
@@ -25,7 +26,9 @@ export function PostCard({ post }: { post: InstagramPost }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="relative aspect-square bg-zinc-100">
-        {first?.kind === "video" ? (
+        {isCarousel ? (
+          <PostCarousel media={post.media} alt={alt} />
+        ) : first?.kind === "video" ? (
           // No autoplay: user presses play. Poster shown until then.
           <video
             controls
@@ -44,11 +47,6 @@ export function PostCard({ post }: { post: InstagramPost }) {
             loading="lazy"
             className="h-full w-full object-cover"
           />
-        )}
-        {isCarousel && (
-          <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
-            1 / {post.media.length}
-          </span>
         )}
       </div>
 
