@@ -8,7 +8,7 @@ Swap these for a saved response from your real test account whenever convenient
 — the shape already matches `models.InstagramPost`.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.features.instagram.models import InstagramMedia, InstagramPost
 
@@ -24,7 +24,7 @@ def sample_posts() -> list[InstagramPost]:
             permalink="https://www.instagram.com/p/sample1/",
             media_type="IMAGE",
             caption="Sample post — a single image. #somuchability",
-            timestamp=datetime(2026, 7, 30, 9, 0, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 30, 9, 0, tzinfo=UTC),
             media=[InstagramMedia(kind="image", url=_img("love21-1"))],
         ),
         InstagramPost(
@@ -32,7 +32,7 @@ def sample_posts() -> list[InstagramPost]:
             permalink="https://www.instagram.com/p/sample2/",
             media_type="CAROUSEL_ALBUM",
             caption="Sample post — a carousel of three images.",
-            timestamp=datetime(2026, 7, 29, 14, 30, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 29, 14, 30, tzinfo=UTC),
             media=[
                 InstagramMedia(kind="image", url=_img("love21-2a")),
                 InstagramMedia(kind="image", url=_img("love21-2b")),
@@ -44,7 +44,7 @@ def sample_posts() -> list[InstagramPost]:
             permalink="https://www.instagram.com/p/sample3/",
             media_type="VIDEO",
             caption="Sample post — a video, with a poster image and no autoplay.",
-            timestamp=datetime(2026, 7, 28, 11, 15, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 28, 11, 15, tzinfo=UTC),
             media=[
                 InstagramMedia(
                     kind="video",
@@ -58,7 +58,7 @@ def sample_posts() -> list[InstagramPost]:
             permalink="https://www.instagram.com/p/sample4/",
             media_type="IMAGE",
             caption="Sample post — another single image.",
-            timestamp=datetime(2026, 7, 27, 16, 45, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 27, 16, 45, tzinfo=UTC),
             media=[InstagramMedia(kind="image", url=_img("love21-4"))],
         ),
     ]

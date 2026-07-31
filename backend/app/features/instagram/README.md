@@ -51,8 +51,8 @@ frontend changes needed.
 
 ## Configuration
 
-Set in `backend/.env` (see `.env.example`). Read via `app/core/config.py` —
-never `os.getenv` directly. The access token is a **secret**: backend only,
+Set in `backend/.env` (see `.env.example`). Read via `app/config.py`
+(`get_settings()`) — never `os.getenv` directly. The access token is a **secret**: backend only,
 never exposed to the browser.
 
 | Var | Default | Purpose |

@@ -7,7 +7,9 @@ https://developers.facebook.com/docs/instagram-platform/instagram-graph-api
 
 import httpx
 
-from app.core.config import settings
+from app.config import get_settings
+
+settings = get_settings()
 
 # Fields we request per post. `children` expands carousel albums into their
 # individual images/videos.

@@ -7,15 +7,17 @@ page loads don't each hit Instagram (and so a demo survives a brief API hiccup).
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
-from app.core.config import settings
+from app.config import get_settings
 from app.features.instagram import client, fixtures
 from app.features.instagram.models import InstagramFeed, InstagramMedia, InstagramPost
 
 logger = logging.getLogger(__name__)
+
+settings = get_settings()
 
 # Simple in-process cache. Fine for a single-worker MVP; if we ever run multiple
 # workers this moves to Redis, but not before we need to.
@@ -69,7 +71,7 @@ async def get_feed(limit: int = 12) -> InstagramFeed:
 
     `source` on the response records which one the client actually got.
     """
-    fetched_at = datetime.now(timezone.utc)
+    fetched_at = datetime.now(UTC)
 
     if not settings.instagram_access_token:
         return InstagramFeed(
