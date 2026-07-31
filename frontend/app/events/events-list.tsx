@@ -1,4 +1,5 @@
 import type { EventSession } from "./events.types";
+import { EventSignupFlow } from "./event-signup-flow";
 import type { ReactElement } from "react";
 
 function formatDateRange(startsAt: string, endsAt: string): string {
@@ -44,6 +45,8 @@ export function EventsList({ sessions }: { sessions: EventSession[] }): ReactEle
               <dd className="mt-1 leading-6">{session.location}</dd>
             </div>
           </dl>
+
+          <EventSignupFlow session={session} />
         </article>
       ))}
     </div>
