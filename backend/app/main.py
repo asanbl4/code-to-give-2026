@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.features.instagram.router import router as instagram_router
 from app.routers import participants
 
 settings = get_settings()
@@ -18,6 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Feature routers. Add new features under app/features/<name>/ (or app/routers/)
+# and register them here.
+app.include_router(instagram_router)
 app.include_router(participants.router)
 
 
