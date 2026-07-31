@@ -1,31 +1,20 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+import { InstagramSection } from "@/features/instagram/components/InstagramSection";
 
-async function fetchHello(): Promise<{ message?: string; error?: string }> {
-  try {
-    const response = await fetch(`${API_URL}/api/hello`, { cache: "no-store" });
-    if (!response.ok) {
-      return { error: `${response.status} ${response.statusText}` };
-    }
-    return await response.json();
-  } catch (cause) {
-    return { error: `Could not reach the API at ${API_URL}. Is uvicorn running? (${cause})` };
-  }
-}
-
-export default async function Home() {
-  const { message, error } = await fetchHello();
-
+export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 font-sans">
-      <h1 className="text-2xl font-semibold">Frontend</h1>
-      <p className="text-sm text-zinc-500">GET {API_URL}/api/hello</p>
-      {error ? (
-        <p className="rounded border border-red-300 bg-red-50 px-4 py-2 text-red-700">{error}</p>
-      ) : (
-        <p className="rounded border border-green-300 bg-green-50 px-4 py-2 text-green-800">
-          {message}
-        </p>
-      )}
+    <main className="flex-1 font-sans">
+      {/* Placeholder hero — the real landing design is still TBD. */}
+      <section className="border-b border-zinc-200 px-6 py-16 text-center">
+        <h1 className="text-3xl font-semibold text-zinc-900">Love 21 Foundation</h1>
+        <p className="mt-2 text-zinc-500">Landing page — work in progress.</p>
+      </section>
+
+      {/* Drop-in Instagram section. Move/copy <InstagramSection /> anywhere. */}
+      <InstagramSection
+        title="Latest from Instagram"
+        subtitle="Fresh updates from our community."
+        limit={6}
+      />
     </main>
   );
 }

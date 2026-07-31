@@ -6,15 +6,25 @@ browser.
 
 ## Use it
 
-```tsx
-import { InstagramFeed } from "@/features/instagram/components/InstagramFeed";
+Drop the **section** anywhere on any page — it's the self-contained unit
+(heading + container + grid):
 
-<InstagramFeed limit={12} />;
+```tsx
+import { InstagramSection } from "@/features/instagram/components/InstagramSection";
+
+<InstagramSection title="Latest from Instagram" limit={6} />;
 ```
 
-`InstagramFeed` is an async Server Component — it fetches on the server and
-renders the grid. Drop it onto any page. A standalone demo route lives at
-`app/instagram/page.tsx` (visit `/instagram`).
+Props: `title`, `subtitle`, `limit`, `profileUrl` (adds a "See more on
+Instagram" link), `headingLevel` (1–3, default 2, to fit the page's outline),
+`className` (spacing/background overrides). It's an async-friendly Server
+Component, so no client wiring is needed.
+
+Need just the bare grid (your own heading/layout)? Use `<InstagramFeed limit={n} />`.
+
+It's live on the home page (`app/page.tsx`). A standalone route at
+`app/instagram/page.tsx` (`/instagram`) exists only for isolated testing — safe
+to delete.
 
 ## Files
 
@@ -22,7 +32,8 @@ renders the grid. Drop it onto any page. A standalone demo route lives at
 |------|------|
 | `types.ts` | TS shapes — mirror of `backend/app/features/instagram/models.py`. |
 | `api.ts` | `fetchInstagramFeed(limit)` — calls the backend, returns a result object. |
-| `components/InstagramFeed.tsx` | Fetches + lays out the grid; shows a banner when serving sample data. |
+| `components/InstagramSection.tsx` | **Drop-in section**: heading + container + feed. Insert anywhere. |
+| `components/InstagramFeed.tsx` | The bare grid; shows a banner when serving sample data. |
 | `components/PostCard.tsx` | One post: image / video (no autoplay) / carousel. |
 
 ## Notes
