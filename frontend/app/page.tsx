@@ -1,20 +1,28 @@
-import { InstagramSection } from "@/features/instagram/components/InstagramSection";
+import '../features/landing/landing.css';
+import Nav from '../features/landing/components/Nav';
+import Hero from '../features/landing/components/Hero';
+import StatsStrip from '../features/landing/components/StatsStrip';
+import FinancialBanner from '../features/landing/components/FinancialBanner';
+import ProgrammesPreview from '../features/landing/components/ProgrammesPreview';
+import CommunityGoal from '../features/landing/components/CommunityGoal';
+import StoriesSection from '../features/landing/components/StoriesSection';
+import RecentEvents from '../features/landing/components/RecentEvents';
+import Footer from '../features/landing/components/Footer';
+import DonationToast from '../features/landing/components/DonationToast';
 
-export default function Home() {
+export default function Page() {
   return (
-    <main className="flex-1 font-sans">
-      {/* Placeholder hero — the real landing design is still TBD. */}
-      <section className="border-b border-zinc-200 px-6 py-16 text-center">
-        <h1 className="text-3xl font-semibold text-zinc-900">Love 21 Foundation</h1>
-        <p className="mt-2 text-zinc-500">Landing page — work in progress.</p>
-      </section>
-
-      {/* Drop-in Instagram section. Move/copy <InstagramSection /> anywhere. */}
-      <InstagramSection
-        title="Latest from Instagram"
-        subtitle="Fresh updates from our community."
-        limit={6}
-      />
+    <main>
+      <Nav />
+      <Hero />
+      <StatsStrip />
+      <FinancialBanner />
+      <ProgrammesPreview />
+      <CommunityGoal />
+      <StoriesSection />
+      <RecentEvents />
+      <Footer />
+      <DonationToast />
     </main>
   );
 }
