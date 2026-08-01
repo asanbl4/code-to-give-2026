@@ -67,14 +67,88 @@ both halves are talking. A red box names what went wrong.
 | `GET /api/participants` | Published participants, in display order |
 | `GET /api/participants/{slug}` | One participant; 404 if unknown *or* unpublished |
 | `GET /api/photos` | Published photos with signed URLs and confirmed face tags |
+| `GET /api/me` | The signed-in user, their roles, and whether they are staff |
 | `POST /api/admin/photos` | Upload a group photo; returns detected faces with suggested names |
 | `PATCH /api/admin/faces/{id}` | Confirm, correct, or reject a tag |
 | `POST /api/admin/participants/{id}/enroll` | Register a face so the matcher recognises them |
 
-Every `/api/admin/*` route needs an `X-Admin-Token` header.
+Every `/api/admin/*` route needs `Authorization: Bearer <supabase access token>`
+from a staff account. See **Admin access** below.
 
 <http://127.0.0.1:8000/docs> has interactive docs, generated from the route
 signatures.
+
+## Admin access
+
+Staff sign in with a Supabase magic link. There is no admin password and no
+shared token — the previous `ADMIN_TOKEN` granted service-role access to anyone
+who learned it, could not be revoked for one person, and left no record of who
+had used it.
+
+**Identity and permission are separate, on purpose.** The JWT proves *who* you
+are; `public.user_roles` decides *what you may do*. A role claim inside a token
+grants nothing, because a caller can put anything in a token they mint.
+
+### Roles
+
+| Role | Can |
+|---|---|
+| `admin` | Everything, including granting roles |
+| `editor` | The staff tool: participants, photos, face tags |
+| `supporter` | Their own profile. The default for any new sign-up. |
+
+`public.role_allowlist` maps an email to the role it should receive. A trigger
+on `auth.users` reads it the first time that person signs in, so an address can
+be authorised before the account exists. Anyone not on the list becomes a
+`supporter` — the default has to be the harmless one.
+
+Both tables are service-role-only for writes: `user_roles` has a select-your-own
+policy and nothing else, and `role_allowlist` has RLS on with no policies at all.
+A signed-in user cannot promote themselves.
+
+Grant someone access with SQL (Supabase dashboard → SQL Editor):
+
+```sql
+insert into public.role_allowlist (email, role, note)
+values ('someone@love21foundation.com', 'editor', 'Programme staff');
+```
+
+If they already have an account, also grant it now:
+
+```sql
+insert into public.user_roles (user_id, role)
+select u.id, a.role from auth.users u
+join public.role_allowlist a on a.email = lower(u.email)
+on conflict do nothing;
+```
+
+Revoke by deleting their `user_roles` row *and* their `role_allowlist` entry —
+removing only the allowlist leaves an existing grant in place.
+
+### One-time Supabase setup
+
+These two cannot be scripted; do them in the dashboard once.
+
+1. **Auth → URL Configuration**
+   - Site URL: `http://localhost:3000`
+   - Redirect URLs: add `http://localhost:3000/auth/callback`
+     (and your deployed origin's `/auth/callback` when you have one)
+2. **Auth → Providers → Email**: enabled, "Confirm email" on.
+
+Then set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+in `frontend/.env.local` (see `.env.local.example`), and sign in at
+<http://localhost:3000/admin/login>.
+
+### Gotchas
+
+- **The built-in email sender is rate-limited** — a couple of messages an hour on
+  the free tier. Requesting several links in a row returns a 429, which the form
+  reports. Configure a custom SMTP provider before a demo.
+- **The link must be opened in the browser that requested it.** PKCE stores a
+  verifier in a cookie on the requesting device; opening the email on your phone
+  after requesting on a laptop fails with a code-verifier error.
+- **Links are single-use and short-lived.** A mail client that pre-fetches URLs
+  can consume one before you click it.
 
 ## Database
 

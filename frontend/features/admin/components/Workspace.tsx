@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card } from "@/components/ui";
-import { admin, AdminError as AdminRequestError, writeToken } from "@/lib/admin";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui";
+import { admin, AdminError as AdminRequestError } from "@/lib/admin";
 import type { AdminParticipant, AdminPhoto } from "@/lib/admin";
 import { AdminError } from "./AdminError";
+import { SignOutButton } from "./SignOutButton";
 import { MembersSection } from "./MembersSection";
 import { PhotosSection } from "./PhotosSection";
 
@@ -23,7 +25,8 @@ async function loadWorkspace(): Promise<WorkspaceData> {
   return { participants, photos, modelsAvailable: status.face_models_available };
 }
 
-export function Workspace() {
+export function Workspace({ signedInAs }: { signedInAs: string | null }) {
+  const router = useRouter();
   const [data, setData] = useState<WorkspaceData>({
     participants: [],
     photos: [],
@@ -31,15 +34,19 @@ export function Workspace() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  const handleFailure = useCallback((cause: unknown) => {
-    // An expired or wrong token should drop us back to the sign-in screen
-    // rather than showing an error we cannot act on.
-    if (cause instanceof AdminRequestError && cause.status === 401) {
-      writeToken("");
-      return;
-    }
-    setError(cause instanceof Error ? cause.message : String(cause));
-  }, []);
+  const handleFailure = useCallback(
+    (cause: unknown) => {
+      // A session that expired mid-session should send us back to sign in
+      // rather than showing an error nobody can act on. refresh() re-runs the
+      // layout guard, which owns the redirect.
+      if (cause instanceof AdminRequestError && cause.status === 401) {
+        router.refresh();
+        return;
+      }
+      setError(cause instanceof Error ? cause.message : String(cause));
+    },
+    [router],
+  );
 
   const refresh = useCallback(
     () =>
@@ -74,9 +81,10 @@ export function Workspace() {
     <div className="mx-auto w-full max-w-5xl px-5 py-12 sm:px-8">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <h1 className="font-display text-4xl font-bold text-ink">Stories admin</h1>
-        <Button variant="quiet" size="sm" onClick={() => writeToken("")}>
-          Sign out
-        </Button>
+        <div className="flex items-center gap-3">
+          {signedInAs && <span className="text-sm text-ink-soft">{signedInAs}</span>}
+          <SignOutButton />
+        </div>
       </div>
 
       {!modelsAvailable && (

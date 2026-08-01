@@ -1,14 +1,19 @@
+"use client";
+
 /**
  * Client for the staff admin API.
  *
- * The token is held in sessionStorage and sent as a header. It is deliberately
- * never a NEXT_PUBLIC_ variable: those are inlined into the browser bundle and
- * shipped to every visitor.
+ * Authorization is the caller's Supabase access token, sent as a bearer header.
+ * The backend verifies its signature against the project's JWKS and then asks
+ * Postgres whether that person holds a staff role.
+ *
+ * This used to be a shared secret typed into a box and kept in sessionStorage.
+ * That token granted service-role access to whoever learned it, could not be
+ * revoked for one person, and left no record of who used it.
  */
 
 import { API_URL, type Participant } from "./api";
-
-export const TOKEN_KEY = "love21.adminToken";
+import { createClient } from "./supabase/client";
 
 export type AdminParticipant = Participant & {
   consent_given: boolean;
@@ -44,40 +49,6 @@ export type AdminPhoto = {
   faces: AdminFace[];
 };
 
-/*
- * The token as an external store, so components read it through
- * useSyncExternalStore rather than copying it into state inside an effect.
- * sessionStorage genuinely is an external system; this is the primitive for it,
- * and it gives correct server rendering for free via the server snapshot.
- */
-const tokenListeners = new Set<() => void>();
-
-export function readToken(): string {
-  if (typeof window === "undefined") return "";
-  return window.sessionStorage.getItem(TOKEN_KEY) ?? "";
-}
-
-/** Always "" on the server: nothing is signed in during server rendering. */
-export function readTokenOnServer(): string {
-  return "";
-}
-
-export function subscribeToToken(listener: () => void): () => void {
-  tokenListeners.add(listener);
-  return () => {
-    tokenListeners.delete(listener);
-  };
-}
-
-export function writeToken(token: string): void {
-  if (token) {
-    window.sessionStorage.setItem(TOKEN_KEY, token);
-  } else {
-    window.sessionStorage.removeItem(TOKEN_KEY);
-  }
-  tokenListeners.forEach((listener) => listener());
-}
-
 export class AdminError extends Error {
   constructor(
     message: string,
@@ -87,10 +58,29 @@ export class AdminError extends Error {
   }
 }
 
+/**
+ * The current access token, refreshed if it has expired.
+ *
+ * `getSession()` rather than `getUser()`: this needs the raw token to forward,
+ * and the backend is going to verify it anyway. Server-side gating uses
+ * `getUser()`, which revalidates — see `lib/supabase/server.ts`.
+ */
+async function accessToken(): Promise<string> {
+  const {
+    data: { session },
+  } = await createClient().auth.getSession();
+
+  if (!session) {
+    throw new AdminError("Your session has ended. Please sign in again.", 401);
+  }
+  return session.access_token;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = await accessToken();
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { ...init.headers, "X-Admin-Token": readToken() },
+    headers: { ...init.headers, Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
 

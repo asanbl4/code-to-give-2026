@@ -12,7 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from postgrest.exceptions import APIError
 
-from app.admin_auth import require_admin
+from app.auth import require_staff
 from app.db import get_admin_db
 from app.faces import DetectedFace
 from app.main import app
@@ -20,9 +20,7 @@ from tests.conftest import FakeDb
 
 _PARTICIPANT = "6f1e6a4e-6c8c-4a4a-9f0e-6d2a6b7c1d11"
 _ONE_FACE = [
-    DetectedFace(
-        box_x=0.1, box_y=0.1, box_w=0.2, box_h=0.3, confidence=0.99, embedding=[0.1] * 128
-    )
+    DetectedFace(box_x=0.1, box_y=0.1, box_w=0.2, box_h=0.3, confidence=0.99, embedding=[0.1] * 128)
 ]
 
 
@@ -54,7 +52,7 @@ def uploads(monkeypatch: pytest.MonkeyPatch) -> list[str]:
 
 def _client(db: FakeDb) -> TestClient:
     app.dependency_overrides[get_admin_db] = lambda: db
-    app.dependency_overrides[require_admin] = lambda: None
+    app.dependency_overrides[require_staff] = lambda: None
     return TestClient(app)
 
 
