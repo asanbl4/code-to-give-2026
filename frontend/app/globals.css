@@ -31,6 +31,10 @@
   color-scheme: light;
 }
 
+@theme {
+  --color-love21-red: #e53935;
+  --color-love21-red-hover: #c62828;
+  --color-love21-light: #ffebee;
 body {
   background: var(--color-paper);
   color: var(--color-ink);
