@@ -92,3 +92,21 @@ def test_answer_selects_locale_and_easy_read() -> None:
     assert entry.answer("zh-Hant", easy_read=False) == entry.answer_zh
     assert entry.answer("en", easy_read=True) == entry.easy_read_en
     assert entry.answer("zh-Hant", easy_read=True) == entry.easy_read_zh
+
+
+def test_no_entry_points_at_a_followup_that_does_not_exist() -> None:
+    """A dangling followup is silently dropped at runtime, so nothing complains.
+
+    That is how `volunteer-how-to-start` came to be referenced by about.yaml
+    while no such entry existed -- the suggestion simply never rendered.
+    """
+    entries = {entry.id: entry for entry in load_corpus()}
+
+    dangling = {
+        f"{entry.id} -> {followup_id}"
+        for entry in entries.values()
+        for followup_id in entry.followups
+        if followup_id not in entries
+    }
+
+    assert not dangling, f"followups pointing at missing entries: {sorted(dangling)}"

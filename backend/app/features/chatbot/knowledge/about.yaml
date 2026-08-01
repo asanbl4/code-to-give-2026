@@ -36,7 +36,7 @@
     label_en: "See our programmes"
     label_zh: "查看我們的課程"
     href: "/programmes"
-  followups: [about-who-can-join]
+  followups: [about-who-can-join, volunteer-how-to-start]
   source: client-provided
 
 - id: about-who-can-join
