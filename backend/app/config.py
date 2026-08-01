@@ -84,6 +84,21 @@ class Settings(BaseSettings):
     # off-topic question would have crossed it. Re-measure once Task 11 fills
     # the corpus out -- ~35 entries compete differently.
     chatbot_low_confidence: float = 0.55
+    # Acceptance test for ONE PART of a compound question -- deliberately not a
+    # reuse of chatbot_low_confidence, which is too low to be safe here.
+    #
+    # Measured part scores on 2026-08-01 (6 entries), sorted:
+    #   1.000 0.979 0.975 0.961 0.718 0.692 | 0.663 0.643 0.600
+    # The 0.643 is "How do I volunteer?" matching donate-monthly-or-one-off
+    # with a +0.012 gap -- volunteering has no entry at all. It outranks two
+    # genuine matches, so no pure score cut separates noise from signal on a
+    # corpus this small, and the top-1/top-2 gap does not either (genuine
+    # matches produced +0.629 and +0.029 alike).
+    #
+    # 0.70 is therefore conservative on purpose: a genuine part below it gets
+    # the contact line instead of a wrong answer, which is the right way to
+    # fail. Re-measure once the corpus grows.
+    chatbot_part_confidence: float = 0.70
     # A demo must never hang: abandon generation past this and fall back.
     chatbot_timeout_seconds: float = 20.0
     # How long Ollama keeps a model in memory after a request. Its default of

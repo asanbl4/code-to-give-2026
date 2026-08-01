@@ -325,3 +325,154 @@ async def test_shipped_thresholds_disable_generation(monkeypatch, fake_ollama) -
         assert "HK$500" in response.answer, "must be the staff wording, verbatim"
 
     assert fake_ollama.generate_calls == [], "no score may reach the model"
+
+
+def _force_scores_by_part(monkeypatch, table: dict[str, tuple[str, float]]) -> None:
+    """Pin retrieval per question string.
+
+    Compound routing ranks the whole question AND each part, so the single
+    `_force_score` helper above cannot express it -- every call would return
+    the same entry. Keys are matched exactly against the text being ranked.
+    """
+    from app.features.chatbot.corpus import load_corpus
+
+    corpus = {entry.id: entry for entry in load_corpus()}
+
+    async def fake_rank(question, vector_index, entries):
+        if question not in table:
+            return []
+        entry_id, score = table[question]
+        return [(corpus[entry_id], score)]
+
+    monkeypatch.setattr(service.retrieval, "rank", fake_rank)
+
+
+@pytest.mark.anyio
+async def test_compound_question_answers_both_halves(monkeypatch, fake_ollama) -> None:
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "What is Love 21 and what does HK$500 fund?": ("about-what-is-love21", 0.72),
+            "What is Love 21": ("about-what-is-love21", 0.97),
+            "what does HK$500 fund": ("donate-what-500-funds", 0.91),
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="What is Love 21 and what does HK$500 fund?")
+    )
+
+    assert response.route == "composed"
+    assert [source.entry_id for source in response.sources] == [
+        "about-what-is-love21",
+        "donate-what-500-funds",
+    ]
+    assert "\n\n" in response.answer
+    assert not fake_ollama.generate_calls, "composing must not call the model"
+
+
+@pytest.mark.anyio
+async def test_a_refusal_in_any_part_dominates(monkeypatch, fake_ollama) -> None:
+    """Answering the innocuous half buries the half that matters."""
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "what do you do and is my child autistic?": ("about-what-is-love21", 0.60),
+            "what do you do": ("about-what-is-love21", 0.97),
+            "is my child autistic": ("refuse-medical-advice", 0.88),
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="what do you do and is my child autistic?")
+    )
+
+    assert response.route == "refused"
+    assert [source.entry_id for source in response.sources] == ["refuse-medical-advice"]
+    assert "Love 21 is a Hong Kong charity" not in response.answer
+    assert not fake_ollama.generate_calls
+
+
+@pytest.mark.anyio
+async def test_two_parts_hitting_one_entry_answer_once(monkeypatch, fake_ollama) -> None:
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "what do you do and who are you?": ("about-what-is-love21", 0.80),
+            "what do you do": ("about-what-is-love21", 0.97),
+            "who are you": ("about-what-is-love21", 0.95),
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="what do you do and who are you?")
+    )
+
+    assert len(response.sources) == 1
+    assert response.answer.count("Love 21 is a Hong Kong charity") == 1
+
+
+@pytest.mark.anyio
+async def test_an_uncovered_part_is_named_not_dropped(monkeypatch, fake_ollama) -> None:
+    """The bug being fixed is the silent drop. Say the half went unanswered."""
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "what do you do and how do I volunteer?": ("about-what-is-love21", 0.63),
+            "what do you do": ("about-what-is-love21", 0.97),
+            "how do I volunteer": ("donate-monthly-or-one-off", 0.64),  # below 0.70
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="what do you do and how do I volunteer?")
+    )
+
+    assert [source.entry_id for source in response.sources] == ["about-what-is-love21"]
+    assert "get in touch" in response.answer.lower()
+    assert response.action is not None
+    assert response.action.href == "/contact", "the unanswered half is the useful next step"
+
+
+@pytest.mark.anyio
+async def test_no_acceptable_part_falls_back_to_the_whole_question(
+    monkeypatch, fake_ollama
+) -> None:
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "what do you do and how do I volunteer?": ("about-what-is-love21", 0.80),
+            "what do you do": ("about-what-is-love21", 0.40),
+            "how do I volunteer": ("donate-monthly-or-one-off", 0.30),
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="what do you do and how do I volunteer?")
+    )
+
+    assert response.route == "curated", "falls through to today's path"
+    assert [source.entry_id for source in response.sources] == ["about-what-is-love21"]
+
+
+@pytest.mark.anyio
+async def test_degraded_ranking_skips_the_compound_path(monkeypatch, fake_ollama) -> None:
+    """Lexical scores occupy a different range; 0.70 would reject everything."""
+    monkeypatch.setattr(service.index, "load_index", lambda: None)
+
+    response = await service.answer_question(
+        ChatRequest(question="what do you do and who can join?")
+    )
+
+    assert response.route in {"fallback", "refused"}
+    assert response.route != "composed"
+
+
+@pytest.mark.anyio
+async def test_single_questions_are_unaffected(monkeypatch, fake_ollama) -> None:
+    _force_score(monkeypatch, "donate-what-500-funds", 0.92)
+
+    response = await service.answer_question(ChatRequest(question="where does my money go"))
+
+    assert response.route == "curated"
+    assert len(response.sources) == 1

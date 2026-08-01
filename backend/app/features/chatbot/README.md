@@ -14,9 +14,19 @@ Returns `answer`, `route`, `source`, `action`, `followups`, `locale`.
 | route | Meaning |
 |---|---|
 | `curated` | Match at or above the threshold. A staff-written answer, verbatim. No model call. |
+| `composed` | Two halves of one question, each a staff-written answer, stitched. No model call. |
 | `refused` | Below the threshold, or a refusal entry. Offers a person instead. |
 | `fallback` | Ollama was unavailable. Lexical matching, curated text. |
 | `generated` | The model composed from retrieved passages. **Off by default** — see below. |
+
+A question that asks two things at once is split into parts and each part is
+retrieved separately, because a compound question embeds to one blurred vector:
+"What is Love 21 and what does HK$500 fund?" scores 0.729 as a whole and 0.975
+for its first half alone. Parts must clear `CHATBOT_PART_CONFIDENCE` (0.70,
+higher than the ordinary floor) to be answered; a part below it is named as
+unanswered rather than dropped. A refusal in any part decides the whole
+response. This adds no model call — `composed` answers are staff-written text
+in both halves.
 
 ## Why generation is switched off
 
