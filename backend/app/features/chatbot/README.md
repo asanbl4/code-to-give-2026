@@ -1,122 +1,79 @@
 # Chatbot feature (backend)
 
-A local, grounded assistant. Answers come from a curated bilingual corpus, not
-from the model's own knowledge. Nothing leaves the machine.
+A local assistant. The model answers, given the whole curated corpus as
+reference. Medical and self-harm questions bypass the model entirely. Nothing
+leaves the machine.
 
 ## Endpoint
 
     POST /api/chat   { "question": "...", "locale": "en"|"zh-Hant", "easy_read": false }
 
-Returns `answer`, `route`, `source`, `action`, `followups`, `locale`.
+Returns `answer`, `route`, `sources`, `action`, `followups`, `locale`.
 
 `route` says how the answer was produced:
 
 | route | Meaning |
 |---|---|
-| `curated` | Match at or above the threshold. A staff-written answer, verbatim. No model call. |
-| `composed` | Two halves of one question, each a staff-written answer, stitched. No model call. |
-| `refused` | Below the threshold, or a refusal entry. Offers a person instead. |
-| `fallback` | Ollama was unavailable. Lexical matching, curated text. |
-| `generated` | The model composed from retrieved passages. **Off by default** — see below. |
+| `generated` | The model wrote it, given the whole corpus. The normal path. |
+| `refused` | A medical or self-harm question. Staff-written text, verbatim, no model call. |
+| `fallback` | Ollama was unavailable or returned nothing. The nearest curated entry, verbatim. |
 
-A question that asks two things at once is split into parts and each part is
-retrieved separately, because a compound question embeds to one blurred vector:
-"What is Love 21 and what does HK$500 fund?" scores 0.729 as a whole and 0.975
-for its first half alone. Parts must clear `CHATBOT_PART_CONFIDENCE` (0.81,
-well above the ordinary floor) to be answered; a part below it is named as
-unanswered rather than dropped. A refusal in any part decides the whole
-response. This adds no model call — `composed` answers are staff-written text
-in both halves.
+## How it works
 
-0.81 is the midpoint between the lowest genuine part (0.975) and the noise
-floor (0.646, "how do I volunteer" — a topic with no entry) measured on
-2026-08-01. Read the caveat in `config.py` before adjusting it: most of those
-probes are verbatim trigger text, so the genuine floor is optimistic.
+```
+question
+   -> embed, rank against the corpus
+   -> is the TOP match a refusal entry, at or above CHATBOT_REFUSAL_CONFIDENCE?
+         yes -> serve that entry verbatim. The model is never called.
+         no  -> hand the model every non-refusal entry + the question
+   -> model dead, slow or empty? serve the nearest curated entry instead
+```
 
-## Why generation is switched off
+There is no confidence band, no answer floor and no question splitting. The
+corpus is small enough to pass whole, and a model composing from all of it
+handles "two things at once" without help.
 
-`CHATBOT_HIGH_CONFIDENCE` and `CHATBOT_LOW_CONFIDENCE` are both `0.55`. Equal
-thresholds leave no middle band, so every answer is either a staff-written entry
-verbatim or a refusal. **The model never writes a word a visitor reads.**
+**Only the top match can trigger a refusal.** Scanning the whole ranked list was
+tried and shipped a real bug: some refusal entry scores above 0.55 for almost
+any question, so "how can I help" was answered with "call 999". Measured
+2026-08-01, a question that genuinely needs refusing ranks the refusal *first* —
+including "what do you do and is my child autistic" (0.851) — while questions
+that must not refuse sit 0.16–0.70 below.
 
-This is not a limitation we ran out of time to fix. Measured against qwen3:1.7b
-on 2026-08-01, generation invented an institutional commitment on *every*
-question the corpus does not cover:
+## What this trades away
 
-| Question | What the model answered | In the corpus? |
+The model writes text visitors read, so **it can state things the corpus does
+not contain.** This was a deliberate choice on 2026-08-01, taken knowing the
+following, which was measured on the shipped configuration:
+
+| Asked | Answered | Problem |
 |---|---|---|
-| can I bring my company team to help | "We welcome company teams to support our programmes!" | No |
-| can I visit and see a class | "You can visit our centres to observe our programmes and meet people with Down syndrome" | No |
-| can my son join if he is 12 | "Yes, your son can join if he is 12" | No |
-| is there a waiting list | "There's no waiting list mentioned in the reference passages" | Leaks the prompt |
+| can my son join if he is 12 | "Your son can join **regardless of age**" | Age eligibility is not in the corpus |
+| can I visit and see a class | "You can visit Love 21's programmes to see classes" | Physical access to a venue serving vulnerable people |
+| what is Love 21 | "90+ activities **weekly**" | The corpus says 90+ activity *types*, 7 days a week |
 
-The second is not merely wrong. It is a claim about physical access to vulnerable
-people, made by a charity, invented by a 1.7-billion-parameter model. A
-deliberately stricter prompt made that one *worse*, and the wording varied run to
-run, so the same question could be safe once and unsafe the next time.
+The prompt asks the model to say when it does not know, and it sometimes does —
+"where are you located" correctly answered that no address is in the passages.
+But that is a tendency, not a guarantee, and it varies run to run.
 
-Non-negotiable #8 forbids unverified statements in shipped copy. Equal thresholds
-are how that is enforced rather than hoped for.
+**Uncovered topics are where it invents.** Every fabrication above is a question
+with no entry behind it. The mitigation is corpus coverage, not prompt wording:
+a deliberately stricter prompt was tried on 2026-08-01 and made the "visiting"
+fabrication worse.
 
-**Retrieval still does the semantic work.** bge-m3 embeddings decide which human
-answer fits a question phrased in a way no one anticipated, in either language.
-The model chooses; it does not speak.
-
-To re-open the band, raise `CHATBOT_HIGH_CONFIDENCE` above
-`CHATBOT_LOW_CONFIDENCE`. The generation path is intact and tested. Do it only
-with a larger model **and** a corpus broad enough that a mid-band score means
-"phrased differently", not "not covered" — the fabrications above all came from
-gaps, and the corpus is still 6 seed entries. A test fails if you widen the band,
-so this stays a decision rather than a tweak.
-
-## Three floors, not one
-
-Retrieval always returns something. Cosine similarity has no "nothing matched"
-output, so the entry nearest an uncovered question wins by default — and at a
-single 0.55 floor, eight of nine questions the corpus does not cover were
-answered confidently and wrongly ("where are you located" → what Love 21 is).
-
-So the floor an entry must clear depends on what kind of entry it is:
-
-| Entry | Floor | Why |
-|---|---|---|
-| Ordinary | `CHATBOT_ANSWER_CONFIDENCE` (0.80) | A near miss is a wrong answer. |
-| Refusal | `CHATBOT_LOW_CONFIDENCE` (0.55) | Must fire readily — "I feel like ending it" scores 0.728 and would otherwise lose the 999. |
-| Anything, Ollama down | `CHATBOT_LOW_CONFIDENCE` (0.55) | Lexical scores are Jaccard overlap, a different scale. |
-
-Refusals still need *a* floor: "what is the weather in Tokyo" ranks
-`refuse-distress` top at 0.427, and answering that with crisis text was an
-earlier scar.
-
-0.80 is not a clean separator and cannot be — genuine paraphrases of covered
-topics measured 0.610–0.954, overlapping the uncovered range. Four of eleven
-measured paraphrases are refused. They get a person instead of a wrong answer,
-which is the right way to be wrong. Coverage is the real fix.
-
-## Answering in the language asked in
-
-`locale` on the request describes the **site**, not the question — the browser
-reads it from `<html lang>`. Until the accessibility toolbar (CONTEXT §6.1)
-exists, nothing ever sets that to `zh-Hant`, so every request arrives as `en`
-and a Cantonese-first family typing Chinese was answered in English.
-
-`language.py` corrects this: a question containing two or more Han characters
-is answered in Traditional Chinese whatever the request said. The correction is
-**one-way** — an English question never overrides a stated `zh-Hant`, because
-someone who set the site to Chinese and typed "Love 21" is still a Chinese
-reader. It applies to every route, including Easy Read text, refusals, action
-labels and followups.
-
-This stays useful once the toolbar ships: a visitor can switch language just by
-asking in it.
+Non-negotiable #8 forbids unverified statements in shipped copy. This
+configuration does not enforce that — it relies on the prompt and on coverage.
+Reverting is one commit; the safeguarding filter and the curated corpus are
+untouched by it.
 
 ## Setup
 
     ollama pull bge-m3
+    ollama pull qwen3:1.7b
     uv run python -m app.features.chatbot.build_index
 
-`bge-m3` is the only model the app calls while generation is off. `CHATBOT_MODEL`
-(`qwen3:1.7b`) is unused until the band is re-opened; pull it only then.
+**Both** models are needed: `bge-m3` embeds the question for the safeguarding
+check, `CHATBOT_MODEL` (`qwen3:1.7b`) writes the answer.
 
 `CHATBOT_ENABLED=false` in `backend/.env` switches the feature off entirely: the
 endpoint 503s and the frontend omits the launcher. A teammate without Ollama
@@ -131,13 +88,14 @@ handled — a slow embed degrades to lexical matching rather than failing — bu
 wastes the good path on the one question someone is watching.
 
 Ask the assistant a question in the browser before anyone is looking. That loads
-bge-m3 through the app, which holds it for `CHATBOT_KEEP_ALIVE` (30m default,
-well past Ollama's own 5m). Confirm with `ollama ps`.
+both models through the app, which holds them for `CHATBOT_KEEP_ALIVE` (30m
+default, well past Ollama's own 5m). Confirm with `ollama ps`. A cold first
+answer measured ~7s against ~3.5s warm.
 
-If you re-open the generated band, `ollama ps` must list **both** models at once.
-If loading one evicts the other you are out of VRAM and every request will thrash:
+`ollama ps` must list **both** models at once. If loading one evicts the other
+you are out of VRAM and every request will thrash:
 embedding the question unloads the generation model, which reloads from scratch
-and times out, so `generated` can never succeed. Measured on a 4GB RTX 3050,
+and times out, so every answer degrades to `fallback`. Measured on a 4GB RTX 3050,
 qwen3:**4b** (3.5GB) + bge-m3 (0.66GB) does exactly this; qwen3:**1.7b** (~1.4GB)
 leaves room for both.
 
@@ -184,6 +142,7 @@ with the crisis text.
 | `corpus.py` | Loads and validates. Raises rather than shipping a bad entry. |
 | `ollama.py` | The only module that talks to Ollama. |
 | `index.py` / `build_index.py` | Trigger embeddings + staleness check. |
-| `retrieval.py` | Cosine ranking; lexical fallback. |
-| `service.py` | Confidence routing. |
+| `retrieval.py` | Cosine ranking; lexical fallback. Used for the safeguarding check and the fallback answer. |
+| `language.py` | Answer in the language the question was written in. |
+| `service.py` | Safeguarding filter, then the model. |
 | `router.py` | `POST /api/chat`. |

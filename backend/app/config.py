@@ -50,87 +50,21 @@ class Settings(BaseSettings):
     # feature README. On a bigger GPU, qwen3:4b is a drop-in upgrade.
     chatbot_model: str = "qwen3:1.7b"
     chatbot_embed_model: str = "bge-m3"
-    # Both measured against real bge-m3 scores on 2026-08-01 (6 seed entries,
-    # 44 triggers) via `build_index --scores`, not guessed:
+    # The ONLY threshold left. A question must score at least this against a
+    # refusal entry's triggers to be treated as medical or self-harm and
+    # answered by a person's words instead of the model.
     #
-    #   on-topic  0.956 / 0.927 / 0.926 / 0.853, and 0.657 for a question the
-    #             corpus does not yet cover (volunteering)
-    #   off-topic 0.427 ("what is the weather in Tokyo")
+    # Measured against real bge-m3 scores on 2026-08-01 via
+    # `build_index --scores`, not guessed. It has to sit between:
+    #   0.728  "I feel like ending it"      -> must refuse (the 999 handoff)
+    #   0.427  "what is the weather in Tokyo" -> must NOT refuse; answering an
+    #          off-topic question with crisis text reads as broken and cheapens
+    #          the answer for whoever actually needs it.
+    # 0.55 sits in that gap with room either side.
     #
-    # Cosine score at or above which a curated answer is returned verbatim.
-    #
-    # Deliberately EQUAL to chatbot_low_confidence, which switches generation
-    # off: every score is either a verbatim staff answer or a refusal, and the
-    # model never writes a word a visitor reads. Retrieval still does the
-    # semantic work -- bge-m3 picks which human answer fits.
-    #
-    # Why, measured against qwen3:1.7b on 2026-08-01: on every question the
-    # corpus does not cover, generation invented an institutional commitment.
-    # "We welcome company teams to support our programmes", "You can visit our
-    # centres to observe our programmes and meet people with Down syndrome" --
-    # neither is anywhere in the corpus, and the second is a safeguarding claim
-    # about access to vulnerable people. A deliberately stricter prompt made it
-    # worse, and the fabrication varied run to run. Non-negotiable #8 forbids
-    # unverified statements in shipped copy; this is how that is enforced
-    # rather than hoped for. See the feature README.
-    #
-    # Raise this above chatbot_low_confidence to re-open the band (the code
-    # path is intact and tested) -- but only with a bigger model AND a corpus
-    # broad enough that mid-band means "phrased differently", not "not covered".
-    chatbot_high_confidence: float = 0.55
-    # Below this, we refuse rather than guess. 0.55 sits in the middle of the
-    # measured 0.427-0.657 gap; the original 0.45 cleared the off-topic probe
-    # by only 0.023, and bge-m3 scores run high enough that a different
-    # off-topic question would have crossed it. Re-measure once Task 11 fills
-    # the corpus out -- ~35 entries compete differently.
-    chatbot_low_confidence: float = 0.55
-    # What an ORDINARY entry must score before it is used as an answer.
-    #
-    # chatbot_low_confidence is too permissive for this, and that was a real
-    # bug: retrieval always returns something -- cosine has no "nothing
-    # matched" output -- so the nearest entry to an uncovered question wins by
-    # default. Measured 2026-08-01, eight of nine questions the corpus does not
-    # cover cleared 0.55 and were answered confidently and wrongly:
-    #   0.716 "where are you located"     -> about-what-is-love21
-    #   0.646 "do you run summer camps"   -> volunteer-how-to-start
-    #   0.629 "can I get a tax receipt"   -> about-who-can-join
-    #
-    # 0.80 sits 0.084 above the worst of those. It is NOT a clean separator and
-    # cannot be: genuine paraphrases of covered topics measured 0.610-0.954, so
-    # the two populations overlap. Measured paraphrases that this refuses:
-    #   0.610 "who are your programmes for"     0.729 "你們是甚麼機構"
-    #   0.705 "what sort of organisation are you"  0.730 "tell me what you actually do"
-    # Four of eleven. They get the contact line and a person, which is the
-    # right way to be wrong -- and 0.75 would refuse exactly the same four
-    # while leaving far less margin, so 0.80 costs nothing and buys headroom.
-    #
-    # The real fix is coverage: more entries and more triggers move genuine
-    # paraphrases up without moving uncovered questions. Re-measure then.
-    chatbot_answer_confidence: float = 0.80
-    # Acceptance test for ONE PART of a compound question -- deliberately not a
-    # reuse of chatbot_low_confidence, which is too low to be safe here.
-    #
-    # Measured 2026-08-01 via `build_index --scores`, after trigger enrichment
-    # (51 triggers). Genuine parts, lowest first:
-    #   0.975 0.986 1.000 1.000 1.000 1.000 1.000
-    # Noise ("how do I volunteer" -- volunteering has no entry at all):
-    #   0.646
-    # 0.81 is the midpoint of that gap. Before enrichment the two overlapped
-    # (noise 0.643 outranked genuine matches at 0.600 and 0.692), which is why
-    # this had to be measured after the triggers landed rather than before.
-    #
-    # CAVEAT, and it matters: five of those seven probes are now VERBATIM
-    # trigger text, so they score ~1.000 by construction and inflate the
-    # genuine floor. The only true paraphrases measured are "What is Love 21?"
-    # (0.975, against the trigger "what is Love 21") and the zh reordering
-    # 愛21是甚麼 (0.986, against 甚麼是愛21). Two points, both on one entry.
-    # A paraphrase of a covered topic that is not a trigger could land anywhere
-    # between 0.646 and 0.975 and would be refused. Re-derive this from
-    # UNSEEN phrasings -- real visitor questions -- when any exist.
-    #
-    # Failing that way round is deliberate: a part below the bar gets the
-    # contact line, not a wrong answer.
-    chatbot_part_confidence: float = 0.81
+    # Lower this if a real distress phrasing is getting through; raise it only
+    # with evidence that ordinary questions are being caught.
+    chatbot_refusal_confidence: float = 0.55
     # A demo must never hang: abandon generation past this and fall back.
     chatbot_timeout_seconds: float = 20.0
     # How long Ollama keeps a model in memory after a request. Its default of

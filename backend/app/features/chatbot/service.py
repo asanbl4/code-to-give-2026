@@ -1,24 +1,36 @@
-"""Confidence routing: the one place a score is compared to a threshold.
+"""Answer a question: safeguarding filter, then the model.
 
-    score >= high  -> the curated answer, verbatim, no model call
-    low <= s < high -> the model composes, strictly from retrieved passages
-    score < low    -> refuse generically, and offer a person
+    medical / self-harm question -> the staff-written refusal, verbatim
+    everything else              -> the model, given the whole corpus
+
+Deliberately simple. There is no confidence routing, no threshold band and no
+question splitting: the whole corpus is small enough to hand the model in one
+prompt, and a model composing from all of it handles "two things at once"
+without any help from us.
 
 Two properties are load-bearing and are asserted in the tests:
 
-* above the floor, an `is_refusal` entry short-circuits before any generation,
-  so medical and safeguarding questions can never be answered by a small local
-  model. Below the floor the *generic* refusal is used instead, so an off-topic
-  question is not served the safeguarding entry it happened to rank nearest;
-* every failure path degrades to a written answer. This function does not
-  raise, so the endpoint cannot 500.
+* medical and self-harm questions never reach the model. That check runs first,
+  on its own embedding pass over the refusal entries alone, so no ranking
+  decision can route around it;
+* every failure path still degrades to a written answer. If the model is slow,
+  dead or empty, the nearest curated entry is served instead. This function does
+  not raise, so the endpoint cannot 500.
+
+WHAT THIS TRADES AWAY, on purpose and at the user's direction (2026-08-01):
+the model now writes text a visitor reads, so it can state things the corpus
+does not contain. Measured against qwen3:1.7b, uncovered questions produced
+invented institutional commitments -- "you can visit our centres to observe our
+programmes and meet people with Down syndrome" among them. The prompt asks for
+grounding and the corpus is fuller than it was, but neither is a guarantee.
+Questions with no entry (locations, opening hours, fees) are where it will
+invent. See the feature README.
 """
 
-import asyncio
 import logging
 
 from app.config import get_settings
-from app.features.chatbot import index, language, ollama, retrieval, splitting
+from app.features.chatbot import index, language, ollama, retrieval
 from app.features.chatbot.corpus import load_corpus
 from app.features.chatbot.models import (
     Action,
@@ -40,10 +52,11 @@ SYSTEM_PROMPT_EN = """You are the help assistant for Love 21 Foundation, a Hong 
 for the Down syndrome, autistic and neurodiverse community.
 
 Rules you must follow:
-- Answer ONLY using the reference passages given. If they do not contain the answer, say you \
-do not know and suggest contacting the team.
-- Never invent statistics, dates, prices or names. If a number is not in the passages, do not \
-give a number.
+- Answer using the reference passages below. They are everything the charity has \
+confirmed. If they do not contain the answer, say plainly that you do not know and \
+suggest contacting the team -- do not guess.
+- Never invent statistics, dates, prices, addresses, opening hours or names. If a \
+detail is not in the passages, say you do not have it.
 - Never suggest donating to a named individual. Donations support programmes.
 - Never give medical, diagnostic or therapeutic advice.
 - Write plainly and warmly, in short sentences. Two or three sentences is usually enough.
@@ -61,16 +74,6 @@ _REFUSAL_FALLBACK_EN = (
 )
 _REFUSAL_FALLBACK_ZH = "這個問題我不太確定。我們的團隊可以幫忙——請聯絡我們，同事會回覆你。"
 
-# Appended when a compound question had a part we could not answer. The bug this
-# feature fixes is the *silent* drop, so a half that goes unanswered is named.
-# The visitor's own words are not quoted back -- repeating a question we failed
-# on reads as a taunt.
-_PARTIAL_TAIL_EN = (
-    "I couldn't answer the rest of your question. Please get in touch and "
-    "someone will come back to you."
-)
-_PARTIAL_TAIL_ZH = "你問題的其餘部分我未能解答。請聯絡我們，同事會回覆你。"
-
 _CONTACT_ACTION = Action(
     label_en="Contact our team",
     label_zh="聯絡我們的團隊",
@@ -80,8 +83,8 @@ _CONTACT_ACTION = Action(
 
 async def answer_question(request: ChatRequest) -> ChatResponse:
     """Route one question. Never raises."""
-    # Correct the locale once, here, so every path below -- curated, composed,
-    # refused, the Easy Read variants -- renders in the language asked in.
+    # Correct the locale once, here, so every path below -- the refusal, the
+    # generated answer and the curated fallback -- speaks the language asked in.
     request = request.model_copy(
         update={"locale": language.resolve_locale(request.question, request.locale)}
     )
@@ -89,77 +92,45 @@ async def answer_question(request: ChatRequest) -> ChatResponse:
     entries = {entry.id: entry for entry in load_corpus()}
     vector_index = index.load_index()
 
-    parts = splitting.split_question(request.question)
+    ranked, degraded = await _rank(request.question, vector_index, entries)
 
-    if len(parts) > 1:
-        # One gather, not one round trip per part: four sequential embeds would
-        # quadruple the latency of the exact questions this feature exists for.
-        results = await asyncio.gather(
-            _rank(request.question, vector_index, entries),
-            *(_rank(part, vector_index, entries) for part in parts),
-        )
-        (ranked, degraded), part_results = results[0], list(results[1:])
+    # SAFEGUARDING FIRST. A medical or self-harm question is answered by a
+    # person's words, never by a 1.7B model. This is checked before anything
+    # else so no later branch can route around it.
+    refusal = _safeguarding_match(ranked)
+    if refusal is not None:
+        return _from_entry(refusal, request, entries, route="refused")
 
-        # Lexical fallback scores are Jaccard bigram overlap, which occupies a
-        # completely different range from cosine -- a correct lexical match
-        # rarely reaches chatbot_part_confidence at all. Applying it there would
-        # silently reject every part, or invite someone to "fix" that by
-        # lowering the threshold for both paths. Degrade to one good answer.
-        if not degraded:
-            composed = _compose(part_results, request, entries)
-            if composed is not None:
-                return composed
-    else:
-        ranked, degraded = await _rank(request.question, vector_index, entries)
-
-    if not ranked:
-        return _refusal(request.locale, route="refused")
-
-    entry, score = ranked[0]
-
-    # The confidence floor comes first, including for refusal entries. Every
-    # question the corpus does not cover ranks *something* top, and the refusal
-    # entries attract off-topic text: "what is the weather in Tokyo" ranked
-    # refuse-distress top at 0.427 on the real index. Serving that entry
-    # verbatim told a visitor asking about the weather to call 999, which reads
-    # as broken and cheapens the answer for the person who actually needs it.
-    if score < _floor_for(entry, degraded):
-        return _refusal(request.locale, route="fallback" if degraded else "refused")
-
-    # Above the floor, refusals win over the remaining thresholds: a medical
-    # question that happens to score mid-band must still never reach the model.
-    if entry.is_refusal:
-        return _from_entry(entry, request, entries, route="refused")
-
+    # Ollama is unreachable: there is nothing to generate with, so serve the
+    # nearest written answer rather than failing.
     if degraded:
-        return _from_entry(entry, request, entries, route="fallback")
+        if not ranked:
+            return _refusal(request.locale, route="fallback")
+        return _from_entry(ranked[0][0], request, entries, route="fallback")
 
-    if score >= settings.chatbot_high_confidence:
-        return _from_entry(entry, request, entries, route="curated")
-
-    return await _generate(entry, ranked, request, entries)
+    return await _generate(ranked, request, entries)
 
 
-def _floor_for(entry: Entry, degraded: bool) -> float:
-    """The score `entry` must reach before it is used at all.
+def _safeguarding_match(ranked: list[tuple[Entry, float]]) -> Entry | None:
+    """The refusal entry to serve, if any: the TOP match, and only the top.
 
-    Three cases, and they are deliberately different numbers:
+    Scanning the whole ranked list for any refusal above the floor was tried
+    first and is badly wrong -- some refusal entry sits above 0.55 for almost
+    any question, so "how can I help" was answered with "call 999". Measured
+    2026-08-01, the refusal is *top-ranked* in every question that should
+    refuse, including the compound "what do you do and is my child autistic"
+    (0.851), and sits 0.16-0.70 below top in every question that should not.
 
-    * a REFUSAL entry sits low. A safeguarding handoff should fire readily --
-      "I feel like ending it" scores 0.728, and holding it to the answer floor
-      would drop it to a generic "contact us" and lose the 999. It still needs
-      *a* floor, which is the scar above: "what is the weather in Tokyo" ranks
-      refuse-distress top at 0.427.
-    * a DEGRADED score is Jaccard bigram overlap, not cosine, and occupies a
-      different range. The answer floor would refuse nearly everything and make
-      the Ollama-down path useless -- the opposite of degrade-not-fail.
-    * everything else must clear the answer floor, because retrieval always
-      returns something and the nearest entry to a question the corpus does not
-      cover is still the wrong answer.
+    The floor still matters: "what is the weather in Tokyo" ranks
+    refuse-distress top at 0.427, and answering that with crisis text reads as
+    broken and cheapens the answer for whoever actually needs it.
     """
-    if entry.is_refusal or degraded:
-        return settings.chatbot_low_confidence
-    return settings.chatbot_answer_confidence
+    if not ranked:
+        return None
+    entry, score = ranked[0]
+    if entry.is_refusal and score >= settings.chatbot_refusal_confidence:
+        return entry
+    return None
 
 
 async def _rank(
@@ -180,25 +151,21 @@ async def _rank(
 
 
 async def _generate(
-    entry: Entry,
     ranked: list[tuple[Entry, float]],
     request: ChatRequest,
     entries: dict[str, Entry],
 ) -> ChatResponse:
-    """Compose from the top passages, falling back to the best curated answer.
+    """Answer from the whole corpus, falling back to the nearest curated entry.
 
-    Refusal entries are withheld from the context. The corpus is small enough
-    that they land in the top few for almost any question, and handing the model
-    "call 999 in an emergency" as reference material for a donation question
-    invites it to blend crisis wording into an ordinary answer. The prompt
-    discourages that; excluding the text removes the possibility. `entry` is
-    ranked[0] and never a refusal here -- those short-circuit above -- so this
-    can never empty the context.
+    Refusal entries are withheld from the context. Handing the model "call 999
+    in an emergency" as quotable material for a donation question invites it to
+    blend crisis wording into an ordinary answer; the safeguarding check above
+    already owns those questions entirely.
     """
     passages = "\n\n".join(
-        f"[{candidate.id}]\n{candidate.answer(request.locale, request.easy_read)}"
-        for candidate, _ in ranked[:4]
-        if not candidate.is_refusal
+        f"[{entry.id}]\n{entry.answer(request.locale, request.easy_read)}"
+        for entry in entries.values()
+        if not entry.is_refusal
     )
     system = SYSTEM_PROMPT_EN if request.locale == "en" else SYSTEM_PROMPT_ZH
     user = f"Reference passages:\n\n{passages}\n\nVisitor's question: {request.question}"
@@ -207,115 +174,28 @@ async def _generate(
         answer = await ollama.generate(system, user)
     except OllamaUnavailable as exc:
         logger.warning("Generation failed, serving the curated answer: %s", exc)
-        return _from_entry(entry, request, entries, route="fallback")
+        answer = ""
 
     if not answer:
-        return _from_entry(entry, request, entries, route="fallback")
+        if not ranked:
+            return _refusal(request.locale, route="fallback")
+        return _from_entry(ranked[0][0], request, entries, route="fallback")
+
+    # The nearest entry is cited as the source and supplies the action. It is
+    # what the answer is most likely drawn from, but the model saw everything,
+    # so this is a pointer rather than a provenance claim.
+    nearest = ranked[0][0] if ranked else None
 
     return ChatResponse(
         answer=answer,
         route="generated",
-        sources=[Source(entry_id=entry.id, label=entry.triggers(request.locale)[0])],
-        action=_resolve(entry.action, request.locale),
-        followups=build_followups(entry, entries, request.locale),
+        sources=[]
+        if nearest is None
+        else [Source(entry_id=nearest.id, label=nearest.triggers(request.locale)[0])],
+        action=None if nearest is None else _resolve(nearest.action, request.locale),
+        followups=build_followups(nearest, entries, request.locale),
         locale=request.locale,
     )
-
-
-def _compose(
-    part_results: list[tuple[list[tuple[Entry, float]], bool]],
-    request: ChatRequest,
-    entries: dict[str, Entry],
-) -> ChatResponse | None:
-    """Stitch the parts we can answer. None means "use the whole question".
-
-    Returning None rather than a half-answer is what makes splitting safe: a
-    bad split costs the enhancement, never a correct answer.
-    """
-    accepted: list[tuple[Entry, float]] = []
-    seen: set[str] = set()
-    rejected = False
-
-    for ranked, _ in part_results:
-        if not ranked:
-            rejected = True
-            continue
-        entry, score = ranked[0]
-
-        # A refusal in ANY part decides the whole response. Answering the
-        # innocuous half of "what do you do and is my child autistic" buries
-        # the response that matters underneath a charity blurb.
-        if entry.is_refusal and score >= settings.chatbot_low_confidence:
-            return _from_entry(entry, request, entries, route="refused")
-
-        if entry.is_refusal or score < settings.chatbot_part_confidence:
-            rejected = True
-            continue
-        if entry.id in seen:
-            continue
-        seen.add(entry.id)
-        accepted.append((entry, score))
-
-    if not accepted:
-        return None
-
-    # `accepted` stays in the order the visitor asked. Sorting by score reads as
-    # a non sequitur: "What is Love 21 and what does HK$500 fund?" scores the
-    # second half higher, and answering it first makes the reply look like it
-    # missed the question.
-    answer = "\n\n".join(entry.answer(request.locale, request.easy_read) for entry, _ in accepted)
-    if rejected:
-        tail = _PARTIAL_TAIL_EN if request.locale == "en" else _PARTIAL_TAIL_ZH
-        answer = f"{answer}\n\n{tail}"
-
-    # One primary action per screen (CONTEXT.md 8). The best-matching part
-    # supplies it -- but when a part went unanswered, reaching a person beats
-    # any entry's own link.
-    best = max(accepted, key=lambda pair: pair[1])[0]
-    action = (
-        _CONTACT_ACTION.resolve(request.locale)
-        if rejected
-        else _resolve(best.action, request.locale)
-    )
-
-    return ChatResponse(
-        answer=answer,
-        route="composed" if len(accepted) > 1 else "curated",
-        sources=[
-            Source(entry_id=entry.id, label=entry.triggers(request.locale)[0])
-            for entry, _ in accepted
-        ],
-        action=action,
-        followups=_compose_followups(accepted, entries, request.locale),
-        locale=request.locale,
-    )
-
-
-def _compose_followups(
-    accepted: list[tuple[Entry, float]],
-    entries: dict[str, Entry],
-    locale: Locale,
-) -> list[Followup]:
-    """Authored next questions across every entry quoted, minus what we answered."""
-    answered = {entry.id for entry, _ in accepted}
-    followups: list[Followup] = []
-    seen: set[str] = set()
-
-    for entry, _ in accepted:
-        for followup_id in entry.followups:
-            if followup_id in answered or followup_id in seen:
-                continue
-            target = entries.get(followup_id)
-            if target is None:
-                continue
-            triggers = target.triggers(locale)
-            if not triggers:
-                continue
-            seen.add(followup_id)
-            followups.append(Followup(label=triggers[0], question=triggers[0]))
-            if len(followups) == 3:
-                return followups
-    return followups
 
 
 def _from_entry(
@@ -350,12 +230,17 @@ def _refusal(locale: Locale, route: str) -> ChatResponse:
     )
 
 
-def build_followups(entry: Entry, entries: dict[str, Entry], locale: Locale) -> list[Followup]:
+def build_followups(
+    entry: Entry | None, entries: dict[str, Entry], locale: Locale
+) -> list[Followup]:
     """Authored next questions, resolved to their first trigger phrase.
 
     Authored rather than generated: the suggested path through the site stays
     deliberate instead of being improvised by a small local model.
     """
+    if entry is None:
+        return []
+
     followups: list[Followup] = []
     for followup_id in entry.followups:
         target = entries.get(followup_id)
