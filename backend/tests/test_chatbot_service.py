@@ -220,7 +220,7 @@ async def test_weak_match_on_a_refusal_entry_gives_the_generic_refusal(
     )
 
     assert response.route == "refused"
-    assert response.source is None, "an off-topic question must not cite the distress entry"
+    assert response.sources == [], "an off-topic question must not cite the distress entry"
     assert "999" not in response.answer
     assert fake_ollama.generate_calls == []
 
@@ -232,7 +232,7 @@ async def test_weak_match_on_a_medical_refusal_does_not_cite_it(monkeypatch, fak
     response = await service.answer_question(ChatRequest(question="how do I fix my bicycle"))
 
     assert response.route == "refused"
-    assert response.source is None
+    assert response.sources == []
 
 
 @pytest.mark.anyio
@@ -245,7 +245,7 @@ async def test_confident_distress_match_still_gives_the_safeguarding_answer(
     response = await service.answer_question(ChatRequest(question="I want to hurt myself"))
 
     assert response.route == "refused"
-    assert response.source is not None
+    assert response.sources != []
     assert "999" in response.answer
     assert fake_ollama.generate_calls == []
 
@@ -260,7 +260,7 @@ async def test_mid_band_refusal_still_refuses_without_the_model(
     response = await service.answer_question(ChatRequest(question="is my child autistic"))
 
     assert response.route == "refused"
-    assert response.source is not None
+    assert response.sources != []
     assert fake_ollama.generate_calls == []
 
 

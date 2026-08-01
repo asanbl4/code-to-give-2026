@@ -155,7 +155,7 @@ async def _generate(
     return ChatResponse(
         answer=answer,
         route="generated",
-        source=Source(entry_id=entry.id, label=entry.triggers(request.locale)[0]),
+        sources=[Source(entry_id=entry.id, label=entry.triggers(request.locale)[0])],
         action=_resolve(entry.action, request.locale),
         followups=build_followups(entry, entries, request.locale),
         locale=request.locale,
@@ -171,7 +171,7 @@ def _from_entry(
     return ChatResponse(
         answer=entry.answer(request.locale, request.easy_read),
         route=route,  # type: ignore[arg-type]
-        source=Source(entry_id=entry.id, label=entry.triggers(request.locale)[0]),
+        sources=[Source(entry_id=entry.id, label=entry.triggers(request.locale)[0])],
         action=_resolve(entry.action, request.locale),
         followups=build_followups(entry, entries, request.locale),
         locale=request.locale,
@@ -187,7 +187,7 @@ def _refusal(locale: Locale, route: str) -> ChatResponse:
     return ChatResponse(
         answer=_REFUSAL_FALLBACK_EN if locale == "en" else _REFUSAL_FALLBACK_ZH,
         route=route,  # type: ignore[arg-type]
-        source=None,
+        sources=[],
         action=_CONTACT_ACTION.resolve(locale),
         followups=[],
         locale=locale,
