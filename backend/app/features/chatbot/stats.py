@@ -23,11 +23,48 @@ class UnknownStatError(ValueError):
     """A `{{ token }}` with no matching key in impact-stats.yaml."""
 
 
+class MalformedStatsError(ValueError):
+    """impact-stats.yaml is not shaped the way load_stats expects."""
+
+
+def _fail(problem: str) -> None:
+    raise MalformedStatsError(
+        f"{STATS_PATH.name} is malformed: {problem}. Expected a top-level "
+        "'stats:' list whose entries each have a 'key' and a 'value'. "
+        f"File: {STATS_PATH}"
+    )
+
+
 @lru_cache(maxsize=1)
 def load_stats() -> dict[str, str]:
-    """Stat key -> display value. Cached; the file does not change at runtime."""
+    """Stat key -> display value. Cached; the file does not change at runtime.
+
+    Every failure names the file and the offending entry. This is edited by
+    hand between demos, so a typo has to read as "fix your YAML" rather than
+    as a bare KeyError that looks like an application bug.
+    """
     raw = yaml.safe_load(STATS_PATH.read_text(encoding="utf-8"))
-    return {entry["key"]: str(entry["value"]) for entry in raw["stats"]}
+
+    if raw is None:
+        _fail("the file is empty")
+    if not isinstance(raw, dict):
+        _fail(f"the top level is {type(raw).__name__}, not a mapping")
+    if "stats" not in raw:
+        _fail("no top-level 'stats' key")
+    if not isinstance(raw["stats"], list):
+        _fail(f"'stats' is {type(raw['stats']).__name__}, not a list")
+
+    resolved: dict[str, str] = {}
+    for position, entry in enumerate(raw["stats"], start=1):
+        if not isinstance(entry, dict):
+            _fail(f"entry {position} is {type(entry).__name__}, not a mapping")
+        if "key" not in entry:
+            _fail(f"entry {position} has no 'key'")
+        if "value" not in entry:
+            _fail(f"entry {position} ('{entry['key']}') has no 'value'")
+        resolved[entry["key"]] = str(entry["value"])
+
+    return resolved
 
 
 def resolve_tokens(text: str, stats: dict[str, str]) -> str:
