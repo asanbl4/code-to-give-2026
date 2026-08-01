@@ -22,11 +22,16 @@ Returns `answer`, `route`, `source`, `action`, `followups`, `locale`.
 A question that asks two things at once is split into parts and each part is
 retrieved separately, because a compound question embeds to one blurred vector:
 "What is Love 21 and what does HK$500 fund?" scores 0.729 as a whole and 0.975
-for its first half alone. Parts must clear `CHATBOT_PART_CONFIDENCE` (0.70,
-higher than the ordinary floor) to be answered; a part below it is named as
+for its first half alone. Parts must clear `CHATBOT_PART_CONFIDENCE` (0.81,
+well above the ordinary floor) to be answered; a part below it is named as
 unanswered rather than dropped. A refusal in any part decides the whole
 response. This adds no model call — `composed` answers are staff-written text
 in both halves.
+
+0.81 is the midpoint between the lowest genuine part (0.975) and the noise
+floor (0.646, "how do I volunteer" — a topic with no entry) measured on
+2026-08-01. Read the caveat in `config.py` before adjusting it: most of those
+probes are verbatim trigger text, so the genuine floor is optimistic.
 
 ## Why generation is switched off
 

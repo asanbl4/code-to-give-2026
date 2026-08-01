@@ -87,18 +87,27 @@ class Settings(BaseSettings):
     # Acceptance test for ONE PART of a compound question -- deliberately not a
     # reuse of chatbot_low_confidence, which is too low to be safe here.
     #
-    # Measured part scores on 2026-08-01 (6 entries), sorted:
-    #   1.000 0.979 0.975 0.961 0.718 0.692 | 0.663 0.643 0.600
-    # The 0.643 is "How do I volunteer?" matching donate-monthly-or-one-off
-    # with a +0.012 gap -- volunteering has no entry at all. It outranks two
-    # genuine matches, so no pure score cut separates noise from signal on a
-    # corpus this small, and the top-1/top-2 gap does not either (genuine
-    # matches produced +0.629 and +0.029 alike).
+    # Measured 2026-08-01 via `build_index --scores`, after trigger enrichment
+    # (51 triggers). Genuine parts, lowest first:
+    #   0.975 0.986 1.000 1.000 1.000 1.000 1.000
+    # Noise ("how do I volunteer" -- volunteering has no entry at all):
+    #   0.646
+    # 0.81 is the midpoint of that gap. Before enrichment the two overlapped
+    # (noise 0.643 outranked genuine matches at 0.600 and 0.692), which is why
+    # this had to be measured after the triggers landed rather than before.
     #
-    # 0.70 is therefore conservative on purpose: a genuine part below it gets
-    # the contact line instead of a wrong answer, which is the right way to
-    # fail. Re-measure once the corpus grows.
-    chatbot_part_confidence: float = 0.70
+    # CAVEAT, and it matters: five of those seven probes are now VERBATIM
+    # trigger text, so they score ~1.000 by construction and inflate the
+    # genuine floor. The only true paraphrases measured are "What is Love 21?"
+    # (0.975, against the trigger "what is Love 21") and the zh reordering
+    # 愛21是甚麼 (0.986, against 甚麼是愛21). Two points, both on one entry.
+    # A paraphrase of a covered topic that is not a trigger could land anywhere
+    # between 0.646 and 0.975 and would be refused. Re-derive this from
+    # UNSEEN phrasings -- real visitor questions -- when any exist.
+    #
+    # Failing that way round is deliberate: a part below the bar gets the
+    # contact line, not a wrong answer.
+    chatbot_part_confidence: float = 0.81
     # A demo must never hang: abandon generation past this and fall back.
     chatbot_timeout_seconds: float = 20.0
     # How long Ollama keeps a model in memory after a request. Its default of

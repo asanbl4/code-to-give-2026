@@ -231,18 +231,23 @@ def _compose(
     if not accepted:
         return None
 
-    accepted.sort(key=lambda pair: pair[1], reverse=True)
+    # `accepted` stays in the order the visitor asked. Sorting by score reads as
+    # a non sequitur: "What is Love 21 and what does HK$500 fund?" scores the
+    # second half higher, and answering it first makes the reply look like it
+    # missed the question.
     answer = "\n\n".join(entry.answer(request.locale, request.easy_read) for entry, _ in accepted)
     if rejected:
         tail = _PARTIAL_TAIL_EN if request.locale == "en" else _PARTIAL_TAIL_ZH
         answer = f"{answer}\n\n{tail}"
 
-    # One primary action per screen (CONTEXT.md 8). When a part went
-    # unanswered, reaching a person beats the top entry's own link.
+    # One primary action per screen (CONTEXT.md 8). The best-matching part
+    # supplies it -- but when a part went unanswered, reaching a person beats
+    # any entry's own link.
+    best = max(accepted, key=lambda pair: pair[1])[0]
     action = (
         _CONTACT_ACTION.resolve(request.locale)
         if rejected
-        else _resolve(accepted[0][0].action, request.locale)
+        else _resolve(best.action, request.locale)
     )
 
     return ChatResponse(

@@ -476,3 +476,36 @@ async def test_single_questions_are_unaffected(monkeypatch, fake_ollama) -> None
 
     assert response.route == "curated"
     assert len(response.sources) == 1
+
+
+@pytest.mark.anyio
+async def test_halves_are_answered_in_the_order_asked(monkeypatch, fake_ollama) -> None:
+    """Score order is not question order.
+
+    Found end to end, not by the tests above: "What is Love 21 and what does
+    HK$500 fund?" scores its SECOND half higher once both are exact triggers,
+    so sorting by score answered the visitor backwards.
+    """
+    _force_scores_by_part(
+        monkeypatch,
+        {
+            "What is Love 21 and what does HK$500 fund?": ("about-what-is-love21", 0.72),
+            "What is Love 21": ("about-what-is-love21", 0.90),
+            "what does HK$500 fund": ("donate-what-500-funds", 1.00),
+        },
+    )
+
+    response = await service.answer_question(
+        ChatRequest(question="What is Love 21 and what does HK$500 fund?")
+    )
+
+    assert [source.entry_id for source in response.sources] == [
+        "about-what-is-love21",
+        "donate-what-500-funds",
+    ], "answered in the order asked, not by score"
+    assert response.answer.index("Love 21 is a Hong Kong charity") < response.answer.index(
+        "HK$500 funds one class"
+    )
+    # The action still comes from the best-scoring part, which here is the second.
+    assert response.action is not None
+    assert response.action.href.startswith("/donate")

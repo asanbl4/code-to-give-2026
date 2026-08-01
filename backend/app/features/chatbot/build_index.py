@@ -22,6 +22,18 @@ _PROBES = [
     ("en", "what is the weather in Tokyo"),
     ("zh-Hant", "愛21是甚麼機構"),
     ("zh-Hant", "我可以怎樣捐款"),
+    # Parts of the compound questions the splitting feature exists for, so
+    # CHATBOT_PART_CONFIDENCE stays measured rather than remembered. "how do I
+    # volunteer" is the noise probe: volunteering has no entry, so whatever it
+    # scores is the floor of what nonsense reaches. Everything else is genuine.
+    ("en", "What is Love 21?"),
+    ("en", "what does HK$500 fund"),
+    ("en", "how much does a class cost"),
+    ("en", "what do you do"),
+    ("en", "who can join"),
+    ("en", "how do I volunteer"),
+    ("zh-Hant", "愛21是甚麼"),
+    ("zh-Hant", "HK$500可以資助甚麼"),
 ]
 
 

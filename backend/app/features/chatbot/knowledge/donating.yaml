@@ -8,10 +8,16 @@
     - "what does my donation pay for"
     - "how much should I give"
     - "what will my donation do"
+    - "what does HK$500 fund"
+    - "how much does a class cost"
+    - "is there a fee for classes"
   triggers_zh:
     - "捐款用在哪裡"
     - "我的捐款如何運用"
     - "應該捐多少"
+    - "HK$500可以資助甚麼"
+    - "一堂課要多少錢"
+    - "課程要收費嗎"
   answer_en: >
     HK${{ hkd_per_class }} funds one class for up to {{ class_capacity }}
     members — the coach, the space and the equipment. Every Love 21 programme is
