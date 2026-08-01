@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  Love 21 Foundation — design tokens.
+
+  Blue and yellow are not arbitrary: they are the colours of World Down Syndrome
+  Day, which falls on 21 March for trisomy 21. The community already owns them.
+
+  Everything here is tuned for an audience that includes people with Down
+  syndrome and autism. Large type, high contrast, generous targets and calm
+  motion are accessibility requirements first and the visual identity second.
+*/
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: #10203a;
+  --color-ink-soft: #4a5b76;
+  --color-paper: #ffffff;
+  --color-surface: #eef3fb;
+  --color-edge: #d3deef;
+
+  --color-signal: #1d5cff;
+  --color-signal-deep: #123fb3;
+  --color-highlight: #ffc61e;
+
+  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-atkinson);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* The photographs carry the colour. The page stays light behind them. */
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-atkinson), system-ui, sans-serif;
+  /* Nobody in this audience benefits from 14px body copy. */
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* One focus treatment, everywhere, impossible to miss. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-signal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/*
+  The card that appears when you tap a face.
+
+  On a phone it is a sheet pinned to the bottom of the screen: a small card
+  tethered to a small face is unreadable on a 390px viewport, and the sheet is
+  the pattern people already know. From `sm` up it anchors to the face itself,
+  above or below depending on where there is room.
+*/
+.tag-card {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 0.75rem;
+}
+
+@media (min-width: 40rem) {
+  .tag-card {
+    position: absolute;
+    inset-inline: auto;
+    left: var(--anchor-x);
+    top: var(--anchor-y);
+    bottom: auto;
+    width: 22rem;
+    max-width: 90vw;
+    padding: 0;
+  }
+
+  .tag-card--below {
+    transform: translate(-50%, 0.75rem);
+  }
+
+  .tag-card--above {
+    transform: translate(-50%, calc(-100% - 0.75rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -66,6 +66,12 @@ both halves are talking. A red box names what went wrong.
 | `GET /api/hello` | `{"message": "Hello from FastAPI"}` |
 | `GET /api/participants` | Published participants, in display order |
 | `GET /api/participants/{slug}` | One participant; 404 if unknown *or* unpublished |
+| `GET /api/photos` | Published photos with signed URLs and confirmed face tags |
+| `POST /api/admin/photos` | Upload a group photo; returns detected faces with suggested names |
+| `PATCH /api/admin/faces/{id}` | Confirm, correct, or reject a tag |
+| `POST /api/admin/participants/{id}/enroll` | Register a face so the matcher recognises them |
+
+Every `/api/admin/*` route needs an `X-Admin-Token` header.
 
 <http://127.0.0.1:8000/docs> has interactive docs, generated from the route
 signatures.
@@ -89,6 +95,28 @@ someone is one boolean, and a story cannot go live by accident.
 Adding a table? Read `.claude/skills/adding-an-rls-table` first. A table without
 RLS is readable by anyone with the publishable key, which is in the browser
 bundle.
+
+## Face recognition
+
+Detection and matching run **entirely on your own server**. OpenCV YuNet finds
+faces, SFace turns each into a 128-number signature, and pgvector matches it
+against enrolled members inside Postgres. No image, face, or signature is sent
+to any third party, and there is no per-call cost.
+
+Fetch the models once:
+
+```bash
+cd backend && uv run python scripts/fetch_models.py   # ~39MB, gitignored
+```
+
+The model proposes; a person decides. An upload creates only *suggested* tags,
+and RLS never shows those publicly. A staff member confirms each one, with the
+match score displayed so they know when to distrust it.
+
+Face signatures are biometric data and are treated as such: their own consent
+flag, a trigger that refuses to store them without it, another that **deletes
+them outright** when consent is withdrawn, and a table with RLS enabled and no
+policies at all, so the publishable key cannot read a single row.
 
 ## Environment
 

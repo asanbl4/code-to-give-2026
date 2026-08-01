@@ -37,7 +37,9 @@ Both must be running for the page to render anything but an error.
 | `backend/tests/` | pytest, offline. `FakeDb` stands in for PostgREST. |
 | `backend/pyproject.toml` | Dependencies, ruff and pytest config. |
 | `supabase/migrations/` | Schema history. One `.sql` file per applied migration. |
-| `frontend/app/` | App Router pages. |
+| `frontend/app/stories/` | The public page. Server Component + one client component for the tap-a-face interaction. |
+| `frontend/app/admin/stories/` | Staff tool. Client Component, guarded by the admin token. |
+| `frontend/lib/` | `api.ts` (public shapes), `admin.ts` (token + admin client). |
 | `backend/.env` | Gitignored. `CORS_ORIGINS`, `SUPABASE_*`. |
 | `frontend/.env.local` | Gitignored. `NEXT_PUBLIC_API_URL`. |
 | `docs/superpowers/specs/` | Dated design docs. History, not current state. |
@@ -97,6 +99,31 @@ without consent.
 Migrations are applied through the Supabase MCP tools; save a copy of every
 applied migration into `supabase/migrations/<version>_<name>.sql` so the schema
 has a history in git.
+
+## Face recognition
+
+`app/faces.py` is the only module that imports cv2. OpenCV **YuNet** (MIT)
+detects, **SFace** (Apache 2.0) embeds to 128 dimensions, and pgvector matches
+in Postgres. Everything runs in-process: no image or face leaves the server.
+
+Do not swap in InsightFace. Its code is MIT but its pretrained models
+(`buffalo_l`, `antelopev2`) are licensed for non-commercial research only.
+
+Models live in `backend/models/`, are gitignored, and are fetched by
+`uv run python scripts/fetch_models.py`. When they are absent, detection returns
+nothing and the admin tool falls back to manual tagging rather than failing.
+
+Two gotchas that cost real time:
+
+- SFace needs `recognizer.alignCrop(image, row)` with YuNet's **whole 15-value
+  detection row** (box, five landmarks, score). Cropping the bounding box
+  yourself yields embeddings that silently match nothing.
+- The match threshold is cosine **0.363**, the figure OpenCV documents for
+  SFace. pgvector's `<=>` is cosine *distance*, so the SQL compares `1 - (a <=> b)`.
+
+Recognition only ever *suggests*. Everything an upload creates is `status =
+'suggested'`, and RLS never exposes those. A human confirms each tag; that is
+the safeguard, not a UI nicety.
 
 ## Tests
 
