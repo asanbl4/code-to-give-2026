@@ -5,6 +5,9 @@
 !.env.example
 !.env.local.example
 
+# Face models: ~39MB of ONNX, fetched by backend/scripts/fetch_models.py
+backend/models/
+
 # Python
 __pycache__/
 *.py[cod]

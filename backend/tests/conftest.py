@@ -25,17 +25,25 @@ class FakeQuery:
     query the router built, not only on what came back.
     """
 
-    def __init__(self, rows: list[dict[str, Any]]) -> None:
+    def __init__(self, rows: list[dict[str, Any]], table: str = "") -> None:
         self._rows = rows
+        self.table_name = table
         self.filters: list[tuple[str, Any]] = []
+        self.in_filters: list[tuple[str, list[Any]]] = []
         self.orders: list[tuple[str, bool]] = []
         self.limit_value: int | None = None
+        self.written: list[dict[str, Any]] | dict[str, Any] | None = None
+        self.operation = "select"
 
     def select(self, *_args: Any, **_kwargs: Any) -> "FakeQuery":
         return self
 
     def eq(self, column: str, value: Any) -> "FakeQuery":
         self.filters.append((column, value))
+        return self
+
+    def in_(self, column: str, values: list[Any]) -> "FakeQuery":
+        self.in_filters.append((column, values))
         return self
 
     def order(self, column: str, desc: bool = False) -> "FakeQuery":
@@ -46,12 +54,34 @@ class FakeQuery:
         self.limit_value = count
         return self
 
+    def insert(self, payload: dict[str, Any] | list[dict[str, Any]]) -> "FakeQuery":
+        self.operation = "insert"
+        self.written = payload
+        return self
+
+    def update(self, payload: dict[str, Any]) -> "FakeQuery":
+        self.operation = "update"
+        self.written = payload
+        return self
+
+    def delete(self) -> "FakeQuery":
+        self.operation = "delete"
+        return self
+
     def execute(self) -> "FakeResponse":
+        if self.operation == "insert":
+            written = self.written if isinstance(self.written, list) else [self.written or {}]
+            # Stand in for the row the database would return.
+            return FakeResponse([{"id": f"generated-{n}", **row} for n, row in enumerate(written)])
+
         rows = [
             row
             for row in self._rows
             if all(row.get(column) == value for column, value in self.filters)
+            and all(row.get(column) in values for column, values in self.in_filters)
         ]
+        if self.operation == "update":
+            rows = [{**row, **(self.written or {})} for row in rows]
         if self.limit_value is not None:
             rows = rows[: self.limit_value]
         return FakeResponse(rows)
@@ -62,15 +92,37 @@ class FakeResponse:
         self.data = data
 
 
+class FakeRpc:
+    def __init__(self, rows: list[dict[str, Any]]) -> None:
+        self._rows = rows
+
+    def execute(self) -> "FakeResponse":
+        return FakeResponse(self._rows)
+
+
 class FakeDb:
-    def __init__(self, rows_by_table: dict[str, list[dict[str, Any]]]) -> None:
+    def __init__(
+        self,
+        rows_by_table: dict[str, list[dict[str, Any]]],
+        rpc_results: dict[str, list[dict[str, Any]]] | None = None,
+    ) -> None:
         self._rows_by_table = rows_by_table
+        self._rpc_results = rpc_results or {}
         self.queries: list[FakeQuery] = []
+        self.rpc_calls: list[tuple[str, dict[str, Any]]] = []
 
     def table(self, name: str) -> FakeQuery:
-        query = FakeQuery(self._rows_by_table.get(name, []))
+        query = FakeQuery(self._rows_by_table.get(name, []), table=name)
         self.queries.append(query)
         return query
+
+    def rpc(self, name: str, params: dict[str, Any]) -> FakeRpc:
+        self.rpc_calls.append((name, params))
+        return FakeRpc(self._rpc_results.get(name, []))
+
+    def queries_for(self, table: str) -> list[FakeQuery]:
+        """Queries in call order; the routers hit several tables per request."""
+        return [query for query in self.queries if query.table_name == table]
 
 
 PARTICIPANT_ROWS: list[dict[str, Any]] = [
@@ -103,9 +155,53 @@ PARTICIPANT_ROWS: list[dict[str, Any]] = [
 ]
 
 
+PHOTO_ROWS: list[dict[str, Any]] = [
+    {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "storage_path": "photos/2026/07/group.jpg",
+        "width": 1600,
+        "height": 900,
+        "alt_text": "Six members of the Thursday cooking group around a table.",
+        "caption": "Thursday cooking group",
+        "taken_on": "2026-06-04",
+        "sort_order": 0,
+    }
+]
+
+# RLS would have filtered these already, so every row here is confirmed and
+# belongs to a published photo -- the fake has no policy engine to do it for us.
+FACE_ROWS: list[dict[str, Any]] = [
+    {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "photo_id": "11111111-1111-4111-8111-111111111111",
+        "participant_id": "6f1e6a4e-6c8c-4a4a-9f0e-6d2a6b7c1d11",
+        "box_x": 0.12,
+        "box_y": 0.20,
+        "box_w": 0.09,
+        "box_h": 0.16,
+    }
+]
+
+
+@pytest.fixture(autouse=True)
+def stub_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Never reach the bucket. Signing requires the service role and a network."""
+    monkeypatch.setattr(
+        "app.storage.signed_urls",
+        lambda paths: {path: f"https://signed.test/{path}" for path in paths},
+    )
+    monkeypatch.setattr("app.storage.signed_url", lambda path: None)
+
+
 @pytest.fixture
 def fake_db() -> FakeDb:
-    return FakeDb({"participants": PARTICIPANT_ROWS})
+    return FakeDb(
+        {
+            "participants": PARTICIPANT_ROWS,
+            "photos": PHOTO_ROWS,
+            "photo_faces": FACE_ROWS,
+        }
+    )
 
 
 @pytest.fixture
