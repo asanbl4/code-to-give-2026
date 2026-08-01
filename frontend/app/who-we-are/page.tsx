@@ -147,7 +147,7 @@ export default function WhoWeArePage() {
           {/* Education Image Placeholder */}
           <div className="relative h-64 sm:h-80 w-full overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80">
             <Image 
-              src="/neurodiversity-education.png" 
+              src="/neurodiversity-education.jpg" 
               alt="Neurodiversity education community" 
               fill 
               className="object-cover" 
