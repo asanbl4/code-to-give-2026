@@ -12,6 +12,18 @@
   that imported it.
 */
 
+/*
+  The rotating word in "Ability to play / cook / thrive / contribute", styled as
+  Love 21's own crimson pill. The padding is what the RotatingText slot mask
+  clips against, so it has to live here rather than on an inner element.
+*/
+.hero-rotating-word {
+  background: var(--color-signal);
+  color: #fff;
+  padding: 0.1em 0.5em 0.18em;
+  border-radius: 999px;
+}
+
 .hero-carousel {
   position: relative;
   height: 560px;
@@ -60,7 +72,7 @@
   gap: 1rem;
   padding: 2.5rem;
   /* Readability scrim. The photographs vary; the caption must not. */
-  background: linear-gradient(to top, rgb(16 32 58 / 0.75), transparent 60%);
+  background: linear-gradient(to top, rgb(0 0 0 / 0.7), transparent 60%);
 }
 
 .hero-carousel-caption {

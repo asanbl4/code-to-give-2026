@@ -116,7 +116,7 @@ export function Hero() {
           <span>Ability to</span>
           <RotatingText
             texts={ROTATING_WORDS}
-            className="text-signal"
+            className="hero-rotating-word"
             staggerFrom="last"
             staggerDuration={0.025}
             rotationInterval={2200}

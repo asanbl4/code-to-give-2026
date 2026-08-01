@@ -4,47 +4,58 @@
   Love 21 Foundation — design tokens. The single source of truth for colour,
   type, radius and elevation across every page.
 
-  Blue and yellow are not arbitrary: they are the colours of World Down Syndrome
-  Day, which falls on 21 March for trisomy 21. The community already owns them.
+  The palette is taken from love21foundation.com's own theme stylesheet
+  (wp-content/themes/love21foundation-theme/assets/css/style.css), so this
+  prototype and the live site read as one organisation:
+
+    #DB2140  the crimson on every donate button and CTA
+    #B3122D  its :hover / :active state
+    #333333  body text            #707070  muted text
+    #FADD40  the accent yellow    #F8F9FA / #E9ECEF  section backgrounds
 
   Everything here is tuned for an audience that includes people with Down
   syndrome and autism. Large type, high contrast, generous targets and calm
   motion are accessibility requirements first and the visual identity second.
 
-  Every colour that carries text is checked against the surface it sits on:
-  ink 16.3:1, ink-soft 6.9:1, signal 5.2:1, signal-deep 8.8:1, positive 5.3:1
-  and danger 6.5:1 on paper; ink on highlight is 10.4:1. All clear WCAG AA.
-  Keep it that way if you change one.
+  Every colour that carries text is contrast-checked against the surface it
+  sits on: ink 12.6:1, ink-soft 6.2:1, signal 4.9:1, signal-deep 6.9:1,
+  positive 5.4:1 and danger 8.2:1 on paper; ink on highlight is 9.3:1. All
+  clear WCAG AA. Keep it that way if you change one.
 */
 
 @theme inline {
-  /* Text and structure. */
-  --color-ink: #10203a;
-  --color-ink-soft: #4a5b76;
+  /* Text and structure. Love 21's #333333 body grey, with a slightly darker
+     muted tone than their #707070 so it still clears 4.5:1 on tinted cards
+     (#707070 lands at 4.3:1 there, just under). */
+  --color-ink: #333333;
+  --color-ink-soft: #616161;
 
   --color-paper: #ffffff;
-  --color-surface: #eef3fb;
-  --color-surface-deep: #dde7f6;
-  --color-edge: #d3deef;
+  --color-surface: #f8f9fa;
+  --color-surface-deep: #e9ecef;
+  --color-edge: #dee2e6;
 
   /* The one accent that means "this is the action". Change --color-signal and
      the whole site follows; that is the entire point of routing every page
      through these names instead of literal Tailwind palettes. */
-  --color-signal: #1d5cff;
-  --color-signal-deep: #123fb3;
-  --color-signal-soft: #dfe9ff;
+  --color-signal: #db2140;
+  --color-signal-deep: #b3122d;
+  --color-signal-soft: #fdecef;
 
   /* Attention without alarm: pending review, earned badges, things to notice. */
-  --color-highlight: #ffc61e;
-  --color-highlight-soft: #fff4d6;
+  --color-highlight: #fadd40;
+  --color-highlight-soft: #fef8dc;
 
   /* Done, confirmed, published. */
-  --color-positive: #0f7a5a;
-  --color-positive-soft: #e7f6f0;
+  --color-positive: #1e7a46;
+  --color-positive-soft: #e8f5ed;
 
-  /* Errors only. Never decoration — this audience should see red rarely. */
-  --color-danger: #b3261e;
-  --color-danger-soft: #fdecea;
+  /* Errors only. Deliberately a darker, browner red than the brand crimson:
+     when the brand itself is red, an error has to be told apart by treatment
+     as much as hue. Actions are a solid signal fill; errors are always a pale
+     danger-soft panel with bold danger text and role="alert". */
+  --color-danger: #9b1b1b;
+  --color-danger-soft: #fbeaea;
 
   --font-display: var(--font-bricolage);
   --font-sans: var(--font-atkinson);
@@ -53,8 +64,8 @@
   --radius-card: 1.25rem;
   --radius-panel: 2rem;
 
-  --shadow-card: 0 1px 2px rgba(16, 32, 58, 0.06);
-  --shadow-lift: 0 18px 45px -12px rgba(16, 32, 58, 0.35);
+  --shadow-card: 0 1px 2px rgba(51, 51, 51, 0.08);
+  --shadow-lift: 0 18px 45px -12px rgba(51, 51, 51, 0.3);
 }
 
 :root {

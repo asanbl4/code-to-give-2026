@@ -1,8 +1,48 @@
+/*
+  The "slot machine" word swap.
+
+  Two things make it behave, and the original had neither:
+
+  1. `overflow: hidden` on the outer element. The characters animate out to
+     translateY(-120%), so without a mask they fly up over the headline instead
+     of sliding out of the word's own box. That is what made the animation look
+     like it jumped too far up the page.
+
+  2. A hidden sizer holding the longest word. AnimatePresence in "wait" mode
+     unmounts the old word before mounting the new one, so for a moment there
+     is nothing in flow. Reserving the width up front means the slot never
+     collapses and re-expands between words.
+*/
+
 .text-rotate {
-  display: flex;
-  flex-wrap: wrap;
-  white-space: pre-wrap;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  /* Overflow starts a new baseline context; align it to the text beside it. */
+  vertical-align: bottom;
+}
+
+/* Holds the space open, paints nothing. */
+.text-rotate-sizer {
+  visibility: hidden;
+}
+
+/* The animating word, laid over the sizer inside the padding box. */
+.text-rotate-group {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: pre;
+}
+
+.text-rotate-element {
+  display: inline-block;
+  /* A full line box, so translateY(100%) starts exactly one line below the
+     slot and descenders have room before the mask clips them. */
+  line-height: 1.25;
 }
 
 .text-rotate-sr-only {
@@ -12,25 +52,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
-}
-
-.text-rotate-word {
-  display: inline-flex;
-}
-
-.text-rotate-lines {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.text-rotate-element {
-  display: inline-block;
-}
-
-.text-rotate-space {
-  white-space: pre;
 }

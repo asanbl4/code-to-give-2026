@@ -190,7 +190,7 @@ function PersonCard({
   onClose: () => void;
 }) {
   return (
-    <div className="rounded-2xl bg-paper p-5 shadow-[0_18px_45px_-12px_rgba(16,32,58,0.45)] ring-1 ring-edge">
+    <div className="rounded-card bg-paper p-5 shadow-lift ring-1 ring-edge">
       <div className="flex items-start gap-3">
         {person.avatar_url && (
           /* eslint-disable-next-line @next/next/no-img-element -- signed URL, see above */
