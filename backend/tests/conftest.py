@@ -9,12 +9,15 @@ engine, and neither does any test here. Verify policies against a real project
 or a local `supabase start`.
 """
 
+from collections.abc import Callable
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.db import get_db
+from app.auth import require_staff
+from app.db import get_admin_db, get_db
 from app.main import app
 
 
@@ -71,8 +74,10 @@ class FakeQuery:
     def execute(self) -> "FakeResponse":
         if self.operation == "insert":
             written = self.written if isinstance(self.written, list) else [self.written or {}]
-            # Stand in for the row the database would return.
-            return FakeResponse([{"id": f"generated-{n}", **row} for n, row in enumerate(written)])
+            # Stand in for the row the database would return. The id is a real
+            # uuid because every `id` column here is one, and a response model
+            # that parses it will reject a placeholder like "generated-0".
+            return FakeResponse([{"id": str(uuid4()), **row} for row in written])
 
         rows = [
             row
@@ -134,7 +139,6 @@ PARTICIPANT_ROWS: list[dict[str, Any]] = [
         "display_name": "Maria K.",
         "avatar_url": "https://example.test/maria.jpg",
         "headline": "Back to independent travel after two years",
-        "progress_summary": "Now navigates the bus network unaccompanied.",
         "story": "The long version.",
         "joined_on": "2024-03-01",
         "sort_order": 0,
@@ -147,7 +151,6 @@ PARTICIPANT_ROWS: list[dict[str, Any]] = [
         "display_name": None,
         "avatar_url": None,
         "headline": "Leads the Thursday cooking group",
-        "progress_summary": None,
         "story": None,
         "joined_on": None,
         "sort_order": 1,
@@ -211,3 +214,28 @@ def client(fake_db: FakeDb) -> Any:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def admin_client() -> Any:
+    """Build a TestClient for a caller who is already staff.
+
+    A factory rather than a client, because the admin tests each need their own
+    `FakeDb` -- one that refuses an insert, one holding a particular face.
+
+    `require_staff` is overridden rather than exercised on purpose. What it
+    checks -- a JWT signature against the project JWKS, then a role lookup in
+    Postgres -- is `test_auth.py`'s subject. Repeating it here would test the
+    same thing again and make every admin test slower to read.
+    """
+
+    def build(db: FakeDb) -> TestClient:
+        app.dependency_overrides[get_admin_db] = lambda: db
+        app.dependency_overrides[require_staff] = lambda: None
+        return TestClient(app)
+
+    yield build
+    app.dependency_overrides.clear()
+
+
+AdminClient = Callable[[FakeDb], TestClient]

@@ -15,7 +15,7 @@ export default async function AdminLoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   // Already signed in as staff? Skip the form.
-  if (await isStaff()) redirect("/admin/stories");
+  if (await isStaff()) redirect("/admin/members");
 
   const { error } = await searchParams;
 

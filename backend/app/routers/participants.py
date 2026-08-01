@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/participants", tags=["participants"])
 # already applied them, and echoing them back invites a client to re-check badly.
 _COLUMNS = (
     "id, slug, first_name, last_name, display_name, avatar_url, avatar_path, "
-    "headline, progress_summary, story, joined_on, sort_order"
+    "headline, story, joined_on, sort_order"
 )
 
 

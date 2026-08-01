@@ -1,5 +1,7 @@
 export { Button, type ButtonSize, type ButtonVariant } from "./Button";
 export { Card, type CardPadding, type CardTone } from "./Card";
+export { Combobox, type ComboboxOption } from "./Combobox";
+export { Dialog } from "./Dialog";
 export { TextField, TextareaField, SelectField } from "./Field";
 export { Icon, IconBadge, type IconBadgeTone, type IconName } from "./Icon";
 export { PageIntro } from "./PageIntro";

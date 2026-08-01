@@ -13,8 +13,9 @@ export type Participant = {
   last_name: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  /** The short story: one line, shown in the tap-a-face popup. */
   headline: string | null;
-  progress_summary: string | null;
+  /** The long story, behind "read more". */
   story: string | null;
   joined_on: string | null;
   sort_order: number;

@@ -117,6 +117,10 @@ export const admin = {
       body: JSON.stringify(body),
     }),
 
+  /** Also destroys their face data and removes them from every group photo. */
+  deleteParticipant: (id: string) =>
+    request<void>(`/api/admin/participants/${id}`, { method: "DELETE" }),
+
   enrollFace: (id: string, file: File) => {
     const form = new FormData();
     form.append("file", file);
@@ -151,4 +155,7 @@ export const admin = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }),
+
+  /** Throw away a detection box. Rejecting one keeps it; this does not. */
+  deleteFace: (id: string) => request<void>(`/api/admin/faces/${id}`, { method: "DELETE" }),
 };

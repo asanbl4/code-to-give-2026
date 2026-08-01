@@ -18,11 +18,6 @@ export function MemberCard({ person }: { person: Participant }) {
         <h3 className="font-display text-2xl font-bold leading-tight text-ink">{person.name}</h3>
       </div>
       {person.headline && <p className="mt-4 text-ink-soft">{person.headline}</p>}
-      {person.progress_summary && (
-        <p className="mt-3 border-l-4 border-signal pl-3 font-bold text-ink">
-          {person.progress_summary}
-        </p>
-      )}
     </Card>
   );
 }
