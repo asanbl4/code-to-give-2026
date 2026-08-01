@@ -80,10 +80,15 @@ signatures.
 
 ## Admin access
 
-Staff sign in with a Supabase magic link. There is no admin password and no
-shared token — the previous `ADMIN_TOKEN` granted service-role access to anyone
-who learned it, could not be revoked for one person, and left no record of who
-had used it.
+Staff sign in with **a password or a magic link** — both land on the same
+authorization check. There is no shared token: the previous `ADMIN_TOKEN`
+granted service-role access to anyone who learned it, could not be revoked for
+one person, and left no record of who had used it.
+
+Password is the default on the sign-in screen because it sends no email.
+Supabase's built-in email sender is capped at roughly **two messages per hour**
+and the cap cannot be raised, which is fine day to day and a liability during a
+demo. Magic link remains for staff who would rather not keep a password.
 
 **Identity and permission are separate, on purpose.** The JWT proves *who* you
 are; `public.user_roles` decides *what you may do*. A role claim inside a token
@@ -125,6 +130,26 @@ on conflict do nothing;
 Revoke by deleting their `user_roles` row *and* their `role_allowlist` entry —
 removing only the allowlist leaves an existing grant in place.
 
+### Giving someone a password
+
+```bash
+cd backend
+uv run python scripts/set_staff_password.py someone@love21foundation.com
+```
+
+Prompts for the password (never taken as an argument — that would sit in your
+shell history and in `ps`), creates the account if it does not exist, and prints
+the roles the database actually granted. Add them to `role_allowlist` first, or
+it will tell you they have none.
+
+A password grants nothing on its own: `public.user_roles` still decides whether
+that session may open the staff tool.
+
+> **Before relying on passwords, raise the floor in the dashboard.** Supabase's
+> default minimum is 6 characters and leaked-password checking is off — the
+> security advisor flags the latter. Auth → Providers → Email → set a minimum of
+> 12 and enable "Prevent use of leaked passwords".
+
 ### One-time Supabase setup
 
 These two cannot be scripted; do them in the dashboard once.
@@ -141,9 +166,13 @@ in `frontend/.env.local` (see `.env.local.example`), and sign in at
 
 ### Gotchas
 
-- **The built-in email sender is rate-limited** — a couple of messages an hour on
-  the free tier. Requesting several links in a row returns a 429, which the form
-  reports. Configure a custom SMTP provider before a demo.
+- **The built-in email sender is rate-limited** — roughly two messages an hour,
+  and the cap cannot be raised. A refused send still consumes an attempt. The
+  form holds the button for 60s after each try and explains a 429 rather than
+  showing a raw error, but the real answer is to use a password, or configure
+  custom SMTP (Auth → SMTP Settings) if you want magic links to be dependable.
+- **Before a demo, sign in beforehand.** Sessions persist through the refresh
+  token, so a browser signed in the night before needs no email at all.
 - **The link must be opened in the browser that requested it.** PKCE stores a
   verifier in a cookie on the requesting device; opening the email on your phone
   after requesting on a laptop fails with a code-verifier error.

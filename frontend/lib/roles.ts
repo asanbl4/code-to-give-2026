@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient, getUser } from "./supabase/server";
 
 export type AppRole = "admin" | "editor" | "supporter";
@@ -11,8 +12,11 @@ const STAFF_ROLES: readonly AppRole[] = ["admin", "editor"];
  * policy is what limits the answer — the same rule the database applies to
  * every other caller. Never read from a token claim: a JWT proves identity,
  * not permission.
+ *
+ * `cache()`d per request, like `getUser`, so a layout and the page it wraps
+ * share one query instead of each making their own.
  */
-export async function getRoles(): Promise<AppRole[]> {
+export const getRoles = cache(async (): Promise<AppRole[]> => {
   const user = await getUser();
   if (!user) return [];
 
@@ -21,7 +25,7 @@ export async function getRoles(): Promise<AppRole[]> {
   if (error || !data) return [];
 
   return data.map((row) => row.role as AppRole);
-}
+});
 
 /** Whether the caller may open the staff tool. */
 export async function isStaff(): Promise<boolean> {

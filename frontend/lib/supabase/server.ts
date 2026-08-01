@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers.
@@ -41,11 +42,17 @@ export async function createClient() {
  * Always `getUser()`, never `getSession()`, on the server: `getSession` reads
  * the cookie and trusts it, while `getUser` revalidates the token with Supabase.
  * A cookie is attacker-editable; only the verified answer is safe to gate on.
+ *
+ * Wrapped in React `cache()` so it runs at most once per request no matter how
+ * many components ask. Without it, rendering /admin/stories called the auth API
+ * four times over — layout, isStaff(), and the page each asked independently,
+ * on top of the proxy. That is a network round trip each, and it is what filled
+ * the auth log with `GET /user`.
  */
-export async function getUser() {
+export const getUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});

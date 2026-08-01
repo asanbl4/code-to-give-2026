@@ -46,7 +46,20 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip static assets and image files — refreshing a session to serve a .svg
-  // is wasted work on every request.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  /*
+    Only the routes that actually need a session.
+
+    This used to match every request except static files, so each visit to the
+    landing page, /donate, /events or /stories spent a round trip to the auth
+    API refreshing a session those pages never read. On a site that is almost
+    entirely anonymous, that was the bulk of our auth traffic.
+
+    Narrowing it is safe. Refresh happens on the way *into* the signed-in area,
+    and an access token that expired while someone browsed public pages is
+    renewed from the refresh token the moment they return here.
+
+    Add a path when it starts depending on the session — /profile will, once
+    supporter accounts are wired up.
+  */
+  matcher: ["/admin/:path*", "/auth/:path*"],
 };

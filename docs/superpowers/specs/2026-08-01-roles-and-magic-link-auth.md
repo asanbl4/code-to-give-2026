@@ -147,6 +147,52 @@ redirect was traced (303 → `/auth/callback`), and PKCE was confirmed live —
 verifier cookie present — but the final click was done by injecting the session
 rather than reading an email.
 
+## Addendum, same day: password sign-in and auth-call volume
+
+Hitting `429: email rate limit exceeded` in the dashboard logs prompted a look
+at auth traffic. Two separate problems, only one of which caused the 429.
+
+**The 429 was purely `/otp`.** Supabase's built-in email sender allows about two
+messages an hour and the cap cannot be raised — it is a testing sender. Five
+sign-in requests in an hour was already over.
+
+**The auth-call volume was a real bug**, unrelated to the 429. `proxy.ts`
+matched every route, so every visit to the landing page, `/donate` or `/stories`
+spent a round trip refreshing a session those pages never read. Measured by
+instrumenting `fetch` inside the Next server, same signed-in traffic each time:
+
+| Route | Before | After |
+|---|---|---|
+| `/`, `/donate`, `/stories` | 1 each | 0 |
+| `/admin/stories`, `/admin/login` | 2 each | 2 |
+
+The matcher is now `/admin/:path*` and `/auth/:path*`. `getUser`/`getRoles` are
+also wrapped in React `cache()`; the measurement showed Next's own fetch
+memoization was already deduping most of the server-side calls, but the cache
+makes it explicit and survives that behaviour changing.
+
+Worth recording: an anonymous request costs **zero** auth calls — `@supabase/ssr`
+short-circuits when there is no session cookie, without touching the network.
+
+**Password sign-in added** so a demo never depends on email. `/admin/login`
+defaults to email + password (`signInWithPassword`), with magic link one click
+away. `scripts/set_staff_password.py` sets one, prompting rather than taking it
+as an argument.
+
+A password changes nothing about authorization: both paths produce a session and
+`public.user_roles` still decides. Verified in a browser — admin with password
+reached the tool with 0 emails sent, a non-staff account with a valid password
+was redirected to `/admin/no-access`, and a wrong password produced the generic
+"does not match an account" message that does not reveal whether the address
+exists.
+
+One bug found: the Auth admin API answers **405 to PATCH** on
+`/admin/users/{id}`; it wants PUT.
+
+Passwords make the previously-irrelevant `auth_leaked_password_protection`
+advisor warning relevant. Enabling it, and raising the 6-character default
+minimum, are dashboard settings and are now called out in the README.
+
 ## Follow-ups not done here
 
 - **`profiles` is written but never read.** `/api/me` returns data from the
