@@ -1,38 +1,28 @@
-import { CommunityGoalWidget } from "./homepage/community-goal-widget";
+import '../features/landing/landing.css';
+import Nav from '../features/landing/components/Nav';
+import Hero from '../features/landing/components/Hero';
+import StatsStrip from '../features/landing/components/StatsStrip';
+import FinancialBanner from '../features/landing/components/FinancialBanner';
+import ProgrammesPreview from '../features/landing/components/ProgrammesPreview';
+import CommunityGoal from '../features/landing/components/CommunityGoal';
+import StoriesSection from '../features/landing/components/StoriesSection';
+import RecentEvents from '../features/landing/components/RecentEvents';
+import Footer from '../features/landing/components/Footer';
+import DonationToast from '../features/landing/components/DonationToast';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-
-async function fetchHello(): Promise<{ message?: string; error?: string }> {
-  try {
-    const response = await fetch(`${API_URL}/api/hello`, { cache: "no-store" });
-    if (!response.ok) {
-      return { error: `${response.status} ${response.statusText}` };
-    }
-    return await response.json();
-  } catch (cause) {
-    return { error: `Could not reach the API at ${API_URL}. Is uvicorn running? (${cause})` };
-  }
-}
-
-export default async function Home() {
-  const { message, error } = await fetchHello();
-
+export default function Page() {
   return (
-    <>
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 pb-32 font-sans sm:pb-8">
-        <h1 className="text-2xl font-semibold">Frontend</h1>
-        <p className="text-sm text-zinc-500">GET {API_URL}/api/hello</p>
-        {error ? (
-          <p className="rounded border border-red-300 bg-red-50 px-4 py-2 text-red-700">
-            {error}
-          </p>
-        ) : (
-          <p className="rounded border border-green-300 bg-green-50 px-4 py-2 text-green-800">
-            {message}
-          </p>
-        )}
-      </main>
-      <CommunityGoalWidget />
-    </>
+    <main>
+      <Nav />
+      <Hero />
+      <StatsStrip />
+      <FinancialBanner />
+      <ProgrammesPreview />
+      <CommunityGoal />
+      <StoriesSection />
+      <RecentEvents />
+      <Footer />
+      <DonationToast />
+    </main>
   );
 }
