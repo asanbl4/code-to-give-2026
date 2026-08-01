@@ -58,8 +58,26 @@ class Settings(BaseSettings):
     #   off-topic 0.427 ("what is the weather in Tokyo")
     #
     # Cosine score at or above which a curated answer is returned verbatim.
-    # Nothing measured falls between 0.75 and 0.853, so this is unforced.
-    chatbot_high_confidence: float = 0.75
+    #
+    # Deliberately EQUAL to chatbot_low_confidence, which switches generation
+    # off: every score is either a verbatim staff answer or a refusal, and the
+    # model never writes a word a visitor reads. Retrieval still does the
+    # semantic work -- bge-m3 picks which human answer fits.
+    #
+    # Why, measured against qwen3:1.7b on 2026-08-01: on every question the
+    # corpus does not cover, generation invented an institutional commitment.
+    # "We welcome company teams to support our programmes", "You can visit our
+    # centres to observe our programmes and meet people with Down syndrome" --
+    # neither is anywhere in the corpus, and the second is a safeguarding claim
+    # about access to vulnerable people. A deliberately stricter prompt made it
+    # worse, and the fabrication varied run to run. Non-negotiable #8 forbids
+    # unverified statements in shipped copy; this is how that is enforced
+    # rather than hoped for. See the feature README.
+    #
+    # Raise this above chatbot_low_confidence to re-open the band (the code
+    # path is intact and tested) -- but only with a bigger model AND a corpus
+    # broad enough that mid-band means "phrased differently", not "not covered".
+    chatbot_high_confidence: float = 0.55
     # Below this, we refuse rather than guess. 0.55 sits in the middle of the
     # measured 0.427-0.657 gap; the original 0.45 cleared the off-topic probe
     # by only 0.023, and bge-m3 scores run high enough that a different

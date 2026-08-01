@@ -55,6 +55,19 @@ def fake_ollama(monkeypatch) -> FakeOllama:
     return fake
 
 
+@pytest.fixture
+def generation_band(monkeypatch) -> None:
+    """Re-open the generated band, which the shipped config closes.
+
+    The default sets high == low so the model never writes visitor-facing text
+    (see config.py). The generation path is still live code for a bigger model
+    and a fuller corpus, so it is still tested -- just not with the shipped
+    thresholds. test_shipped_thresholds_disable_generation covers the default.
+    """
+    monkeypatch.setattr(service.settings, "chatbot_high_confidence", 0.75)
+    monkeypatch.setattr(service.settings, "chatbot_low_confidence", 0.55)
+
+
 def _force_score(monkeypatch, entry_id: str, score: float) -> None:
     """Pin retrieval so each confidence band can be tested in isolation."""
     from app.features.chatbot.corpus import load_corpus
@@ -81,7 +94,9 @@ async def test_high_confidence_returns_the_curated_answer_verbatim(
 
 
 @pytest.mark.anyio
-async def test_mid_confidence_generates_from_retrieved_passages(monkeypatch, fake_ollama) -> None:
+async def test_mid_confidence_generates_from_retrieved_passages(
+    monkeypatch, fake_ollama, generation_band
+) -> None:
     _force_score(monkeypatch, "donate-what-500-funds", 0.60)
 
     response = await service.answer_question(ChatRequest(question="tell me about giving"))
@@ -106,7 +121,9 @@ async def test_low_confidence_refuses_without_calling_the_model(monkeypatch, fak
 
 
 @pytest.mark.anyio
-async def test_refusal_entry_never_reaches_the_model(monkeypatch, fake_ollama) -> None:
+async def test_refusal_entry_never_reaches_the_model(
+    monkeypatch, fake_ollama, generation_band
+) -> None:
     """The safety property. Scored mid-band on purpose: is_refusal must win."""
     _force_score(monkeypatch, "refuse-medical-advice", 0.60)
 
@@ -131,7 +148,9 @@ async def test_ollama_down_falls_back_lexically(monkeypatch) -> None:
 
 
 @pytest.mark.anyio
-async def test_generation_failure_falls_back_to_the_curated_answer(monkeypatch) -> None:
+async def test_generation_failure_falls_back_to_the_curated_answer(
+    monkeypatch, generation_band
+) -> None:
     """A model that dies mid-answer must not take the page with it."""
     _force_score(monkeypatch, "donate-what-500-funds", 0.60)
 
@@ -232,7 +251,9 @@ async def test_confident_distress_match_still_gives_the_safeguarding_answer(
 
 
 @pytest.mark.anyio
-async def test_mid_band_refusal_still_refuses_without_the_model(monkeypatch, fake_ollama) -> None:
+async def test_mid_band_refusal_still_refuses_without_the_model(
+    monkeypatch, fake_ollama, generation_band
+) -> None:
     """A refusal scoring inside the generated band must never reach the model."""
     _force_score(monkeypatch, "refuse-medical-advice", 0.65)
 
@@ -245,7 +266,7 @@ async def test_mid_band_refusal_still_refuses_without_the_model(monkeypatch, fak
 
 @pytest.mark.anyio
 async def test_refusal_entries_are_not_given_to_the_model_as_context(
-    monkeypatch, fake_ollama
+    monkeypatch, fake_ollama, generation_band
 ) -> None:
     """Refusal text must not be quotable material for an ordinary answer.
 
@@ -279,3 +300,28 @@ async def test_refusal_entries_are_not_given_to_the_model_as_context(
     assert "refuse-distress" not in user_prompt
     assert "refuse-medical-advice" not in user_prompt
     assert "about-who-can-join" in user_prompt, "the matched entry must still be context"
+
+
+@pytest.mark.anyio
+async def test_shipped_thresholds_disable_generation(monkeypatch, fake_ollama) -> None:
+    """The shipped config must never let the model write visitor-facing text.
+
+    qwen3:1.7b invented an institutional commitment on every uncovered question
+    measured on 2026-08-01 -- including "you can visit our centres", a
+    safeguarding claim. high == low closes the band. This test fails the moment
+    someone widens it, which is the point: reopening it is a decision, not a
+    tweak.
+    """
+    assert (
+        service.settings.chatbot_high_confidence == service.settings.chatbot_low_confidence
+    ), "high must equal low, or the model can write to visitors"
+
+    for score in (0.56, 0.60, 0.70, 0.74):
+        _force_score(monkeypatch, "donate-what-500-funds", score)
+
+        response = await service.answer_question(ChatRequest(question="tell me about giving"))
+
+        assert response.route == "curated", f"score {score} produced {response.route}"
+        assert "HK$500" in response.answer, "must be the staff wording, verbatim"
+
+    assert fake_ollama.generate_calls == [], "no score may reach the model"
