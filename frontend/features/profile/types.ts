@@ -1,3 +1,5 @@
+import type { IconBadgeTone, IconName } from "@/components/ui";
+
 export type ProfileActivityKind = "donation" | "volunteer";
 export type ContributionType = "one-time" | "monthly";
 export type BadgeTone = "support" | "volunteer" | "community";
@@ -10,6 +12,9 @@ export interface ImpactSummaryMetric {
   label: string;
   value: string;
   helperText: string;
+  /** Declared with the data instead of being guessed from `id` in the view. */
+  icon: IconName;
+  tone: IconBadgeTone;
 }
 
 export interface DonationImpactRecord {
@@ -71,6 +76,9 @@ export interface GivingLeaderboardEntry extends BaseLeaderboardEntry {
   donationTotalHkd: number;
   contributionCount: number;
 }
+
+/** Declared once here; three components each used to re-declare this union. */
+export type LeaderboardEntry = VolunteerLeaderboardEntry | GivingLeaderboardEntry;
 
 export interface CommunityRecognitionData {
   period: LeaderboardPeriod;

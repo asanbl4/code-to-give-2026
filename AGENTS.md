@@ -37,9 +37,12 @@ Both must be running for the page to render anything but an error.
 | `backend/tests/` | pytest, offline. `FakeDb` stands in for PostgREST. |
 | `backend/pyproject.toml` | Dependencies, ruff and pytest config. |
 | `supabase/migrations/` | Schema history. One `.sql` file per applied migration. |
-| `frontend/app/stories/` | The public page. Server Component + one client component for the tap-a-face interaction. |
-| `frontend/app/admin/stories/` | Staff tool. Client Component, guarded by the admin token. |
-| `frontend/lib/` | `api.ts` (public shapes), `admin.ts` (token + admin client). |
+| `frontend/app/` | **Routes only.** A `page.tsx` composes primitives and feature components; it does not define them. |
+| `frontend/components/ui/` | The design system. Button, Card, Section, Field, RadioCard, Tabs, ProgressBar, StatCard, Tag, Toggle, Icon, PageIntro. |
+| `frontend/components/layout/` | Site chrome: `PageShell` (header + main + footer), and `navigation.ts` — the one list of nav links. |
+| `frontend/components/vendor/` | Third-party components copied in (reactbits.dev). Not ours, not on the token system. |
+| `frontend/features/<name>/` | One folder per feature: `components/`, `data.ts`, `types.ts`. |
+| `frontend/lib/` | `api.ts` (public shapes + `API_URL`), `admin.ts` (token + admin client), `format.ts` (money and dates), `cn.ts`. |
 | `backend/.env` | Gitignored. `CORS_ORIGINS`, `SUPABASE_*`. |
 | `frontend/.env.local` | Gitignored. `NEXT_PUBLIC_API_URL`. |
 | `docs/superpowers/specs/` | Dated design docs. History, not current state. |
@@ -47,12 +50,40 @@ Both must be running for the page to render anything but an error.
 As this grows, split `app/main.py` into `app/routers/<resource>.py` and register
 each router in `main.py` — one module per resource.
 
+## Frontend conventions
+
+Three rules, and the codebase already got expensive once for breaking all three.
+
+**Colour comes from `app/globals.css`, never from a Tailwind palette.** Use
+`ink`, `ink-soft`, `paper`, `surface`, `surface-deep`, `edge`, `signal`,
+`signal-deep`, `signal-soft`, `highlight`, `highlight-soft`, `positive`,
+`positive-soft`, `danger`, `danger-soft`. A literal `text-zinc-950` or
+`border-orange-200` in a diff is a bug: it is how the site ended up with five
+palettes, one per contributor. Every token is contrast-checked — see the comment
+in that file before changing a value.
+
+**Reach for `components/ui` before writing markup.** If you are about to type
+`rounded-2xl border bg-white p-6`, you want `<Card>`. Buttons, form fields,
+tabs, progress bars and status pills all exist. Extend the primitive rather than
+forking it.
+
+**Never restate focus styles.** `globals.css` declares one 3px `signal` ring for
+every interactive element. A per-component `focus-visible:outline-2` overrides
+it with something thinner, which is what nine components used to do.
+
+Shared components live in `components/`; anything specific to one feature lives
+in `features/<name>/components/`. `app/` holds routes and nothing else.
+
 ## How the two connect
 
-`frontend/app/page.tsx` is a Server Component. It fetches
-`${NEXT_PUBLIC_API_URL}/api/hello` at request time and renders either the
-response or a red box naming the failure. That red box is the connection status:
-break the wiring and the page says so.
+`frontend/app/stories/page.tsx` is a Server Component. It calls `loadStories()`
+in `lib/api.ts`, which fetches `${NEXT_PUBLIC_API_URL}/api/photos` and
+`/api/participants` at request time and returns an `error` string instead of
+throwing. The page renders that string in a red card. That card is the
+connection status: break the wiring and the page says so.
+
+(The landing page at `app/page.tsx` reaches the backend only through
+`features/instagram`, and is otherwise static content.)
 
 Because that fetch runs server-side in Node rather than in the browser, CORS is
 not involved in it. CORS *is* involved the moment you fetch from a Client

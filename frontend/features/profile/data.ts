@@ -7,24 +7,32 @@ export const DEMO_SUPPORTER_PROFILE: SupporterProfile = {
   summary: [
     {
       id: "total-donated",
+      icon: "heart",
+      tone: "signal",
       label: "Total donated",
       value: "HK$3,600",
       helperText: "Across one-time and monthly support.",
     },
     {
       id: "donation-count",
+      icon: "receipt",
+      tone: "signal",
       label: "Donations",
       value: "6",
       helperText: "Including recurring and one-time gifts.",
     },
     {
       id: "volunteer-hours",
+      icon: "hands",
+      tone: "positive",
       label: "Volunteer hours",
       value: "18",
       helperText: "Across community and event activities.",
     },
     {
       id: "milestones",
+      icon: "star",
+      tone: "highlight",
       label: "Milestones",
       value: "4",
       helperText: "Participation badges, not supporter rankings.",

@@ -1,79 +1,97 @@
-import React from 'react';
+import type { Metadata } from "next";
+import { PageShell } from "@/components/layout";
+import { Button, Card, PageIntro } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "Get Involved",
+  description:
+    "Donate, give equipment, or volunteer with the Love 21 Foundation community in Hong Kong.",
+};
+
+interface InvolvementRoute {
+  emoji: string;
+  title: string;
+  description: string;
+  bullets?: string[];
+  cta: string;
+  href: string;
+  variant: "primary" | "secondary";
+}
+
+const ROUTES: readonly InvolvementRoute[] = [
+  {
+    emoji: "❤️",
+    title: "Make a Donation",
+    description:
+      "Your financial contributions directly fund our sports classes, nutritional guidance programs, and counseling for our community members and their families.",
+    cta: "Donate Now",
+    href: "/donate",
+    variant: "primary",
+  },
+  {
+    emoji: "🎁",
+    title: "Donation Wishlist",
+    description:
+      "Prefer to give essential supplies? Check out our active wishlist of needed equipment and items:",
+    bullets: [
+      "Sports Equipment (Basketballs, Yoga mats)",
+      "Nutritional ingredients & snacks",
+      "Art & workshop craft supplies",
+    ],
+    cta: "View Item Wishlist",
+    href: "/donate",
+    variant: "secondary",
+  },
+  {
+    emoji: "🤝",
+    title: "Become a Volunteer",
+    description:
+      "Share your time and skills! Help coach sports activities, assist in nutrition classes, or support our community events and administration.",
+    cta: "Sign Up to Volunteer",
+    href: "/events",
+    variant: "secondary",
+  },
+];
 
 export default function GetInvolvedPage() {
   return (
-    // manually forcing a light background to ensure proper contrast
-    <div className="w-full min-h-screen bg-slate-100 text-slate-800">
-      <main className="py-12 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <section className="max-w-4xl mx-auto text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-love21-red mb-4 tracking-tight">
-            Get Involved with Love 21
-          </h1>
-          <p className="text-lg text-slate-700 max-w-2xl mx-auto">
-            Empowering the Down syndrome and autism community in Hong Kong through sports, 
-            nutrition, and holistic support. Join us in making a lasting impact!
-          </p>
-        </section>
+    <PageShell>
+      <PageIntro
+        eyebrow="Get involved"
+        title="Get Involved with Love 21"
+        lede="Empowering the Down syndrome and autism community in Hong Kong through sports, nutrition, and holistic support. Join us in making a lasting impact."
+      />
 
-        {/* Main 3 Feature Sections */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* 1. Donate Section */}
-          <section className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
-            <div>
-              <div className="w-12 h-12 bg-love21-light text-love21-red rounded-xl flex items-center justify-center font-bold text-2xl mb-6">
-                ❤️
+      <ul className="mt-12 grid gap-6 md:grid-cols-3">
+        {ROUTES.map((route) => (
+          <li key={route.title} className="flex">
+            <Card as="article" panel padding="lg" className="flex w-full flex-col">
+              <span
+                aria-hidden="true"
+                className="flex h-12 w-12 items-center justify-center rounded-card bg-surface text-2xl"
+              >
+                {route.emoji}
+              </span>
+              <h2 className="mt-6 font-display text-2xl font-bold text-ink">{route.title}</h2>
+              <p className="mt-3 leading-relaxed text-ink-soft">{route.description}</p>
+              {route.bullets && (
+                <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
+                  {route.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              )}
+              {/* mt-auto pins the buttons to a common baseline across cards of
+                  different heights. */}
+              <div className="mt-auto pt-6">
+                <Button href={route.href} variant={route.variant} block>
+                  {route.cta}
+                </Button>
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">Make a Donation</h2>
-              <p className="text-slate-700 mb-6 leading-relaxed">
-                Your financial contributions directly fund our sports classes, nutritional guidance programs, and counseling for our community members and their families.
-              </p>
-            </div>
-            <button className="w-full bg-love21-red hover:bg-love21-red-hover text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm">
-              Donate Now
-            </button>
-          </section>
-
-          {/* 2. Donate Wishlist Section */}
-          <section className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
-            <div>
-              <div className="w-12 h-12 bg-red-100 text-red-800 rounded-xl flex items-center justify-center font-bold text-2xl mb-6">
-                🎁
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">Donation Wishlist</h2>
-              <p className="text-slate-700 mb-4 leading-relaxed">
-                Prefer to give essential supplies? Check out our active wishlist of needed equipment and items:
-              </p>
-              <ul className="text-sm text-slate-700 space-y-2 mb-6 list-disc list-inside">
-                <li>Sports Equipment (Basketballs, Yoga mats)</li>
-                <li>Nutritional ingredients & snacks</li>
-                <li>Art & workshop craft supplies</li>
-              </ul>
-            </div>
-            <button className="w-full bg-red-800 hover:bg-red-900 text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm">
-              View Item Wishlist
-            </button>
-          </section>
-
-          {/* 3. Volunteer Section */}
-          <section className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
-            <div>
-              <div className="w-12 h-12 bg-love21-light text-love21-red rounded-xl flex items-center justify-center font-bold text-2xl mb-6">
-                🤝
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">Become a Volunteer</h2>
-              <p className="text-slate-700 mb-6 leading-relaxed">
-                Share your time and skills! Help coach sports activities, assist in nutrition classes, or support our community events and administration.
-              </p>
-            </div>
-            <button className="w-full border-2 border-love21-red text-love21-red hover:bg-love21-light font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm">
-              Sign Up to Volunteer
-            </button>
-          </section>
-
-        </div>
-      </main>
-    </div>
+            </Card>
+          </li>
+        ))}
+      </ul>
+    </PageShell>
   );
 }

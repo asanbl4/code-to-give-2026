@@ -1,47 +1,44 @@
+import { Card, Section } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import type { ProfileActivity } from "../types";
 
-interface RecentActivitySectionProps {
+export function RecentActivitySection({
+  activities,
+}: {
   activities: ReadonlyArray<ProfileActivity>;
-}
-
-export function RecentActivitySection({ activities }: RecentActivitySectionProps) {
+}) {
   return (
-    <section
-      aria-labelledby="recent-activity-heading"
-      className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
+    <Section
+      card
+      title="Recent activity"
+      description="Recent giving and volunteering activity linked to this supporter profile."
     >
-      <h2 id="recent-activity-heading" className="text-2xl font-semibold text-zinc-950">
-        Recent activity
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
-        Recent giving and volunteering activity linked to this supporter profile.
-      </p>
-
-      <ul className="mt-6 space-y-0">
+      <ul>
         {activities.map((activity) => (
-          <li key={activity.id} className="relative grid gap-3 border-l-2 border-zinc-200 pb-6 pl-6 last:pb-0">
-            <span className="absolute -left-[9px] top-0 flex h-4 w-4 rounded-full bg-white ring-2 ring-zinc-300">
+          <li key={activity.id} className="relative border-l-2 border-edge pb-6 pl-6 last:pb-0">
+            <span className="absolute -left-[9px] top-0 flex h-4 w-4 rounded-full bg-paper ring-2 ring-edge">
               <span
-                className={`m-auto h-2 w-2 rounded-full ${
-                  activity.kind === "donation" ? "bg-orange-500" : "bg-teal-600"
-                }`}
+                className={cn(
+                  "m-auto h-2 w-2 rounded-full",
+                  activity.kind === "donation" ? "bg-signal" : "bg-positive",
+                )}
               />
             </span>
-            <article className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
+            <Card as="article" tone="surface">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-soft">
                     {activity.kind}
                   </p>
-                  <h3 className="mt-2 font-semibold text-zinc-950">{activity.title}</h3>
+                  <h3 className="mt-2 font-display text-lg font-bold text-ink">{activity.title}</h3>
                 </div>
-                <p className="text-sm font-medium text-zinc-600">{activity.dateLabel}</p>
+                <p className="font-bold text-ink-soft">{activity.dateLabel}</p>
               </div>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">{activity.description}</p>
-            </article>
+              <p className="mt-3 leading-6 text-ink-soft">{activity.description}</p>
+            </Card>
           </li>
         ))}
       </ul>
-    </section>
+    </Section>
   );
 }
