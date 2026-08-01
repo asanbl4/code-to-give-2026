@@ -2,12 +2,15 @@
 
     score >= high  -> the curated answer, verbatim, no model call
     low <= s < high -> the model composes, strictly from retrieved passages
-    score < low    -> refuse, and offer a person
+    score < low    -> refuse generically, and offer a person
 
 Two properties are load-bearing and are asserted in the tests:
 
-* a `is_refusal` entry short-circuits before any generation, so medical and
-  safeguarding questions can never be answered by a 4B model;
+* above the floor, an `is_refusal` entry short-circuits before any generation,
+  so medical and safeguarding questions can never be answered by a 4B model.
+  Below the floor the *generic* refusal is used instead, so an off-topic
+  question does not get served the safeguarding entry it happened to rank
+  nearest;
 * every failure path degrades to a written answer. This function does not
   raise, so the endpoint cannot 500.
 """
@@ -77,21 +80,25 @@ async def answer_question(request: ChatRequest) -> ChatResponse:
 
     entry, score = ranked[0]
 
-    # Refusals win over every threshold: a medical question that happens to
-    # score mid-band must still never reach the model.
+    # The confidence floor comes first, including for refusal entries. Every
+    # question the corpus does not cover ranks *something* top, and the refusal
+    # entries attract off-topic text: "what is the weather in Tokyo" ranked
+    # refuse-distress top at 0.427 on the real index. Serving that entry
+    # verbatim told a visitor asking about the weather to call 999, which reads
+    # as broken and cheapens the answer for the person who actually needs it.
+    if score < settings.chatbot_low_confidence:
+        return _refusal(request.locale, route="fallback" if degraded else "refused")
+
+    # Above the floor, refusals win over the remaining thresholds: a medical
+    # question that happens to score mid-band must still never reach the model.
     if entry.is_refusal:
         return _from_entry(entry, request, entries, route="refused")
 
     if degraded:
-        if score < settings.chatbot_low_confidence:
-            return _refusal(request.locale, route="fallback")
         return _from_entry(entry, request, entries, route="fallback")
 
     if score >= settings.chatbot_high_confidence:
         return _from_entry(entry, request, entries, route="curated")
-
-    if score < settings.chatbot_low_confidence:
-        return _refusal(request.locale, route="refused")
 
     return await _generate(entry, ranked, request, entries)
 

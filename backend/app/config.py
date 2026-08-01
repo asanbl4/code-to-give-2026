@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     chatbot_low_confidence: float = 0.55
     # A demo must never hang: abandon generation past this and fall back.
     chatbot_timeout_seconds: float = 20.0
+    # How long Ollama keeps a model in memory after a request. Its default of
+    # 5m is shorter than the gaps between questions in a demo, and reloading
+    # qwen3:4b measured ~7.3s on top of ~13s of generation on 2026-08-01 --
+    # enough to cross chatbot_timeout_seconds and degrade the answer.
+    chatbot_keep_alive: str = "30m"
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -27,7 +27,11 @@ class OllamaUnavailable(RuntimeError):
 
 async def embed(text: str) -> list[float]:
     """Embed one string. Raises OllamaUnavailable on any failure."""
-    payload = {"model": settings.chatbot_embed_model, "input": text}
+    payload = {
+        "model": settings.chatbot_embed_model,
+        "input": text,
+        "keep_alive": settings.chatbot_keep_alive,
+    }
 
     data = await _post("/api/embed", payload, timeout=30.0)
     try:
@@ -39,9 +43,13 @@ async def embed(text: str) -> list[float]:
 async def generate(system: str, user: str) -> str:
     """One non-streaming completion.
 
-    `think: false` matters: qwen3 is a hybrid reasoning model and will otherwise
-    spend 10-20s reasoning before every answer. If a future model ignores the
-    flag, add "/no_think" to the system prompt as well.
+    Deliberately does NOT send `think`. qwen3 is a hybrid reasoning model, and
+    `think: false` reads like "answer faster" but measured against qwen3:4b it
+    does not stop the reasoning -- it stops Ollama splitting the reasoning into
+    its own field, so the chain of thought lands in `message.content` and goes
+    straight to the visitor ("Hmm, the user is asking whether..."). Omitting the
+    flag returns a clean `content` alongside a separate `thinking` we ignore,
+    at the same latency. Do not "optimise" this back.
     """
     payload = {
         "model": settings.chatbot_model,
@@ -50,7 +58,7 @@ async def generate(system: str, user: str) -> str:
             {"role": "user", "content": user},
         ],
         "stream": False,
-        "think": False,
+        "keep_alive": settings.chatbot_keep_alive,
         "options": {"temperature": 0.2},
     }
 

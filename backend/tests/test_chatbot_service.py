@@ -181,3 +181,63 @@ async def test_followups_resolve_to_labels(monkeypatch, fake_ollama) -> None:
 
     assert response.followups
     assert all(f.label and f.question for f in response.followups)
+
+
+# A weak match on a refusal entry used to be served verbatim, because is_refusal
+# short-circuited before the low-confidence check. Asking "what is the weather in
+# Tokyo" scored 0.427 against refuse-distress on the real index and answered with
+# the crisis text -- telling someone asking about the weather to call 999. That
+# both reads as broken and cheapens the response for the person who needs it.
+
+
+@pytest.mark.anyio
+async def test_weak_match_on_a_refusal_entry_gives_the_generic_refusal(
+    monkeypatch, fake_ollama
+) -> None:
+    _force_score(monkeypatch, "refuse-distress", 0.42)
+
+    response = await service.answer_question(
+        ChatRequest(question="what is the weather in Tokyo")
+    )
+
+    assert response.route == "refused"
+    assert response.source is None, "an off-topic question must not cite the distress entry"
+    assert "999" not in response.answer
+    assert fake_ollama.generate_calls == []
+
+
+@pytest.mark.anyio
+async def test_weak_match_on_a_medical_refusal_does_not_cite_it(monkeypatch, fake_ollama) -> None:
+    _force_score(monkeypatch, "refuse-medical-advice", 0.30)
+
+    response = await service.answer_question(ChatRequest(question="how do I fix my bicycle"))
+
+    assert response.route == "refused"
+    assert response.source is None
+
+
+@pytest.mark.anyio
+async def test_confident_distress_match_still_gives_the_safeguarding_answer(
+    monkeypatch, fake_ollama
+) -> None:
+    """The guard above must not weaken the case it exists for."""
+    _force_score(monkeypatch, "refuse-distress", 0.88)
+
+    response = await service.answer_question(ChatRequest(question="I want to hurt myself"))
+
+    assert response.route == "refused"
+    assert response.source is not None
+    assert "999" in response.answer
+    assert fake_ollama.generate_calls == []
+
+
+@pytest.mark.anyio
+async def test_mid_band_refusal_still_refuses_without_the_model(monkeypatch, fake_ollama) -> None:
+    """A refusal scoring inside the generated band must never reach the model."""
+    _force_score(monkeypatch, "refuse-medical-advice", 0.65)
+
+    response = await service.answer_question(ChatRequest(question="is my child autistic"))
+
+    assert response.route == "refused"
+    assert response.source is not None
+    assert fake_ollama.generate_calls == []
