@@ -5,10 +5,12 @@ import StatsStrip from '../features/landing/components/StatsStrip';
 import FinancialBanner from '../features/landing/components/FinancialBanner';
 import ProgrammesPreview from '../features/landing/components/ProgrammesPreview';
 import { CommunityGoalWidget } from '../app/homepage/community-goal-widget';
+
 import StoriesSection from '../features/landing/components/StoriesSection';
 import RecentEvents from '../features/landing/components/RecentEvents';
 import Footer from '../features/landing/components/Footer';
 import DonationToast from '../features/landing/components/DonationToast';
+import { EventsTeaser } from './events/events-teaser';
 
 export default function Page() {
   return (
@@ -23,6 +25,7 @@ export default function Page() {
       <RecentEvents />
       <Footer />
       <DonationToast />
+      <EventsTeaser />
     </main>
   );
 }

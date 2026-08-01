@@ -36,6 +36,8 @@
   --color-foreground: var(--foreground);
   --font-sans: Arial, Helvetica, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
 @theme {
   --color-love21-red: #e53935;
   --color-love21-red-hover: #c62828;
