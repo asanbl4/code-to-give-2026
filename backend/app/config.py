@@ -45,7 +45,10 @@ class Settings(BaseSettings):
     # 127.0.0.1 rather than localhost: Node and Python may resolve localhost to
     # ::1, which Ollama does not bind by default.
     ollama_host: str = "http://127.0.0.1:11434"
-    chatbot_model: str = "qwen3:4b"
+    # 1.7b, not 4b: a 4GB GPU cannot hold qwen3:4b (3.5GB) and bge-m3 (0.66GB)
+    # at once, and the two then evict each other on every request. See the
+    # feature README. On a bigger GPU, qwen3:4b is a drop-in upgrade.
+    chatbot_model: str = "qwen3:1.7b"
     chatbot_embed_model: str = "bge-m3"
     # Both measured against real bge-m3 scores on 2026-08-01 (6 seed entries,
     # 44 triggers) via `build_index --scores`, not guessed:
