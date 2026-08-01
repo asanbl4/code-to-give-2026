@@ -63,9 +63,15 @@ def generation_band(monkeypatch) -> None:
     (see config.py). The generation path is still live code for a bigger model
     and a fuller corpus, so it is still tested -- just not with the shipped
     thresholds. test_shipped_thresholds_disable_generation covers the default.
+
+    chatbot_answer_confidence has to come down too. It is the point at which an
+    entry is usable at all, so it forms the *bottom* of the generated band:
+    leaving it at the shipped 0.80 while high is 0.75 makes the band empty from
+    the other direction, and nothing would ever generate.
     """
     monkeypatch.setattr(service.settings, "chatbot_high_confidence", 0.75)
     monkeypatch.setattr(service.settings, "chatbot_low_confidence", 0.55)
+    monkeypatch.setattr(service.settings, "chatbot_answer_confidence", 0.55)
 
 
 def _force_score(monkeypatch, entry_id: str, score: float) -> None:
@@ -316,7 +322,10 @@ async def test_shipped_thresholds_disable_generation(monkeypatch, fake_ollama) -
         service.settings.chatbot_high_confidence == service.settings.chatbot_low_confidence
     ), "high must equal low, or the model can write to visitors"
 
-    for score in (0.56, 0.60, 0.70, 0.74):
+    # Scores spanning everything that is answerable at all. Below
+    # chatbot_answer_confidence an ordinary entry is refused rather than
+    # answered, so probing 0.56-0.74 here would test the floor, not the band.
+    for score in (0.80, 0.85, 0.95, 1.00):
         _force_score(monkeypatch, "donate-what-500-funds", score)
 
         response = await service.answer_question(ChatRequest(question="tell me about giving"))
@@ -524,3 +533,60 @@ async def test_a_chinese_question_is_answered_in_chinese(monkeypatch, fake_ollam
 
     assert response.locale == "zh-Hant"
     assert response.answer.startswith("愛21是一間香港慈善機構")
+
+
+@pytest.mark.anyio
+async def test_a_near_miss_is_refused_rather_than_answered(monkeypatch, fake_ollama) -> None:
+    """The reported bug: "how can I help" answered with what Love 21 is.
+
+    Uncovered questions measured 0.53-0.72 against the nearest entry on
+    2026-08-01. At the old 0.55 floor, eight of nine were answered confidently
+    and wrongly.
+    """
+    _force_score(monkeypatch, "about-what-is-love21", 0.72)
+
+    response = await service.answer_question(ChatRequest(question="where are you located"))
+
+    assert response.route == "refused"
+    assert response.sources == [], "a near miss must not cite the entry it nearly matched"
+    assert response.action is not None, "a refusal must still offer a person"
+
+
+@pytest.mark.anyio
+async def test_a_refusal_entry_uses_a_lower_floor_than_an_answer(
+    monkeypatch, fake_ollama
+) -> None:
+    """The asymmetry, and the reason the floors are split.
+
+    "I feel like ending it" scores 0.728 -- below the answer floor. Raising a
+    single shared floor would have dropped it to the generic "contact us" and
+    lost the 999 handoff. A safeguarding entry must fire more readily than an
+    ordinary answer, not less.
+    """
+    _force_score(monkeypatch, "refuse-distress", 0.728)
+
+    response = await service.answer_question(ChatRequest(question="I feel like ending it"))
+
+    assert response.route == "refused"
+    assert [source.entry_id for source in response.sources] == ["refuse-distress"]
+    assert "999" in response.answer, "the safeguarding handoff must survive the split"
+    assert fake_ollama.generate_calls == []
+
+
+@pytest.mark.anyio
+async def test_the_degraded_path_keeps_the_permissive_floor(monkeypatch, fake_ollama) -> None:
+    """Lexical scores are Jaccard bigram overlap -- a different scale entirely.
+
+    Applying the cosine answer floor to them would refuse nearly everything and
+    make the Ollama-down path useless, which is the opposite of degrade-not-fail.
+    """
+    from app.features.chatbot.corpus import load_corpus
+
+    entry = next(e for e in load_corpus() if e.id == "about-what-is-love21")
+    monkeypatch.setattr(service.index, "load_index", lambda: None)
+    monkeypatch.setattr(service.retrieval, "rank_lexically", lambda q, e: [(entry, 0.60)])
+
+    response = await service.answer_question(ChatRequest(question="what is Love 21"))
+
+    assert response.route == "fallback", "0.60 lexical must still answer"
+    assert response.answer

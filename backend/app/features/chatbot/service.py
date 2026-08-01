@@ -123,7 +123,7 @@ async def answer_question(request: ChatRequest) -> ChatResponse:
     # refuse-distress top at 0.427 on the real index. Serving that entry
     # verbatim told a visitor asking about the weather to call 999, which reads
     # as broken and cheapens the answer for the person who actually needs it.
-    if score < settings.chatbot_low_confidence:
+    if score < _floor_for(entry, degraded):
         return _refusal(request.locale, route="fallback" if degraded else "refused")
 
     # Above the floor, refusals win over the remaining thresholds: a medical
@@ -138,6 +138,28 @@ async def answer_question(request: ChatRequest) -> ChatResponse:
         return _from_entry(entry, request, entries, route="curated")
 
     return await _generate(entry, ranked, request, entries)
+
+
+def _floor_for(entry: Entry, degraded: bool) -> float:
+    """The score `entry` must reach before it is used at all.
+
+    Three cases, and they are deliberately different numbers:
+
+    * a REFUSAL entry sits low. A safeguarding handoff should fire readily --
+      "I feel like ending it" scores 0.728, and holding it to the answer floor
+      would drop it to a generic "contact us" and lose the 999. It still needs
+      *a* floor, which is the scar above: "what is the weather in Tokyo" ranks
+      refuse-distress top at 0.427.
+    * a DEGRADED score is Jaccard bigram overlap, not cosine, and occupies a
+      different range. The answer floor would refuse nearly everything and make
+      the Ollama-down path useless -- the opposite of degrade-not-fail.
+    * everything else must clear the answer floor, because retrieval always
+      returns something and the nearest entry to a question the corpus does not
+      cover is still the wrong answer.
+    """
+    if entry.is_refusal or degraded:
+        return settings.chatbot_low_confidence
+    return settings.chatbot_answer_confidence
 
 
 async def _rank(

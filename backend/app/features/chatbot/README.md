@@ -69,6 +69,30 @@ with a larger model **and** a corpus broad enough that a mid-band score means
 gaps, and the corpus is still 6 seed entries. A test fails if you widen the band,
 so this stays a decision rather than a tweak.
 
+## Three floors, not one
+
+Retrieval always returns something. Cosine similarity has no "nothing matched"
+output, so the entry nearest an uncovered question wins by default — and at a
+single 0.55 floor, eight of nine questions the corpus does not cover were
+answered confidently and wrongly ("where are you located" → what Love 21 is).
+
+So the floor an entry must clear depends on what kind of entry it is:
+
+| Entry | Floor | Why |
+|---|---|---|
+| Ordinary | `CHATBOT_ANSWER_CONFIDENCE` (0.80) | A near miss is a wrong answer. |
+| Refusal | `CHATBOT_LOW_CONFIDENCE` (0.55) | Must fire readily — "I feel like ending it" scores 0.728 and would otherwise lose the 999. |
+| Anything, Ollama down | `CHATBOT_LOW_CONFIDENCE` (0.55) | Lexical scores are Jaccard overlap, a different scale. |
+
+Refusals still need *a* floor: "what is the weather in Tokyo" ranks
+`refuse-distress` top at 0.427, and answering that with crisis text was an
+earlier scar.
+
+0.80 is not a clean separator and cannot be — genuine paraphrases of covered
+topics measured 0.610–0.954, overlapping the uncovered range. Four of eleven
+measured paraphrases are refused. They get a person instead of a wrong answer,
+which is the right way to be wrong. Coverage is the real fix.
+
 ## Answering in the language asked in
 
 `locale` on the request describes the **site**, not the question — the browser

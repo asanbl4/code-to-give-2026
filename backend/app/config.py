@@ -84,6 +84,29 @@ class Settings(BaseSettings):
     # off-topic question would have crossed it. Re-measure once Task 11 fills
     # the corpus out -- ~35 entries compete differently.
     chatbot_low_confidence: float = 0.55
+    # What an ORDINARY entry must score before it is used as an answer.
+    #
+    # chatbot_low_confidence is too permissive for this, and that was a real
+    # bug: retrieval always returns something -- cosine has no "nothing
+    # matched" output -- so the nearest entry to an uncovered question wins by
+    # default. Measured 2026-08-01, eight of nine questions the corpus does not
+    # cover cleared 0.55 and were answered confidently and wrongly:
+    #   0.716 "where are you located"     -> about-what-is-love21
+    #   0.646 "do you run summer camps"   -> volunteer-how-to-start
+    #   0.629 "can I get a tax receipt"   -> about-who-can-join
+    #
+    # 0.80 sits 0.084 above the worst of those. It is NOT a clean separator and
+    # cannot be: genuine paraphrases of covered topics measured 0.610-0.954, so
+    # the two populations overlap. Measured paraphrases that this refuses:
+    #   0.610 "who are your programmes for"     0.729 "你們是甚麼機構"
+    #   0.705 "what sort of organisation are you"  0.730 "tell me what you actually do"
+    # Four of eleven. They get the contact line and a person, which is the
+    # right way to be wrong -- and 0.75 would refuse exactly the same four
+    # while leaving far less margin, so 0.80 costs nothing and buys headroom.
+    #
+    # The real fix is coverage: more entries and more triggers move genuine
+    # paraphrases up without moving uncovered questions. Re-measure then.
+    chatbot_answer_confidence: float = 0.80
     # Acceptance test for ONE PART of a compound question -- deliberately not a
     # reuse of chatbot_low_confidence, which is too low to be safe here.
     #
