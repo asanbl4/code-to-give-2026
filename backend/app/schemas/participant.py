@@ -26,11 +26,9 @@ class Participant(BaseModel):
 
     avatar_url: str | None = None
 
-    #: One line, shown in the click-on-face popup.
+    #: The short story: one line, shown in the click-on-face popup.
     headline: str | None = None
-    #: Their progress, shown under the headline in that popup.
-    progress_summary: str | None = None
-    #: Full text behind "SHOW MORE".
+    #: The long story, behind "SHOW MORE".
     story: str | None = None
 
     joined_on: date | None = None

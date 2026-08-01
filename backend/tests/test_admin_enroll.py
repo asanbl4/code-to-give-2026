@@ -9,20 +9,14 @@ sitting in the bucket. That happened once; these tests keep it fixed.
 from typing import Any
 
 import pytest
-from fastapi.testclient import TestClient
 from postgrest.exceptions import APIError
 
-from app.admin_auth import require_admin
-from app.db import get_admin_db
 from app.faces import DetectedFace
-from app.main import app
-from tests.conftest import FakeDb
+from tests.conftest import AdminClient, FakeDb
 
 _PARTICIPANT = "6f1e6a4e-6c8c-4a4a-9f0e-6d2a6b7c1d11"
 _ONE_FACE = [
-    DetectedFace(
-        box_x=0.1, box_y=0.1, box_w=0.2, box_h=0.3, confidence=0.99, embedding=[0.1] * 128
-    )
+    DetectedFace(box_x=0.1, box_y=0.1, box_w=0.2, box_h=0.3, confidence=0.99, embedding=[0.1] * 128)
 ]
 
 
@@ -52,35 +46,34 @@ def uploads(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     return recorded
 
 
-def _client(db: FakeDb) -> TestClient:
-    app.dependency_overrides[get_admin_db] = lambda: db
-    app.dependency_overrides[require_admin] = lambda: None
-    return TestClient(app)
+@pytest.fixture
+def removals(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Record every storage deletion instead of performing one."""
+    recorded: list[str] = []
+    monkeypatch.setattr("app.storage.remove", lambda paths: recorded.extend(paths))
+    return recorded
 
 
-def test_refused_enrolment_uploads_nothing(uploads: list[str]) -> None:
+def _enroll(client: Any) -> Any:
+    return client.post(
+        f"/api/admin/participants/{_PARTICIPANT}/enroll",
+        files={"file": ("portrait.jpg", b"not-a-real-jpeg", "image/jpeg")},
+    )
+
+
+def test_refused_enrolment_uploads_nothing(admin_client: AdminClient, uploads: list[str]) -> None:
     db = RefusingDb({"participants": [], "participant_face_signatures": []})
-    try:
-        response = _client(db).post(
-            f"/api/admin/participants/{_PARTICIPANT}/enroll",
-            files={"file": ("portrait.jpg", b"not-a-real-jpeg", "image/jpeg")},
-        )
-    finally:
-        app.dependency_overrides.clear()
+    response = _enroll(admin_client(db))
 
     assert response.status_code == 400
     assert uploads == [], "a refused enrolment must not leave their photo in the bucket"
 
 
-def test_accepted_enrolment_uploads_the_avatar(uploads: list[str]) -> None:
+def test_accepted_enrolment_uploads_the_avatar(
+    admin_client: AdminClient, uploads: list[str]
+) -> None:
     db = FakeDb({"participants": [], "participant_face_signatures": []})
-    try:
-        response = _client(db).post(
-            f"/api/admin/participants/{_PARTICIPANT}/enroll",
-            files={"file": ("portrait.jpg", b"not-a-real-jpeg", "image/jpeg")},
-        )
-    finally:
-        app.dependency_overrides.clear()
+    response = _enroll(admin_client(db))
 
     assert response.status_code == 200
     assert response.json()["enrolled"] is True
@@ -88,18 +81,46 @@ def test_accepted_enrolment_uploads_the_avatar(uploads: list[str]) -> None:
     assert uploads[0].startswith(f"avatars/{_PARTICIPANT}/")
 
 
-def test_embedding_is_sent_as_pgvector_text(uploads: list[str]) -> None:
+def test_embedding_is_sent_as_pgvector_text(admin_client: AdminClient, uploads: list[str]) -> None:
     """pgvector parses '[0.1,0.2]'; a bare JSON array is ambiguous over the wire."""
     db = FakeDb({"participants": [], "participant_face_signatures": []})
-    try:
-        _client(db).post(
-            f"/api/admin/participants/{_PARTICIPANT}/enroll",
-            files={"file": ("portrait.jpg", b"not-a-real-jpeg", "image/jpeg")},
-        )
-    finally:
-        app.dependency_overrides.clear()
+    _enroll(admin_client(db))
 
     written = db.queries_for("participant_face_signatures")[0].written
     assert isinstance(written, dict)
     assert isinstance(written["embedding"], str)
     assert written["embedding"].startswith("[") and written["embedding"].endswith("]")
+
+
+def test_replacing_a_portrait_removes_the_previous_file(
+    admin_client: AdminClient, uploads: list[str], removals: list[str]
+) -> None:
+    """Every enrolment mints a fresh path, so the old one has to be swept up.
+
+    Nothing in the database points at it afterwards, and it is a photograph of a
+    real person sitting in a bucket nobody is auditing.
+    """
+    db = FakeDb(
+        {
+            "participants": [{"id": _PARTICIPANT, "avatar_path": "avatars/old/portrait.jpg"}],
+            "participant_face_signatures": [],
+        }
+    )
+    response = _enroll(admin_client(db))
+
+    assert response.status_code == 200
+    assert removals == ["avatars/old/portrait.jpg"]
+    assert uploads[0] not in removals, "the portrait just uploaded must survive"
+
+
+def test_a_first_portrait_removes_nothing(
+    admin_client: AdminClient, uploads: list[str], removals: list[str]
+) -> None:
+    db = FakeDb(
+        {
+            "participants": [{"id": _PARTICIPANT, "avatar_path": None}],
+            "participant_face_signatures": [],
+        }
+    )
+    assert _enroll(admin_client(db)).status_code == 200
+    assert removals == []

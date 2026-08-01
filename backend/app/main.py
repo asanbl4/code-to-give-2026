@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import CurrentUser, UserRoles
 from app.config import get_settings
 from app.features.chatbot.router import router as chatbot_router
 from app.features.instagram.router import router as instagram_router
@@ -40,3 +41,19 @@ def health() -> dict[str, str | bool]:
 def hello() -> dict[str, str]:
     """Proves the frontend can reach the backend."""
     return {"message": "Hello from FastAPI"}
+
+
+@app.get("/api/me")
+def me(user: CurrentUser, roles: UserRoles) -> dict[str, object]:
+    """Who am I, and what may I do.
+
+    The frontend calls this after a magic link resolves, to decide whether to
+    show the staff tool. `roles` comes from `public.user_roles` via the caller's
+    own RLS-scoped client -- not from a claim in the token.
+    """
+    return {
+        "id": user.id,
+        "email": user.email,
+        "roles": sorted(roles),
+        "is_staff": bool(roles & {"admin", "editor"}),
+    }

@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Section } from "@/components/ui";
 
-interface ShareImpactProps {
-  summary: string;
-}
-
-export function ShareImpact({ summary }: ShareImpactProps) {
+export function ShareImpact({ summary }: { summary: string }) {
   const [status, setStatus] = useState("Ready to copy a privacy-safe summary.");
 
   async function copySummary() {
@@ -19,34 +16,19 @@ export function ShareImpact({ summary }: ShareImpactProps) {
   }
 
   return (
-    <section
-      aria-labelledby="share-impact-heading"
-      className="rounded-[2rem] border border-teal-100 bg-white p-6 shadow-sm sm:p-8"
+    <Section
+      card
+      title="Share your impact"
+      description="Copy a short summary if you want to share it yourself. This action does not publish anything automatically and includes no private account details."
     >
-      <h2 id="share-impact-heading" className="text-2xl font-semibold text-zinc-950">
-        Share your impact
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
-        Copy a short summary if you want to share it yourself. This action does
-        not publish anything automatically and includes no private account details.
-      </p>
-
-      <blockquote className="mt-5 rounded-2xl border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-zinc-700">
-        {summary}
-      </blockquote>
+      <blockquote className="rounded-card bg-surface p-4 leading-6 text-ink">{summary}</blockquote>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button
-          type="button"
-          onClick={copySummary}
-          className="rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-        >
-          Copy impact summary
-        </button>
-        <p aria-live="polite" className="text-sm text-zinc-600">
+        <Button onClick={copySummary}>Copy impact summary</Button>
+        <p aria-live="polite" className="text-ink-soft">
           {status}
         </p>
       </div>
-    </section>
+    </Section>
   );
 }

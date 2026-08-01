@@ -1,16 +1,16 @@
+import { cn } from "@/lib/cn";
 import { DONATION_STEPS } from "../data";
 import type { DonationStep } from "../types";
 
-interface DonationProgressProps {
-  currentStep: DonationStep;
-}
-
-export function DonationProgress({ currentStep }: DonationProgressProps) {
+export function DonationProgress({ currentStep }: { currentStep: DonationStep }) {
   const currentIndex = DONATION_STEPS.findIndex((step) => step.value === currentStep);
 
   return (
-    <nav aria-label="Donation progress" className="rounded-2xl border border-orange-100 bg-white/90 p-3 shadow-sm">
-      <ol className="grid gap-2 text-sm sm:grid-cols-3">
+    <nav
+      aria-label="Donation progress"
+      className="rounded-card bg-paper p-3 shadow-card ring-1 ring-edge"
+    >
+      <ol className="grid gap-2 sm:grid-cols-3">
         {DONATION_STEPS.map((step, index) => {
           const isCurrent = step.value === currentStep;
           const isComplete = index < currentIndex;
@@ -18,29 +18,29 @@ export function DonationProgress({ currentStep }: DonationProgressProps) {
           return (
             <li
               key={step.value}
-              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
-                isCurrent
-                  ? "border-zinc-950 bg-zinc-950 text-white"
-                  : isComplete
-                    ? "border-teal-200 bg-teal-50 text-zinc-950"
-                    : "border-zinc-200 bg-zinc-50 text-zinc-600"
-              }`}
+              aria-current={isCurrent ? "step" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-card border-2 px-3 py-2.5",
+                isCurrent && "border-signal bg-signal-soft text-ink",
+                isComplete && "border-positive bg-positive-soft text-ink",
+                !isCurrent && !isComplete && "border-edge bg-surface text-ink-soft",
+              )}
             >
               <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                  isCurrent
-                    ? "bg-white text-zinc-950"
-                    : isComplete
-                      ? "bg-teal-700 text-white"
-                      : "bg-white text-zinc-600 ring-1 ring-zinc-200"
-                }`}
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold",
+                  isCurrent && "bg-signal text-white",
+                  isComplete && "bg-positive text-white",
+                  !isCurrent && !isComplete && "bg-paper text-ink-soft ring-1 ring-edge",
+                )}
               >
                 {index + 1}
               </span>
               <span>
-                <span className="block font-semibold">{step.label}</span>
-                {isCurrent && <span className="block text-xs">Current step</span>}
-                {isComplete && <span className="block text-xs">Completed</span>}
+                <span className="block font-bold">{step.label}</span>
+                {/* State in words as well as colour. */}
+                {isCurrent && <span className="block text-sm">Current step</span>}
+                {isComplete && <span className="block text-sm">Completed</span>}
               </span>
             </li>
           );

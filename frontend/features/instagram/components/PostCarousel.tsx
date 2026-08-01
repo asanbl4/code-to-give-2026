@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 import type { InstagramMedia } from "../types";
 
 /**
@@ -65,13 +66,12 @@ export function PostCarousel({ media, alt }: { media: InstagramMedia[]; alt: str
         ))}
       </ul>
 
-      {/* Prev / Next */}
       <button
         type="button"
         onClick={() => scrollToIndex(index - 1)}
         disabled={index === 0}
         aria-label="Previous image"
-        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-2 py-1 text-white hover:bg-black/70 disabled:pointer-events-none disabled:opacity-0"
+        className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink/60 text-white hover:bg-ink/80 disabled:pointer-events-none disabled:opacity-0"
       >
         <span aria-hidden="true">‹</span>
       </button>
@@ -80,13 +80,12 @@ export function PostCarousel({ media, alt }: { media: InstagramMedia[]; alt: str
         onClick={() => scrollToIndex(index + 1)}
         disabled={index === media.length - 1}
         aria-label="Next image"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-2 py-1 text-white hover:bg-black/70 disabled:pointer-events-none disabled:opacity-0"
+        className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink/60 text-white hover:bg-ink/80 disabled:pointer-events-none disabled:opacity-0"
       >
         <span aria-hidden="true">›</span>
       </button>
 
-      {/* Dots + count */}
-      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/40 px-2 py-1">
+      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink/50 px-2 py-1">
         {media.map((_, i) => (
           <button
             key={i}
@@ -94,9 +93,10 @@ export function PostCarousel({ media, alt }: { media: InstagramMedia[]; alt: str
             onClick={() => scrollToIndex(i)}
             aria-label={`Go to image ${i + 1} of ${media.length}`}
             aria-current={i === index}
-            className={`h-1.5 w-1.5 rounded-full transition-colors ${
-              i === index ? "bg-white" : "bg-white/50 hover:bg-white/80"
-            }`}
+            className={cn(
+              "h-1.5 w-1.5 rounded-full transition-colors",
+              i === index ? "bg-white" : "bg-white/50 hover:bg-white/80",
+            )}
           />
         ))}
       </div>

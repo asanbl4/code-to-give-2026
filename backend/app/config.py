@@ -25,11 +25,6 @@ class Settings(BaseSettings):
     # Bypasses RLS entirely. Server-side only, never sent to a client.
     supabase_secret_key: str = ""
 
-    # Shared secret guarding the staff admin routes. Not per-user auth -- a known
-    # limitation, documented in the README with its migration path. Unset means
-    # the admin routes refuse to serve rather than defaulting open.
-    admin_token: str = ""
-
     # Private bucket holding the photos.
     storage_bucket: str = "photos"
     # Signed URLs cannot be revoked before they expire, so keep the window short.
@@ -99,8 +94,10 @@ class Settings(BaseSettings):
         return bool(self.supabase_url and self.supabase_secret_key)
 
     @property
-    def admin_configured(self) -> bool:
-        return bool(self.admin_token and self.admin_database_configured)
+    def auth_configured(self) -> bool:
+        """Staff sign-in needs the JWKS endpoint (supabase_url) and, because the
+        staff routes write with the service role, the secret key too."""
+        return bool(self.supabase_url and self.admin_database_configured)
 
 
 @lru_cache(maxsize=1)

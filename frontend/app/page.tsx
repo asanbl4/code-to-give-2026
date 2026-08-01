@@ -1,31 +1,28 @@
-import '../features/landing/landing.css';
-import Nav from '../features/landing/components/Nav';
-import Hero from '../features/landing/components/Hero';
-import StatsStrip from '../features/landing/components/StatsStrip';
-import FinancialBanner from '../features/landing/components/FinancialBanner';
-import ProgrammesPreview from '../features/landing/components/ProgrammesPreview';
-import { CommunityGoalWidget } from '../app/homepage/community-goal-widget';
+import { PageShell } from "@/components/layout";
+import { CommunityGoalWidget } from "@/features/community-goal/components/CommunityGoalWidget";
+import { EventsTeaser } from "@/features/events/components/EventsTeaser";
+import { DonationToast } from "@/features/landing/components/DonationToast";
+import { FinancialBanner } from "@/features/landing/components/FinancialBanner";
+import { Hero } from "@/features/landing/components/Hero";
+import { ProgrammesPreview } from "@/features/landing/components/ProgrammesPreview";
+import { RecentEvents } from "@/features/landing/components/RecentEvents";
+import { StatsStrip } from "@/features/landing/components/StatsStrip";
+import { StoriesSection } from "@/features/landing/components/StoriesSection";
 
-import StoriesSection from '../features/landing/components/StoriesSection';
-import RecentEvents from '../features/landing/components/RecentEvents';
-import Footer from '../features/landing/components/Footer';
-import DonationToast from '../features/landing/components/DonationToast';
-import { EventsTeaser } from './events/events-teaser';
-
-export default function Page() {
+export default function HomePage() {
   return (
-    <main>
-      <Nav />
+    <PageShell width="full">
       <Hero />
       <StatsStrip />
       <FinancialBanner />
       <ProgrammesPreview />
-      <CommunityGoalWidget />
       <StoriesSection />
-      <RecentEvents />
-      <Footer />
-      <DonationToast />
       <EventsTeaser />
-    </main>
+      <RecentEvents />
+
+      {/* Floating overlays, not page flow. */}
+      <CommunityGoalWidget />
+      <DonationToast />
+    </PageShell>
   );
 }

@@ -1,47 +1,76 @@
 @import "tailwindcss";
 
 /*
-  Love 21 Foundation — design tokens.
+  Love 21 Foundation — design tokens. The single source of truth for colour,
+  type, radius and elevation across every page.
 
-  Blue and yellow are not arbitrary: they are the colours of World Down Syndrome
-  Day, which falls on 21 March for trisomy 21. The community already owns them.
+  The palette is taken from love21foundation.com's own theme stylesheet
+  (wp-content/themes/love21foundation-theme/assets/css/style.css), so this
+  prototype and the live site read as one organisation:
+
+    #DB2140  the crimson on every donate button and CTA
+    #B3122D  its :hover / :active state
+    #333333  body text            #707070  muted text
+    #FADD40  the accent yellow    #F8F9FA / #E9ECEF  section backgrounds
 
   Everything here is tuned for an audience that includes people with Down
   syndrome and autism. Large type, high contrast, generous targets and calm
   motion are accessibility requirements first and the visual identity second.
+
+  Every colour that carries text is contrast-checked against the surface it
+  sits on: ink 12.6:1, ink-soft 6.2:1, signal 4.9:1, signal-deep 6.9:1,
+  positive 5.4:1 and danger 8.2:1 on paper; ink on highlight is 9.3:1. All
+  clear WCAG AA. Keep it that way if you change one.
 */
 
 @theme inline {
-  --color-ink: #10203a;
-  --color-ink-soft: #4a5b76;
-  --color-paper: #ffffff;
-  --color-surface: #eef3fb;
-  --color-edge: #d3deef;
+  /* Text and structure. Love 21's #333333 body grey, with a slightly darker
+     muted tone than their #707070 so it still clears 4.5:1 on tinted cards
+     (#707070 lands at 4.3:1 there, just under). */
+  --color-ink: #333333;
+  --color-ink-soft: #616161;
 
-  --color-signal: #1d5cff;
-  --color-signal-deep: #123fb3;
-  --color-highlight: #ffc61e;
+  --color-paper: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-surface-deep: #e9ecef;
+  --color-edge: #dee2e6;
+
+  /* The one accent that means "this is the action". Change --color-signal and
+     the whole site follows; that is the entire point of routing every page
+     through these names instead of literal Tailwind palettes. */
+  --color-signal: #db2140;
+  --color-signal-deep: #b3122d;
+  --color-signal-soft: #fdecef;
+
+  /* Attention without alarm: pending review, earned badges, things to notice. */
+  --color-highlight: #fadd40;
+  --color-highlight-soft: #fef8dc;
+
+  /* Done, confirmed, published. */
+  --color-positive: #1e7a46;
+  --color-positive-soft: #e8f5ed;
+
+  /* Errors only. Deliberately a darker, browner red than the brand crimson:
+     when the brand itself is red, an error has to be told apart by treatment
+     as much as hue. Actions are a solid signal fill; errors are always a pale
+     danger-soft panel with bold danger text and role="alert". */
+  --color-danger: #9b1b1b;
+  --color-danger-soft: #fbeaea;
 
   --font-display: var(--font-bricolage);
   --font-sans: var(--font-atkinson);
+
+  /* Two radii, so cards on different pages cannot drift apart. */
+  --radius-card: 1.25rem;
+  --radius-panel: 2rem;
+
+  --shadow-card: 0 1px 2px rgba(51, 51, 51, 0.08);
+  --shadow-lift: 0 18px 45px -12px rgba(51, 51, 51, 0.3);
 }
 
 :root {
   /* The photographs carry the colour. The page stays light behind them. */
   color-scheme: light;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-}
-
-@theme {
-  --color-love21-red: #e53935;
-  --color-love21-red-hover: #c62828;
-  --color-love21-light: #ffebee;
 }
 
 body {
@@ -54,11 +83,35 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* One focus treatment, everywhere, impossible to miss. */
-:where(a, button, [tabindex]):focus-visible {
+/*
+  One focus treatment, everywhere, impossible to miss.
+
+  Components must not restate this. Before the tokens landed, nine components
+  each declared their own `focus-visible:outline-2` in a different colour, which
+  quietly replaced this 3px ring with a thinner, lower-contrast one.
+*/
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--color-signal);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/*
+  The modal backdrop.
+
+  Written as a literal rather than var(--color-ink): ::backdrop did not inherit
+  custom properties in Safari 16.4, which is the floor this app builds for, and
+  a backdrop that silently resolves to nothing is a modal you can see straight
+  through. This is --color-ink at 55%.
+*/
+dialog::backdrop {
+  background: rgba(51, 51, 51, 0.55);
+}
+
+/* showModal() makes the rest of the document inert but does not stop it
+   scrolling underneath. */
+html:has(dialog[open]) {
+  overflow: hidden;
 }
 
 /*
