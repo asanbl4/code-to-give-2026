@@ -1,7 +1,8 @@
 # AGENTS.md
 
 Next.js frontend + FastAPI backend, wired together, plus a Supabase/Postgres
-connector and one domain table (`participants`). No auth yet.
+connector and the `participants` / `photos` / `photo_faces` domain tables. Staff
+authenticate with a Supabase magic link; roles live in `public.user_roles`.
 
 `frontend/AGENTS.md` also applies inside `frontend/`. Read it: this is Next.js
 16, which renamed several conventions, and your training data is likely stale.
@@ -31,7 +32,8 @@ Both must be running for the page to render anything but an error.
 |---|---|
 | `backend/app/main.py` | App setup: CORS, `/health`, `/api/hello`, router registration. |
 | `backend/app/config.py` | Settings read from the environment, cached. |
-| `backend/app/db.py` | The only place a Supabase client is built. |
+| `backend/app/db.py` | The only place a Supabase client is built. Anonymous, per-caller, and service-role. |
+| `backend/app/auth.py` | JWT verification (authentication) and the staff-role gate (authorization). |
 | `backend/app/routers/` | One module per resource. |
 | `backend/app/schemas/` | Pydantic models for what crosses the API boundary. |
 | `backend/tests/` | pytest, offline. `FakeDb` stands in for PostgREST. |
@@ -42,9 +44,10 @@ Both must be running for the page to render anything but an error.
 | `frontend/components/layout/` | Site chrome: `PageShell` (header + main + footer), and `navigation.ts` — the one list of nav links. |
 | `frontend/components/vendor/` | Third-party components copied in (reactbits.dev). Not ours, not on the token system. |
 | `frontend/features/<name>/` | One folder per feature: `components/`, `data.ts`, `types.ts`. |
-| `frontend/lib/` | `api.ts` (public shapes + `API_URL`), `admin.ts` (token + admin client), `format.ts` (money and dates), `cn.ts`. |
+| `frontend/lib/` | `api.ts` (public shapes + `API_URL`), `admin.ts` (admin client, bearer token), `supabase/` (browser + server clients), `roles.ts`, `format.ts`, `cn.ts`. |
+| `frontend/proxy.ts` | Refreshes the Supabase session per request. Next 16 renamed `middleware` to `proxy`. |
 | `backend/.env` | Gitignored. `CORS_ORIGINS`, `SUPABASE_*`. |
-| `frontend/.env.local` | Gitignored. `NEXT_PUBLIC_API_URL`. |
+| `frontend/.env.local` | Gitignored. `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_*`. |
 | `docs/superpowers/specs/` | Dated design docs. History, not current state. |
 
 As this grows, split `app/main.py` into `app/routers/<resource>.py` and register
@@ -118,6 +121,20 @@ Before adding any table, read `.claude/skills/adding-an-rls-table`. A table
 without RLS is readable by anyone holding the publishable key, and that key
 ships in the browser bundle.
 
+**Roles and auth.** Staff sign in with a Supabase magic link; there is no admin
+token. Identity and permission are deliberately separate: `app/auth.py` verifies
+the JWT signature against the project JWKS, then reads `public.user_roles`
+through the caller's own RLS-scoped client. A role claim inside a token grants
+nothing.
+
+Roles are `admin`, `editor`, `supporter`, and they live in `user_roles` rather
+than on `profiles` — `profiles_update_own` lets a user edit their own profile
+row, so a `profiles.role` column would be a one-PATCH self-promotion. Neither
+`user_roles` nor `role_allowlist` has a write policy, so only the service role
+grants a role. `role_allowlist` maps an email to a role and is applied by an
+`auth.users` trigger on first sign-in, which is how someone is authorised before
+their account exists. See README > Admin access.
+
 `participants` departs from that skill's owner-scoped pattern on purpose: it is
 public editorial content, so the policy is "anyone reads published *and*
 consented rows" and there is no write policy at all. Writes require the service
@@ -129,7 +146,11 @@ without consent.
 
 Migrations are applied through the Supabase MCP tools; save a copy of every
 applied migration into `supabase/migrations/<version>_<name>.sql` so the schema
-has a history in git.
+has a history in git. This slipped once: three migrations from the original auth
+work were applied and never committed, which is why `profiles` existed for two
+days with no file explaining it. The three files are now backfilled and marked
+as reconstructed. Check `supabase_migrations.schema_migrations` against the
+directory if the schema ever looks unfamiliar.
 
 ## Face recognition
 

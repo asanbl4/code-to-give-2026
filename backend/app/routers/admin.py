@@ -18,13 +18,13 @@ from pydantic import BaseModel, Field
 
 from app import faces as face_service
 from app import storage
-from app.admin_auth import require_admin
+from app.auth import require_staff
 from app.config import get_settings
 from app.db import AdminDb, postgrest_errors
 from app.schemas.participant import Participant
 from app.schemas.photo import AdminPhoto
 
-router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
+router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_staff)])
 
 _PARTICIPANT_COLUMNS = (
     "id, slug, first_name, last_name, display_name, avatar_url, avatar_path, "
