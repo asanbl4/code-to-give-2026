@@ -4,7 +4,7 @@ import Hero from '../features/landing/components/Hero';
 import StatsStrip from '../features/landing/components/StatsStrip';
 import FinancialBanner from '../features/landing/components/FinancialBanner';
 import ProgrammesPreview from '../features/landing/components/ProgrammesPreview';
-import CommunityGoal from '../features/landing/components/CommunityGoal';
+import { CommunityGoalWidget } from '../app/homepage/community-goal-widget';
 import StoriesSection from '../features/landing/components/StoriesSection';
 import RecentEvents from '../features/landing/components/RecentEvents';
 import Footer from '../features/landing/components/Footer';
@@ -18,7 +18,7 @@ export default function Page() {
       <StatsStrip />
       <FinancialBanner />
       <ProgrammesPreview />
-      <CommunityGoal />
+      <CommunityGoalWidget />
       <StoriesSection />
       <RecentEvents />
       <Footer />
