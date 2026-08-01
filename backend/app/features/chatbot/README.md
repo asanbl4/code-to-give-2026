@@ -20,7 +20,7 @@ Returns `answer`, `route`, `source`, `action`, `followups`, `locale`.
 
 ## Setup
 
-    ollama pull qwen3:4b
+    ollama pull qwen3:1.7b
     ollama pull bge-m3
     uv run python -m app.features.chatbot.build_index
 
@@ -28,14 +28,31 @@ Returns `answer`, `route`, `source`, `action`, `followups`, `locale`.
 endpoint 503s and the frontend omits the launcher. A teammate without Ollama
 still gets a working site.
 
-**If the machine struggles on the day**, drop to the smaller model — no code
-change, and answers stay grounded because the corpus does the factual work:
-
-    ollama pull qwen3:1.7b
-    # backend/.env
-    CHATBOT_MODEL=qwen3:1.7b
-
 Then restart uvicorn. `--reload` watches `.py`, not `.env`.
+
+## Demo day: warm the models first
+
+Do this **before** anyone watches. Ollama unloads an idle model, and a cold load
+costs enough to push the first answer past `CHATBOT_TIMEOUT_SECONDS` — which is
+handled (you get the curated answer instead) but wastes the generated route on
+the one question someone is watching.
+
+    ollama run qwen3:1.7b "hi"     # loads the generation model
+
+Then ask the assistant one question in the browser. That loads the embedding
+model through the app, which holds both for `CHATBOT_KEEP_ALIVE` (30m default,
+well past Ollama's own 5m). Confirm with:
+
+    ollama ps
+
+**Both models must be listed at once.** If loading one evicts the other you are
+out of VRAM, and every request will thrash — embedding the question unloads the
+generation model, which then reloads from scratch and times out, so `generated`
+can never succeed. Measured on a 4GB RTX 3050: qwen3:**4b** (3.5GB) + bge-m3
+(0.66GB) exceeds 4GB and does exactly this. qwen3:**1.7b** (~1.4GB) leaves room
+for both, which is why it is the default. On a bigger GPU, `CHATBOT_MODEL=qwen3:4b`
+is a drop-in upgrade — answers stay grounded either way, because the corpus does
+the factual work.
 
 ## Editing answers (for staff)
 
@@ -62,7 +79,7 @@ and makes ungrounded numbers *more* confident. See
 Refusals (medical, safeguarding) are ordinary corpus entries with
 `is_refusal: true`. Because they are in the index they retrieve at high
 confidence and short-circuit the model completely. Retrieval as the safety
-filter beats asking a 4B model to police itself.
+filter beats asking a small local model to police itself.
 
 ## Files
 

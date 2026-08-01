@@ -7,10 +7,9 @@
 Two properties are load-bearing and are asserted in the tests:
 
 * above the floor, an `is_refusal` entry short-circuits before any generation,
-  so medical and safeguarding questions can never be answered by a 4B model.
-  Below the floor the *generic* refusal is used instead, so an off-topic
-  question does not get served the safeguarding entry it happened to rank
-  nearest;
+  so medical and safeguarding questions can never be answered by a small local
+  model. Below the floor the *generic* refusal is used instead, so an off-topic
+  question is not served the safeguarding entry it happened to rank nearest;
 * every failure path degrades to a written answer. This function does not
   raise, so the endpoint cannot 500.
 """
@@ -189,7 +188,7 @@ def build_followups(entry: Entry, entries: dict[str, Entry], locale: Locale) -> 
     """Authored next questions, resolved to their first trigger phrase.
 
     Authored rather than generated: the suggested path through the site stays
-    deliberate instead of being improvised by a 4B model.
+    deliberate instead of being improvised by a small local model.
     """
     followups: list[Followup] = []
     for followup_id in entry.followups:
