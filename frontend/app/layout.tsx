@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ChatLauncher } from "@/features/chatbot/components/ChatLauncher";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* pb-28 reserves room for the fixed launcher so it never permanently
+          covers content at the bottom of a scrolled page. It lives here rather
+          than per-page because the launcher does. */}
+      <body className="min-h-full flex flex-col pb-28">
+        {children}
+        {/* Mounted in the root layout, so the assistant is reachable from
+            every route rather than only the landing page. */}
+        <ChatLauncher />
+      </body>
     </html>
   );
 }

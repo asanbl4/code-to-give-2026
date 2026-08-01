@@ -5,7 +5,6 @@ import { postQuestion } from "../api";
 import type { Locale } from "../types";
 import { ChatPanel } from "./ChatPanel";
 import { ChatTranscript, type Turn } from "./ChatTranscript";
-import { SuggestedQuestions } from "./SuggestedQuestions";
 
 /**
  * UI chrome in both locales (#5). Answers themselves are bilingual in the
@@ -21,8 +20,7 @@ const STRINGS = {
     savedAnswers: "Answering from saved answers.",
     failed: "Sorry — I could not answer just now.",
     contact: "Talk to a person",
-    startHeading: "Try one of these",
-    nextHeading: "You could also ask",
+    greeting: "Hi! I'm the Love 21 assistant. Ask me anything about our programmes, volunteering or donating.",
     inputLabel: "Type your question",
     send: "Send",
   },
@@ -35,25 +33,10 @@ const STRINGS = {
     savedAnswers: "正使用已儲存的答案回覆。",
     failed: "抱歉——暫時無法回答。",
     contact: "與真人聯絡",
-    startHeading: "試試這些問題",
-    nextHeading: "你也可以問",
+    greeting: "你好！我是愛21的助理。有關課程、義工或捐款的問題，都可以問我。",
     inputLabel: "輸入你的問題",
     send: "傳送",
   },
-} as const;
-
-/** Exact trigger text from the corpus, so they also match without Ollama. */
-const OPENING_QUESTIONS = {
-  en: [
-    { label: "What is Love 21?", question: "what is Love 21" },
-    { label: "Who can join?", question: "who can join" },
-    { label: "Where does my money go?", question: "where does my money go" },
-  ],
-  "zh-Hant": [
-    { label: "甚麼是愛21？", question: "甚麼是愛21" },
-    { label: "誰可以參加？", question: "誰可以參加" },
-    { label: "捐款用在哪裡？", question: "捐款用在哪裡" },
-  ],
 } as const;
 
 export function ChatLauncher() {
@@ -107,12 +90,6 @@ export function ChatLauncher() {
     [pending, locale, easyRead],
   );
 
-  const lastResponse = turns[turns.length - 1]?.response ?? null;
-  const suggestions =
-    lastResponse !== null
-      ? lastResponse.followups.map((f) => ({ label: f.label, question: f.question }))
-      : [...OPENING_QUESTIONS[locale]];
-
   return (
     <>
       <button
@@ -132,13 +109,11 @@ export function ChatLauncher() {
         title={strings.title}
         closeLabel={strings.close}
       >
-        <ChatTranscript turns={turns} pending={pending} strings={strings} />
-
-        <SuggestedQuestions
-          questions={suggestions}
-          onPick={ask}
-          disabled={pending}
-          heading={turns.length === 0 ? strings.startHeading : strings.nextHeading}
+        <ChatTranscript
+          turns={turns}
+          pending={pending}
+          greeting={strings.greeting}
+          strings={strings}
         />
 
         <form

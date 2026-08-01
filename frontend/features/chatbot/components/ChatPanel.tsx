@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { ChatAvatar } from "./ChatAvatar";
 
 interface ChatPanelProps {
   open: boolean;
@@ -68,15 +69,20 @@ export function ChatPanel({
       tabIndex={-1}
       className={[
         "fixed z-50 flex flex-col overflow-hidden bg-white text-zinc-900",
-        "border border-zinc-300 shadow-lg outline-none",
+        "border border-zinc-300 shadow-xl outline-none",
         // Full-screen by default; a floating card only once there is room.
+        // Square while full-screen on purpose -- rounding against the viewport
+        // edge shows slivers of the page behind and reads as a rendering bug.
         "inset-0 rounded-none",
         "min-[37.5em]:inset-auto min-[37.5em]:bottom-24 min-[37.5em]:right-6",
-        "min-[37.5em]:h-[32rem] min-[37.5em]:w-[24rem] min-[37.5em]:rounded-xl",
+        "min-[37.5em]:h-[32rem] min-[37.5em]:w-[24rem] min-[37.5em]:rounded-3xl",
       ].join(" ")}
     >
-      <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-        <h2 className="text-base font-semibold">{title}</h2>
+      <header className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <ChatAvatar size={10} />
+          <h2 className="truncate text-base font-semibold">{title}</h2>
+        </div>
         <button
           type="button"
           onClick={() => {
