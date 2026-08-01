@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     # Cosine similarity above which SFace considers two faces the same person.
     # 0.363 is the threshold OpenCV documents for this model.
     face_match_threshold: float = 0.363
+    # --- Instagram feature -------------------------------------------------
+    # Long-lived Instagram Graph API token. When empty, the feature serves
+    # bundled sample data instead of calling Instagram (see features/instagram).
+    instagram_access_token: str | None = None
+    # Whose media to read. "me" resolves to the token's own account.
+    instagram_user_id: str = "me"
+    instagram_graph_host: str = "https://graph.instagram.com"
+    # How long a live fetch is reused before hitting Instagram again (seconds).
+    instagram_cache_ttl_seconds: int = 300
+    # How many posts to pull per live fetch.
+    instagram_fetch_count: int = 25
 
     @property
     def cors_origin_list(self) -> list[str]:
