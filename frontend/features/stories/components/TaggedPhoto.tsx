@@ -214,12 +214,6 @@ function PersonCard({
         </button>
       </div>
 
-      {person.progress_summary && (
-        <p className="mt-4 border-l-4 border-signal bg-surface py-2 pl-3 pr-2 font-bold">
-          {person.progress_summary}
-        </p>
-      )}
-
       {showFullStory && person.story && (
         <div className="mt-4 max-h-64 overflow-y-auto whitespace-pre-line border-t border-edge pt-4">
           {person.story}

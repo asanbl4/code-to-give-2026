@@ -73,7 +73,7 @@ export default async function StoriesPage() {
             Staff can add members and group photos from the admin tool. Nothing appears here until a
             member has consented and someone has confirmed their tag.
           </p>
-          <Button href="/admin/stories" className="mt-6">
+          <Button href="/admin/members" className="mt-6">
             Open the admin tool
           </Button>
         </Card>

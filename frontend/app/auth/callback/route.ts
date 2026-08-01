@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   // Where to go afterwards. Relative paths only: an absolute URL here would be
   // an open redirect, letting a crafted link bounce someone to another site
   // carrying the trust of our domain.
-  const nextParam = searchParams.get("next") ?? "/admin/stories";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/admin/stories";
+  const nextParam = searchParams.get("next") ?? "/admin/members";
+  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/admin/members";
 
   // Supabase reports a refused or expired link this way.
   const error = searchParams.get("error_description") ?? searchParams.get("error");

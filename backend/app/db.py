@@ -108,6 +108,20 @@ Db = Annotated[Client, Depends(get_db)]
 AdminDb = Annotated[Client, Depends(get_admin_db)]
 
 
+def postgrest_http_error(exc: APIError) -> HTTPException:
+    """The one place a PostgREST failure becomes an HTTP status.
+
+    Split out of `postgrest_errors` for callers that need to inspect the error
+    first -- the slug retry in `app.routers.admin` swallows one specific unique
+    violation and has to hand every other error back to this same mapping.
+    """
+    # 42501 is Postgres `insufficient_privilege` -- an RLS policy refused a
+    # write. Only reachable on writes: a denied *read* returns zero rows.
+    if exc.code == "42501":
+        return HTTPException(status.HTTP_403_FORBIDDEN, "Not permitted")
+    return HTTPException(status.HTTP_400_BAD_REQUEST, exc.message or "Database error")
+
+
 @contextmanager
 def postgrest_errors() -> Iterator[None]:
     """Turn PostgREST failures into HTTP responses.
@@ -119,8 +133,4 @@ def postgrest_errors() -> Iterator[None]:
     try:
         yield
     except APIError as exc:
-        # 42501 is Postgres `insufficient_privilege` -- an RLS policy refused a
-        # write. Only reachable on writes: a denied *read* returns zero rows.
-        if exc.code == "42501":
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "Not permitted") from exc
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, exc.message or "Database error") from exc
+        raise postgrest_http_error(exc) from exc

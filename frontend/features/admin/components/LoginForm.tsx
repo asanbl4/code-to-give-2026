@@ -69,7 +69,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
 
     // refresh() so the Server Components re-run and the layout guard sees the
     // new session; push() alone could serve a cached signed-out page.
-    router.push("/admin/stories");
+    router.push("/admin/members");
     router.refresh();
   }
 

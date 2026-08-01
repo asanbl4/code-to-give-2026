@@ -97,6 +97,24 @@ body {
 }
 
 /*
+  The modal backdrop.
+
+  Written as a literal rather than var(--color-ink): ::backdrop did not inherit
+  custom properties in Safari 16.4, which is the floor this app builds for, and
+  a backdrop that silently resolves to nothing is a modal you can see straight
+  through. This is --color-ink at 55%.
+*/
+dialog::backdrop {
+  background: rgba(51, 51, 51, 0.55);
+}
+
+/* showModal() makes the rest of the document inert but does not stop it
+   scrolling underneath. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/*
   The card that appears when you tap a face.
 
   On a phone it is a sheet pinned to the bottom of the screen: a small card
