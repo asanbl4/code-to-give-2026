@@ -69,6 +69,23 @@ with a larger model **and** a corpus broad enough that a mid-band score means
 gaps, and the corpus is still 6 seed entries. A test fails if you widen the band,
 so this stays a decision rather than a tweak.
 
+## Answering in the language asked in
+
+`locale` on the request describes the **site**, not the question — the browser
+reads it from `<html lang>`. Until the accessibility toolbar (CONTEXT §6.1)
+exists, nothing ever sets that to `zh-Hant`, so every request arrives as `en`
+and a Cantonese-first family typing Chinese was answered in English.
+
+`language.py` corrects this: a question containing two or more Han characters
+is answered in Traditional Chinese whatever the request said. The correction is
+**one-way** — an English question never overrides a stated `zh-Hant`, because
+someone who set the site to Chinese and typed "Love 21" is still a Chinese
+reader. It applies to every route, including Easy Read text, refusals, action
+labels and followups.
+
+This stays useful once the toolbar ships: a visitor can switch language just by
+asking in it.
+
 ## Setup
 
     ollama pull bge-m3

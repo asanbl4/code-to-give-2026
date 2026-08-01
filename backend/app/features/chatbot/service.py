@@ -18,7 +18,7 @@ import asyncio
 import logging
 
 from app.config import get_settings
-from app.features.chatbot import index, ollama, retrieval, splitting
+from app.features.chatbot import index, language, ollama, retrieval, splitting
 from app.features.chatbot.corpus import load_corpus
 from app.features.chatbot.models import (
     Action,
@@ -80,6 +80,12 @@ _CONTACT_ACTION = Action(
 
 async def answer_question(request: ChatRequest) -> ChatResponse:
     """Route one question. Never raises."""
+    # Correct the locale once, here, so every path below -- curated, composed,
+    # refused, the Easy Read variants -- renders in the language asked in.
+    request = request.model_copy(
+        update={"locale": language.resolve_locale(request.question, request.locale)}
+    )
+
     entries = {entry.id: entry for entry in load_corpus()}
     vector_index = index.load_index()
 

@@ -509,3 +509,18 @@ async def test_halves_are_answered_in_the_order_asked(monkeypatch, fake_ollama) 
     # The action still comes from the best-scoring part, which here is the second.
     assert response.action is not None
     assert response.action.href.startswith("/donate")
+
+
+@pytest.mark.anyio
+async def test_a_chinese_question_is_answered_in_chinese(monkeypatch, fake_ollama) -> None:
+    """The browser pins locale to "en" until the accessibility toolbar exists.
+
+    A Cantonese-first visitor typing Chinese must not be answered in English
+    because of a site-wide toggle they never saw.
+    """
+    _force_score(monkeypatch, "about-what-is-love21", 0.95)
+
+    response = await service.answer_question(ChatRequest(question="愛21是甚麼", locale="en"))
+
+    assert response.locale == "zh-Hant"
+    assert response.answer.startswith("愛21是一間香港慈善機構")
