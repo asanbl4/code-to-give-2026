@@ -68,7 +68,10 @@ export function ChatPanel({
       aria-label={title}
       tabIndex={-1}
       className={[
-        "fixed z-50 flex flex-col overflow-hidden bg-white text-zinc-900",
+        // Same layer as the launcher. At z-50 this tied with the community-goal
+        // widget and only won on DOM order, which is not something to leave a
+        // dialog depending on.
+        "fixed z-[60] flex flex-col overflow-hidden bg-white text-zinc-900",
         "border border-zinc-300 shadow-xl outline-none",
         // Full-screen by default; a floating card only once there is room.
         // Square while full-screen on purpose -- rounding against the viewport

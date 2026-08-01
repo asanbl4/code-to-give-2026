@@ -98,7 +98,17 @@ export function ChatLauncher() {
         type="button"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
         aria-expanded={open}
-        className="fixed bottom-6 right-6 z-40 flex min-h-[3rem] items-center gap-2.5 rounded-full border border-zinc-800 bg-zinc-900 py-3 pl-4 pr-6 text-base font-semibold text-zinc-50 shadow-lg hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+        // Two things about the corner this button sits in:
+        //
+        // z-[60], not z-40 -- the landing page's community-goal widget is z-50
+        // in this same corner, and at z-40 it covered the launcher completely,
+        // so the assistant could not be clicked at all on the homepage.
+        // Anything else that floats here needs to stay below 60 or say why not.
+        //
+        // --corner-stack is published by whatever already occupies the corner
+        // (currently only that widget) and is its height plus a gap. Unset
+        // everywhere else, so the fallback puts us back on bottom-6.
+        className="fixed bottom-[calc(1.5rem+var(--corner-stack,0px))] right-6 z-[60] flex min-h-[3rem] items-center gap-2.5 rounded-full border border-zinc-800 bg-zinc-900 py-3 pl-4 pr-6 text-base font-semibold text-zinc-50 shadow-lg transition-[bottom] duration-200 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 motion-reduce:transition-none"
       >
         {/* Face beside the words, never instead of them -- non-negotiable #4
             forbids icon-only controls. It inherits text-zinc-50 here. */}
