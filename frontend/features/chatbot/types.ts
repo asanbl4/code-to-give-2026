@@ -3,7 +3,7 @@
 export type Locale = "en" | "zh-Hant";
 
 /** How the answer was produced. Drives the "saved answers" note in the panel. */
-export type Route = "curated" | "generated" | "refused" | "fallback" | "composed";
+export type Route = "generated" | "refused" | "fallback";
 
 export interface Action {
   label: string;
@@ -23,7 +23,7 @@ export interface Followup {
 export interface ChatResponse {
   answer: string;
   route: Route;
-  /** Every entry quoted in `answer`. A composed answer has one per part. */
+  /** The nearest matching entry. A pointer, not a provenance claim. */
   sources: Source[];
   action: Action | null;
   followups: Followup[];

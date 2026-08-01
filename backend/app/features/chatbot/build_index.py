@@ -22,10 +22,9 @@ _PROBES = [
     ("en", "what is the weather in Tokyo"),
     ("zh-Hant", "愛21是甚麼機構"),
     ("zh-Hant", "我可以怎樣捐款"),
-    # Parts of the compound questions the splitting feature exists for, so
-    # CHATBOT_PART_CONFIDENCE stays measured rather than remembered. "how do I
-    # volunteer" is the noise probe: volunteering has no entry, so whatever it
-    # scores is the floor of what nonsense reaches. Everything else is genuine.
+    # Ordinary questions, so CHATBOT_REFUSAL_CONFIDENCE stays measured rather
+    # than remembered: these must all rank an ordinary entry top, never a
+    # refusal one. Pair them with the distress and off-topic probes above.
     ("en", "What is Love 21?"),
     ("en", "what does HK$500 fund"),
     ("en", "how much does a class cost"),

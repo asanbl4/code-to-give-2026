@@ -9,7 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Locale = Literal["en", "zh-Hant"]
-Route = Literal["curated", "generated", "refused", "fallback", "composed"]
+Route = Literal["generated", "refused", "fallback"]
 
 
 class Action(BaseModel):
@@ -103,9 +103,9 @@ class ChatResponse(BaseModel):
 
     answer: str
     route: Route
-    #: Every entry quoted in `answer`, in the order they appear. Empty for a
-    #: generic refusal. A composed answer has one per part, which is why this
-    #: is a list rather than the single source it used to be.
+    #: Where the answer came from. Empty for a generic refusal. A list rather
+    #: than one entry because a generated answer sees the whole corpus -- the
+    #: entry named here is the nearest match, a pointer, not a provenance claim.
     sources: list[Source] = Field(default_factory=list)
     action: ResolvedAction | None = None
     followups: list[Followup] = Field(default_factory=list)

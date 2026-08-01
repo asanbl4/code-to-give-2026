@@ -19,7 +19,7 @@ def stub_service(monkeypatch) -> None:
     """The routing logic has its own tests; this file is about HTTP."""
 
     async def fake_answer(request):
-        return ChatResponse(answer="stubbed", route="curated", locale=request.locale)
+        return ChatResponse(answer="stubbed", route="generated", locale=request.locale)
 
     monkeypatch.setattr(chatbot_router, "answer_question", fake_answer)
 
@@ -30,7 +30,7 @@ def test_post_returns_an_answer(api: TestClient) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["answer"] == "stubbed"
-    assert body["route"] == "curated"
+    assert body["route"] == "generated"
 
 
 def test_locale_is_passed_through(api: TestClient) -> None:

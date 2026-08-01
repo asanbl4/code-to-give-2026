@@ -21,7 +21,7 @@ if settings.chatbot_enabled:
 
 _DISABLED = (
     "The assistant is switched off. Set CHATBOT_ENABLED=true in backend/.env "
-    "and make sure Ollama is running -- see app/features/chatbot/README.md."
+    "and make sure Ollama is running -- see the Chatbot section of AGENTS.md."
 )
 
 

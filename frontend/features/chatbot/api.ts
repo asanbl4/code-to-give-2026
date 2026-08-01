@@ -1,6 +1,5 @@
+import { API_URL } from "@/lib/api";
 import type { ChatResult, Locale } from "./types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 /** Longer than the backend's own 20s cap, so the server's fallback wins first. */
 const CLIENT_TIMEOUT_MS = 25_000;
