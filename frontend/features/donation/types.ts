@@ -1,3 +1,5 @@
+import type { IconName } from "@/components/ui";
+
 export type DonationFrequency = "one-time" | "monthly";
 
 export type PresetAmount = 100 | 500 | 1000;
@@ -28,6 +30,7 @@ export interface DonationInterestOption {
   value: DonationInterest;
   label: string;
   description: string;
+  icon: IconName;
 }
 
 export interface DonationSelection {
@@ -49,4 +52,7 @@ export interface DonationSummaryDetails {
 export interface TrustTransparencyItem {
   title: string;
   description: string;
+  /** Named here rather than picked by array index, so reordering the copy
+      cannot silently reassign the pictures. */
+  icon: IconName;
 }

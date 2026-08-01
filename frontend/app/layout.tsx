@@ -18,10 +18,15 @@ const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
 });
 
+// `template` so each page contributes its own name; pages without a title fall
+// back to `default` rather than inheriting whichever page was written first.
 export const metadata: Metadata = {
-  title: "Stories — Love 21 Foundation",
+  title: {
+    default: "Love 21 Foundation",
+    template: "%s — Love 21 Foundation",
+  },
   description:
-    "Members of the Love 21 Foundation community in Hong Kong, in their own words.",
+    "Love 21 empowers the Down syndrome, autistic, and neurodiverse community in Hong Kong through sport, nutrition, and family support.",
 };
 
 export default function RootLayout({
@@ -34,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={`${atkinson.variable} ${bricolage.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

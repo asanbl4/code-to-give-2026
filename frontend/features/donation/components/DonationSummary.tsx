@@ -1,71 +1,51 @@
+import { Card, IconBadge } from "@/components/ui";
 import type { DonationSummaryDetails } from "../types";
+import { DonationDetails } from "./DonationDetails";
 
 interface DonationSummaryProps {
   details: DonationSummaryDetails;
-  customAmountError?: string;
+  hasAmountError?: boolean;
 }
 
-export function DonationSummary({ details, customAmountError }: DonationSummaryProps) {
+/** The sticky sidebar that mirrors the current selection while you edit it. */
+export function DonationSummary({ details, hasAmountError }: DonationSummaryProps) {
   return (
-    <aside
+    <Card
+      as="aside"
+      panel
+      padding="none"
+      className="overflow-hidden"
       aria-labelledby="donation-summary-heading"
       aria-live="polite"
-      className="overflow-hidden rounded-[2rem] border border-orange-200 bg-white shadow-sm"
     >
-      <div className="bg-orange-50 px-6 py-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-800">
+      <div className="bg-surface px-6 py-5">
+        <p className="font-display text-sm font-bold uppercase tracking-[0.18em] text-signal-deep">
           Your selection
         </p>
-        <h2 id="donation-summary-heading" className="mt-2 text-xl font-semibold text-zinc-950">
+        <h2 id="donation-summary-heading" className="mt-1 font-display text-xl font-bold text-ink">
           Donation summary
         </h2>
       </div>
 
-      <dl className="space-y-4 px-6 py-5 text-sm">
-        <div className="flex items-start justify-between gap-4">
-          <dt className="text-zinc-600">Frequency</dt>
-          <dd className="text-right font-medium text-zinc-950">{details.frequencyLabel}</dd>
-        </div>
-        <div className="flex items-start justify-between gap-4">
-          <dt className="text-zinc-600">Amount</dt>
-          <dd className="text-right font-medium text-zinc-950">{details.amountLabel}</dd>
-        </div>
-        {details.monthlyTotalLabel && (
-          <div className="flex items-start justify-between gap-4">
-            <dt className="text-zinc-600">12-month total</dt>
-            <dd className="text-right font-medium text-zinc-950">
-              {details.monthlyTotalLabel}
-            </dd>
-          </div>
-        )}
-        <div className="flex items-start justify-between gap-4">
-          <dt className="text-zinc-600">Support interest</dt>
-          <dd className="text-right font-medium text-zinc-950">{details.interestLabel}</dd>
-        </div>
-      </dl>
+      <DonationDetails details={details} layout="rows" className="px-6 py-5" />
 
-      {customAmountError ? (
-        <p className="mx-6 mb-6 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+      {hasAmountError ? (
+        <p className="mx-6 mb-6 rounded-card bg-danger-soft px-4 py-3 font-bold text-danger">
           Please fix the custom amount before reviewing.
         </p>
       ) : details.impactStatement ? (
-        <div className="mx-6 mb-6 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm leading-6 text-zinc-800">
-          <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-orange-700">
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
-              <path fill="currentColor" d="M12 21s-7-4.4-9.2-8.6C.9 8.8 3.3 5 7.2 5c2 0 3.6 1 4.8 2.5C13.2 6 14.8 5 16.8 5c3.9 0 6.3 3.8 4.4 7.4C19 16.6 12 21 12 21Z" />
-            </svg>
-          </span>
+        <div className="mx-6 mb-6 rounded-card bg-signal-soft px-4 py-3 leading-6 text-ink">
+          <IconBadge name="heart" className="mb-2 bg-paper" />
           <p>
-            <span className="font-semibold text-zinc-950">Verified impact: </span>
+            <span className="font-bold">Verified impact: </span>
             {details.impactStatement}
           </p>
         </div>
       ) : (
-        <p className="mx-6 mb-6 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-6 text-zinc-800">
-          Custom amounts are welcome. This prototype does not generate a custom impact
-          description.
+        <p className="mx-6 mb-6 rounded-card bg-surface px-4 py-3 leading-6 text-ink-soft">
+          Custom amounts are welcome. This prototype does not generate a custom impact description.
         </p>
       )}
-    </aside>
+    </Card>
   );
 }

@@ -1,6 +1,5 @@
+import { API_URL } from "@/lib/api";
 import type { InstagramFeed, InstagramFeedResult } from "./types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 /**
  * Fetch the Instagram feed from the backend. Runs on the server (called from a

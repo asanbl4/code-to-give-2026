@@ -1,8 +1,6 @@
+import { Card, ProgressBar, Section } from "@/components/ui";
+import { formatHkd } from "@/lib/format";
 import type { ContributionSummary, DonationImpactRecord } from "../types";
-
-function formatHkd(amount: number): string {
-  return `HK$${amount.toLocaleString("en-HK")}`;
-}
 
 interface DonationImpactSectionProps {
   donations: ReadonlyArray<DonationImpactRecord>;
@@ -13,75 +11,61 @@ export function DonationImpactSection({
   donations,
   contributionSummary,
 }: DonationImpactSectionProps) {
-  const maxDonation = Math.max(...donations.map((donation) => donation.amountHkd));
+  // `Math.max()` with no arguments is -Infinity, which turned every bar width
+  // into NaN the moment the donation list was empty.
+  const maxDonation = donations.length
+    ? Math.max(...donations.map((donation) => donation.amountHkd))
+    : 0;
+
+  const summaryRows = [
+    { term: "One-time total", value: formatHkd(contributionSummary.oneTimeTotalHkd) },
+    { term: "Monthly total", value: formatHkd(contributionSummary.monthlyTotalHkd) },
+    { term: "Monthly entries", value: String(contributionSummary.monthlyCount) },
+  ];
 
   return (
-    <section
-      aria-labelledby="donation-impact-heading"
-      className="rounded-[2rem] border border-orange-100 bg-white p-6 shadow-sm sm:p-8"
+    <Section
+      card
+      title="Donation impact"
+      description="Donation totals are grouped by supporter interest. They do not show or prove legally restricted fund allocation."
     >
-      <h2 id="donation-impact-heading" className="text-2xl font-semibold text-zinc-950">
-        Donation impact
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
-        Donation totals are grouped by supporter interest. They do not show or prove
-        legally restricted fund allocation.
-      </p>
-
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <article className="rounded-2xl bg-orange-50 p-4">
-          <h3 className="font-semibold text-zinc-950">Contribution summary</h3>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">One-time total</dt>
-              <dd className="font-semibold text-zinc-950">
-                {formatHkd(contributionSummary.oneTimeTotalHkd)}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">Monthly total</dt>
-              <dd className="font-semibold text-zinc-950">
-                {formatHkd(contributionSummary.monthlyTotalHkd)}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">Monthly entries</dt>
-              <dd className="font-semibold text-zinc-950">
-                {contributionSummary.monthlyCount}
-              </dd>
-            </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card as="article" tone="surface">
+          <h3 className="font-display text-lg font-bold text-ink">Contribution summary</h3>
+          <dl className="mt-4 space-y-3">
+            {summaryRows.map((row) => (
+              <div key={row.term} className="flex justify-between gap-4">
+                <dt className="text-ink-soft">{row.term}</dt>
+                <dd className="font-bold text-ink">{row.value}</dd>
+              </div>
+            ))}
           </dl>
-        </article>
+        </Card>
 
         <div className="space-y-3">
           {donations.map((donation) => (
-            <article key={donation.id} className="rounded-2xl border border-zinc-200 p-4">
+            <Card as="article" key={donation.id}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <h3 className="font-semibold text-zinc-950">
+                <h3 className="font-display text-lg font-bold text-ink">
                   {donation.programmeInterest}
                 </h3>
-                <p className="font-semibold text-zinc-950">{formatHkd(donation.amountHkd)}</p>
+                <p className="font-bold text-ink">{formatHkd(donation.amountHkd)}</p>
               </div>
-              <p className="mt-2 text-sm capitalize text-zinc-600">
+              <p className="mt-2 text-sm capitalize text-ink-soft">
                 {donation.contributionType.replace("-", " ")} contribution
               </p>
-              <div className="mt-3" aria-label={`${donation.programmeInterest} total ${formatHkd(donation.amountHkd)}`}>
-                <div className="flex items-center justify-between gap-3 text-xs text-zinc-600">
-                  <span>Programme-interest total</span>
-                  <span>{formatHkd(donation.amountHkd)}</span>
-                </div>
-                <div className="mt-2 h-2 rounded-full bg-orange-100">
-                  <div
-                    className="h-2 rounded-full bg-orange-500"
-                    style={{ width: `${Math.max(12, (donation.amountHkd / maxDonation) * 100)}%` }}
-                  />
-                </div>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">{donation.note}</p>
-            </article>
+              <ProgressBar
+                className="mt-3"
+                value={donation.amountHkd}
+                max={maxDonation}
+                label="Programme-interest total"
+                hint={formatHkd(donation.amountHkd)}
+              />
+              <p className="mt-2 text-sm leading-6 text-ink-soft">{donation.note}</p>
+            </Card>
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
