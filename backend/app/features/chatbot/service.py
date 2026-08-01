@@ -125,10 +125,20 @@ async def _generate(
     request: ChatRequest,
     entries: dict[str, Entry],
 ) -> ChatResponse:
-    """Compose from the top passages, falling back to the best curated answer."""
+    """Compose from the top passages, falling back to the best curated answer.
+
+    Refusal entries are withheld from the context. The corpus is small enough
+    that they land in the top few for almost any question, and handing the model
+    "call 999 in an emergency" as reference material for a donation question
+    invites it to blend crisis wording into an ordinary answer. The prompt
+    discourages that; excluding the text removes the possibility. `entry` is
+    ranked[0] and never a refusal here -- those short-circuit above -- so this
+    can never empty the context.
+    """
     passages = "\n\n".join(
         f"[{candidate.id}]\n{candidate.answer(request.locale, request.easy_read)}"
         for candidate, _ in ranked[:4]
+        if not candidate.is_refusal
     )
     system = SYSTEM_PROMPT_EN if request.locale == "en" else SYSTEM_PROMPT_ZH
     user = f"Reference passages:\n\n{passages}\n\nVisitor's question: {request.question}"

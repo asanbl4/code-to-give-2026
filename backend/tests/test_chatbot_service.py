@@ -241,3 +241,41 @@ async def test_mid_band_refusal_still_refuses_without_the_model(monkeypatch, fak
     assert response.route == "refused"
     assert response.source is not None
     assert fake_ollama.generate_calls == []
+
+
+@pytest.mark.anyio
+async def test_refusal_entries_are_not_given_to_the_model_as_context(
+    monkeypatch, fake_ollama
+) -> None:
+    """Refusal text must not be quotable material for an ordinary answer.
+
+    The corpus is small, so the top 4 passages nearly always include a refusal
+    entry. Handing the model "call 999 in an emergency" as reference material
+    for a donation question invites it to blend crisis text into a cheerful
+    answer -- the prompt discourages that, but not structurally.
+    """
+    from app.features.chatbot.corpus import load_corpus
+
+    corpus = {e.id: e for e in load_corpus()}
+    ranked = [
+        (corpus["about-who-can-join"], 0.65),
+        (corpus["refuse-distress"], 0.62),
+        (corpus["refuse-medical-advice"], 0.60),
+        (corpus["donate-what-500-funds"], 0.58),
+    ]
+
+    async def fake_rank(question, vector_index, entries):
+        return ranked
+
+    monkeypatch.setattr(service.retrieval, "rank", fake_rank)
+
+    response = await service.answer_question(ChatRequest(question="who can join in"))
+
+    assert response.route == "generated"
+    assert len(fake_ollama.generate_calls) == 1
+    _, user_prompt = fake_ollama.generate_calls[0]
+
+    assert "999" not in user_prompt
+    assert "refuse-distress" not in user_prompt
+    assert "refuse-medical-advice" not in user_prompt
+    assert "about-who-can-join" in user_prompt, "the matched entry must still be context"
