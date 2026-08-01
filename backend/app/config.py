@@ -47,11 +47,22 @@ class Settings(BaseSettings):
     ollama_host: str = "http://127.0.0.1:11434"
     chatbot_model: str = "qwen3:4b"
     chatbot_embed_model: str = "bge-m3"
+    # Both measured against real bge-m3 scores on 2026-08-01 (6 seed entries,
+    # 44 triggers) via `build_index --scores`, not guessed:
+    #
+    #   on-topic  0.956 / 0.927 / 0.926 / 0.853, and 0.657 for a question the
+    #             corpus does not yet cover (volunteering)
+    #   off-topic 0.427 ("what is the weather in Tokyo")
+    #
     # Cosine score at or above which a curated answer is returned verbatim.
+    # Nothing measured falls between 0.75 and 0.853, so this is unforced.
     chatbot_high_confidence: float = 0.75
-    # Below this, we refuse rather than guess. Tune both against real scores --
-    # see build_index.py --scores.
-    chatbot_low_confidence: float = 0.45
+    # Below this, we refuse rather than guess. 0.55 sits in the middle of the
+    # measured 0.427-0.657 gap; the original 0.45 cleared the off-topic probe
+    # by only 0.023, and bge-m3 scores run high enough that a different
+    # off-topic question would have crossed it. Re-measure once Task 11 fills
+    # the corpus out -- ~35 entries compete differently.
+    chatbot_low_confidence: float = 0.55
     # A demo must never hang: abandon generation past this and fall back.
     chatbot_timeout_seconds: float = 20.0
 

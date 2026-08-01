@@ -26,6 +26,13 @@ _PROBES = [
 
 
 async def main() -> None:
+    # A Windows console defaults to a legacy codepage (cp1251 on this box), and
+    # printing a zh-Hant probe raises UnicodeEncodeError *after* the index is
+    # written -- so the tool looked like it worked while silently never
+    # measuring the Chinese probes. Thresholds set from that output would only
+    # ever have been calibrated on English.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     print("Embedding triggers (needs Ollama running)...")
     built = await index.build_index()
     index.write_index(built)
