@@ -90,6 +90,18 @@ Supabase's built-in email sender is capped at roughly **two messages per hour**
 and the cap cannot be raised, which is fine day to day and a liability during a
 demo. Magic link remains for staff who would rather not keep a password.
 
+Every staff account starts with the password **`changeme`**. Adding a row to
+`role_allowlist` creates the account there and then, so a new admin can sign in
+immediately instead of waiting on an email. The trade-off is deliberate and
+worth saying out loud: it is one shared, published default, so anyone who knows
+a staff address and has read this repository can sign in as them. Fine for a
+demo — before this site holds anything private, give each account its own
+password:
+
+```bash
+cd backend && uv run python scripts/set_staff_password.py someone@love21foundation.com
+```
+
 **Identity and permission are separate, on purpose.** The JWT proves *who* you
 are; `public.user_roles` decides *what you may do*. A role claim inside a token
 grants nothing, because a caller can put anything in a token they mint.
@@ -102,10 +114,11 @@ grants nothing, because a caller can put anything in a token they mint.
 | `editor` | The staff tool: participants, photos, face tags |
 | `supporter` | Their own profile. The default for any new sign-up. |
 
-`public.role_allowlist` maps an email to the role it should receive. A trigger
-on `auth.users` reads it the first time that person signs in, so an address can
-be authorised before the account exists. Anyone not on the list becomes a
-`supporter` — the default has to be the harmless one.
+`public.role_allowlist` maps an email to the role it should receive, and
+inserting a row is the whole of "create a staff member": one trigger provisions
+the `auth.users` row with the default password, another grants the listed role.
+Someone who signs up on their own without being listed becomes a `supporter` —
+the default has to be the harmless one.
 
 Both tables are service-role-only for writes: `user_roles` has a select-your-own
 policy and nothing else, and `role_allowlist` has RLS on with no policies at all.
