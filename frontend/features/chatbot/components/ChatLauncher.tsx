@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { postQuestion } from "../api";
 import type { Locale } from "../types";
+import { AssistantFace } from "./AssistantFace";
 import { ChatPanel } from "./ChatPanel";
 import { ChatTranscript, type Turn } from "./ChatTranscript";
 
@@ -97,8 +98,11 @@ export function ChatLauncher() {
         type="button"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
         aria-expanded={open}
-        className="fixed bottom-6 right-6 z-40 min-h-[3rem] rounded-full border border-zinc-800 bg-zinc-900 px-6 py-3 text-base font-semibold text-zinc-50 shadow-lg hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+        className="fixed bottom-6 right-6 z-40 flex min-h-[3rem] items-center gap-2.5 rounded-full border border-zinc-800 bg-zinc-900 py-3 pl-4 pr-6 text-base font-semibold text-zinc-50 shadow-lg hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
       >
+        {/* Face beside the words, never instead of them -- non-negotiable #4
+            forbids icon-only controls. It inherits text-zinc-50 here. */}
+        <AssistantFace className="h-7 w-7" />
         {strings.launcher}
       </button>
 

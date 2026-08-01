@@ -1,29 +1,25 @@
+import { AssistantFace } from "./AssistantFace";
+
 interface ChatAvatarProps {
-  /** 8 = beside an answer, 10 = in the panel header. */
+  /** 8 = beside a message, 10 = in the panel header. */
   size?: 8 | 10;
 }
 
 /**
- * PLACEHOLDER. Swap the contents for the real asset.
+ * The assistant's avatar: its face on a light disc.
  *
- * Deliberately a styled `<div>` rather than an `<img>`: there is no approved
- * avatar art yet, and a missing-image icon in a demo is worse than a mark that
- * looks intentional. When the real one arrives, drop an `<img>`/`<Image>` in
- * here and keep the wrapper's sizing and `aria-hidden`.
- *
- * `aria-hidden` because it is decorative — the panel header already names the
- * assistant in text, and a screen reader announcing "Love 21 avatar" before
- * every answer is noise (definition of done: names announced once, not twice).
+ * White rather than tinted, with a ring: the message bubbles beside it are
+ * `bg-zinc-100`, and an avatar in the same grey would dissolve into them.
  */
 export function ChatAvatar({ size = 8 }: ChatAvatarProps) {
-  const box = size === 10 ? "h-10 w-10 text-base" : "h-8 w-8 text-sm";
+  const box = size === 10 ? "h-10 w-10" : "h-8 w-8";
+  const face = size === 10 ? "h-7 w-7" : "h-6 w-6";
 
   return (
     <div
-      aria-hidden="true"
-      className={`${box} flex shrink-0 select-none items-center justify-center rounded-full bg-zinc-900 font-semibold text-zinc-50`}
+      className={`${box} flex shrink-0 items-center justify-center rounded-full bg-white text-zinc-900 ring-1 ring-zinc-300`}
     >
-      21
+      <AssistantFace className={face} />
     </div>
   );
 }
