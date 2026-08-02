@@ -160,13 +160,27 @@ html:has(dialog[open]) {
 
 @media (min-width: 40rem) {
   .tag-card {
+    /* Named once so the clamp below and the width below it cannot disagree.
+       `100%` is the photo's own width -- the card never gets wider than the
+       picture it is pointing into. */
+    --tag-card-width: min(22rem, 100%);
+
     position: absolute;
     inset-inline: auto;
-    left: var(--anchor-x);
+    /* Clamped to half a card-width from each edge, which is exactly what the
+       `translate(-50%)` below needs to keep both edges inside the photo.
+       Without this the card is free to hang outside its own container: on
+       /stories the group photos sit two to a row, so a face near the left edge
+       would open a card lying across the neighbouring photo. `Card` sets no
+       `overflow-hidden`, so it would spill rather than clip. */
+    left: clamp(
+      calc(var(--tag-card-width) / 2),
+      var(--anchor-x),
+      calc(100% - var(--tag-card-width) / 2)
+    );
     top: var(--anchor-y);
     bottom: auto;
-    width: 22rem;
-    max-width: 90vw;
+    width: var(--tag-card-width);
     padding: 0;
   }
 

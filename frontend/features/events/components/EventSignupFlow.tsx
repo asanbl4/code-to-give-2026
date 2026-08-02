@@ -142,7 +142,14 @@ export function EventSignupFlow({ session }: { session: EventSession }) {
   if (!isOpen) {
     return (
       <div className="mt-6">
-        <Button onClick={() => setIsOpen(true)}>Apply to volunteer</Button>
+        <Button
+          onClick={() => {
+            track("event_signup_started");
+            setIsOpen(true);
+          }}
+        >
+          Apply to volunteer
+        </Button>
       </div>
     );
   }

@@ -120,7 +120,12 @@ export default async function StoriesPage() {
           >
             From our annual reports
           </h2>
-          <div className="mt-8 space-y-12">
+          {/* Two per row, but only from `lg`. The tap-a-face card is 22rem wide
+              and anchored inside the photo, so a column narrower than about
+              30rem leaves it nowhere to sit — between 640px and 1024px a
+              half-width column is exactly that. Below 640px the card is a
+              full-width bottom sheet and the photos want the whole page anyway. */}
+          <div className="mt-8 grid gap-8 lg:grid-cols-2">
             {photos.map((photo) => (
               <Card key={photo.id} panel padding="lg">
                 <TaggedPhoto photo={photo} participantsById={participantsById} />

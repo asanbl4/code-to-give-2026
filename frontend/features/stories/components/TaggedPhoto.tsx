@@ -62,8 +62,11 @@ export function TaggedPhoto({ photo, participantsById }: Props) {
   const openPerson = openFace ? participantsById.get(openFace.participant_id) : undefined;
 
   // Anchor the card to the middle of the face, and put it on whichever side has
-  // room. Clamped so a face near the edge cannot push the card off-screen.
-  const anchorX = openFace ? clamp(openFace.box_x + openFace.box_w / 2, 0.18, 0.82) : 0.5;
+  // room. Keeping it inside the photo is `.tag-card`'s job, not this one's: a
+  // fraction clamped here cannot know how wide the card renders, and the two
+  // guesses disagreed once the photos went into a two-column grid. CSS clamps
+  // against the card's real width instead.
+  const anchorX = openFace ? openFace.box_x + openFace.box_w / 2 : 0.5;
   const faceMidY = openFace ? openFace.box_y + openFace.box_h / 2 : 0.5;
   const below = faceMidY < 0.55;
   const anchorY = openFace ? (below ? openFace.box_y + openFace.box_h : openFace.box_y) : 0.5;
@@ -237,8 +240,4 @@ function PersonCard({
       )}
     </div>
   );
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
 }

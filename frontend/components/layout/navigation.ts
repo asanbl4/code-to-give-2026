@@ -20,7 +20,7 @@ export const NAV_LINKS: readonly NavLink[] = [
   { label: "Who We Are", href: "/who-we-are" },
   { label: "What We Do", href: "/what-we-do" },
   { label: "Get Involved", href: "/get-involved" },
-  { label: "News & Stories", href: "/stories" },
+  { label: "Stories", href: "/stories" },
 ];
 
 export const FOOTER_LINKS: readonly NavLink[] = [...NAV_LINKS, { label: "Donate", href: "/donate" }];
