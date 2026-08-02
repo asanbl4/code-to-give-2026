@@ -15,12 +15,21 @@ export interface RoleRoute {
   href: string;
 }
 
-/** WARNING: `/what-we-do` and `/member-portal` do not exist yet. See components/layout/navigation.ts. */
+/**
+ * WARNING: `/what-we-do` does not exist yet. See components/layout/navigation.ts.
+ *
+ * An `href` here may be off-site — members sign in on the main
+ * love21foundation.com WordPress site, which this app does not host. The Hero's
+ * "Go" button detects that from the scheme rather than from a flag on each
+ * route, so adding another external destination needs nothing but the URL.
+ */
 export const ROLE_ROUTES: readonly RoleRoute[] = [
   { value: "family", label: "Family / Parent", href: "/what-we-do" },
   { value: "supporter", label: "Supporter / Donor", href: "/get-involved" },
   { value: "corporate", label: "Corporate Partner", href: "/get-involved#csr" },
-  { value: "member", label: "Alum / Member", href: "/member-portal" },
+  // Was `/member-portal`, which has never existed — picking this role and
+  // pressing Go client-side-routed to a 404.
+  { value: "member", label: "Alum / Member", href: "https://love21foundation.com/login/" },
 ];
 
 export type HeroSlide =

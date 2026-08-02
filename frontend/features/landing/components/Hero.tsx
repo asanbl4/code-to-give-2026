@@ -19,6 +19,15 @@ const SLIDE_INTERVAL = 5500;
  */
 const TAGGED_SLIDE_INTERVAL = 30_000;
 
+/**
+ * Whether a ROLE_ROUTES href leaves this app.
+ *
+ * Read off the scheme rather than a flag on each route: a flag is something
+ * you can forget to set when adding a URL, and forgetting it would hand an
+ * absolute URL to the Next router, which is exactly the bug this replaced.
+ */
+const isExternalHref = (href: string) => /^https?:\/\//i.test(href);
+
 export function Hero() {
   const router = useRouter();
   const [role, setRole] = useState("");
@@ -200,7 +209,20 @@ export function Hero() {
             disabled={!role}
             onClick={() => {
               const target = ROLE_ROUTES.find((route) => route.value === role);
-              if (target) router.push(target.href);
+              if (!target) return;
+              // The Next router owns this app's routes and nothing else, so an
+              // off-site destination cannot go through it. Members sign in on
+              // the main love21foundation.com WordPress site, which this app
+              // does not host.
+              //
+              // New tab with noopener, the treatment every other external link
+              // in this codebase gets — and it keeps the landing page, and
+              // whatever the visitor had already picked, behind them.
+              if (isExternalHref(target.href)) {
+                window.open(target.href, "_blank", "noopener,noreferrer");
+                return;
+              }
+              router.push(target.href);
             }}
           >
             Go

@@ -17,7 +17,10 @@ export function FinancialBanner() {
               Families in our programmes are never charged a single dollar. Your donation funds
               sport, nutrition, and family support sessions directly.
             </p>
-            <Button href="/get-involved/quiz" className="mt-6">
+            {/* /quiz, not /get-involved/quiz — the latter has never existed.
+                The matching quiz is a top-level route, and get-involved's own
+                "Take the Matching Quiz" button has always pointed at it. */}
+            <Button href="/quiz" className="mt-6">
               Take a short quiz to find how you can help
             </Button>
           </div>
