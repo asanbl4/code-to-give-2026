@@ -63,8 +63,8 @@ export const INTRO_BEATS: readonly IntroBeat[] = [
 // question straight to the real chatbot (useChatConversation's `ask`) and
 // keeps the panel open, for questions that don't map to a page — e.g. "why
 // is your mascot 3 chromosomes" gets a real answer from the knowledge base
-// (see backend/app/features/chatbot/knowledge/about.yaml,
-// about-trio21-mascot) rather than a hardcoded frontend string. NOTE: that
+// (see backend/app/features/chatbot/knowledge/mascot.yaml, entry
+// mascot-trio21) rather than a hardcoded frontend string. NOTE: that
 // knowledge entry needs `uv run python -m app.features.chatbot.build_index`
 // (with Ollama running) before the bot can actually retrieve it — I don't
 // have that toolchain in this environment, so it's written but not yet
