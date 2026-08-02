@@ -84,6 +84,46 @@ export type AnalyticsSummary = {
   top_pages: AnalyticsKeyCount[];
   top_events: AnalyticsKeyCount[];
   devices: AnalyticsKeyCount[];
+export type VolunteerApplicationStatus =
+  | "submitted"
+  | "under_review"
+  | "account_pending"
+  | "onboarding"
+  | "assistant_approved"
+  | "coach_assessment"
+  | "trial_pending"
+  | "coach_approved"
+  | "rejected"
+  | "withdrawn";
+
+export type AdminVolunteerApplication = {
+  application_id: string;
+  reference: string;
+  session_id: string;
+  submitted_at: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  age_group: "14-15" | "16-17" | "18-plus";
+  volunteer_role: "assistant" | "coach";
+  interest: string;
+  note: string;
+  status: VolunteerApplicationStatus;
+  receipt_status: "queued" | "sent" | "failed";
+  terms_acknowledged: boolean;
+  scrc_status: "not_required" | "pending" | "verified" | "rejected";
+  identity_verified: boolean;
+  guardian_documents_verified: boolean;
+  trial_status: "not_required" | "pending" | "passed" | "not_suitable";
+  staff_notes: string;
+  auth_user_id: string | null;
+  account_invited_at: string | null;
+  approved_at: string | null;
+};
+
+export type VolunteerLinkResult = {
+  application: AdminVolunteerApplication;
+  delivery: "linked";
 };
 
 export class AdminError extends Error {
@@ -198,4 +238,18 @@ export const admin = {
 
   analyticsSummary: (days: number) =>
     request<AnalyticsSummary>(`/api/admin/analytics/summary?days=${days}`),
+  listVolunteerApplications: () =>
+    request<AdminVolunteerApplication[]>("/api/admin/volunteers/applications"),
+
+  updateVolunteerApplication: (id: string, body: Record<string, unknown>) =>
+    request<AdminVolunteerApplication>(`/api/admin/volunteers/applications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+
+  linkVolunteer: (id: string) =>
+    request<VolunteerLinkResult>(`/api/admin/volunteers/applications/${id}/link`, {
+      method: "POST",
+    }),
 };

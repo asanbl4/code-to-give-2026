@@ -171,7 +171,10 @@ These two cannot be scripted; do them in the dashboard once.
    - Site URL: `http://localhost:3000`
    - Redirect URLs: add `http://localhost:3000/auth/callback`
      (and your deployed origin's `/auth/callback` when you have one)
-2. **Auth → Providers → Email**: enabled, "Confirm email" on.
+2. **Auth → Providers → Email**: enabled. For the hackathon volunteer portal,
+   turn **Confirm email off** so an application can create a password account
+   without using Supabase's built-in email sender. In production, configure
+   custom SMTP and turn confirmation back on to verify address ownership.
 
 Then set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 in `frontend/.env.local` (see `.env.local.example`), and sign in at
@@ -181,9 +184,9 @@ in `frontend/.env.local` (see `.env.local.example`), and sign in at
 
 - **The built-in email sender is rate-limited** — roughly two messages an hour,
   and the cap cannot be raised. A refused send still consumes an attempt. The
-  form holds the button for 60s after each try and explains a 429 rather than
-  showing a raw error, but the real answer is to use a password, or configure
-  custom SMTP (Auth → SMTP Settings) if you want magic links to be dependable.
+  volunteer portal avoids it by using passwords. Configure custom SMTP (Auth →
+  SMTP Settings) if you want staff magic links or verified volunteer addresses
+  to be dependable.
 - **Before a demo, sign in beforehand.** Sessions persist through the refresh
   token, so a browser signed in the night before needs no email at all.
 - **The link must be opened in the browser that requested it.** PKCE stores a

@@ -66,7 +66,9 @@ class FakeQuery:
         self.limit_value = count
         return self
 
-    def insert(self, payload: dict[str, Any] | list[dict[str, Any]]) -> "FakeQuery":
+    def insert(
+        self, payload: dict[str, Any] | list[dict[str, Any]], **_kwargs: Any
+    ) -> "FakeQuery":
         self.operation = "insert"
         self.written = payload
         return self

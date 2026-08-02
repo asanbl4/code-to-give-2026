@@ -36,9 +36,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-12 sm:px-8">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
-        {/* Not "Stories admin" any more: the tool now also reports site
-            traffic, which is not a story about anybody. */}
-        <h1 className="font-display text-4xl font-bold text-ink">Love 21 admin</h1>
+        <h1 className="font-display text-4xl font-bold text-ink">Love 21 staff admin</h1>
         <div className="flex items-center gap-3">
           {user.email && <span className="text-sm text-ink-soft">{user.email}</span>}
           <SignOutButton />

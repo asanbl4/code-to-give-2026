@@ -17,15 +17,16 @@ export async function GET(request: NextRequest) {
   // carrying the trust of our domain.
   const nextParam = searchParams.get("next") ?? "/admin/members";
   const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/admin/members";
+  const loginPath = next.startsWith("/volunteer") ? "/volunteer/login" : "/admin/login";
 
   // Supabase reports a refused or expired link this way.
   const error = searchParams.get("error_description") ?? searchParams.get("error");
   if (error) {
-    return NextResponse.redirect(`${origin}/admin/login?error=${encodeURIComponent(error)}`);
+    return NextResponse.redirect(`${origin}${loginPath}?error=${encodeURIComponent(error)}`);
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/admin/login?error=${encodeURIComponent("That link is missing its sign-in code.")}`);
+    return NextResponse.redirect(`${origin}${loginPath}?error=${encodeURIComponent("That link is missing its sign-in code.")}`);
   }
 
   const supabase = await createClient();
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   if (exchangeError) {
     return NextResponse.redirect(
-      `${origin}/admin/login?error=${encodeURIComponent(
+      `${origin}${loginPath}?error=${encodeURIComponent(
         "That sign-in link has expired or was already used. Please request a new one.",
       )}`,
     );

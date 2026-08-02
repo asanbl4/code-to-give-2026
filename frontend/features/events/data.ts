@@ -8,7 +8,8 @@ export const eventSessions: EventSession[] = [
     startsAt: "2026-08-08T10:00:00+08:00",
     endsAt: "2026-08-08T11:30:00+08:00",
     location: "Happy Valley Recreation Ground",
-    capacityLabel: "8 volunteer spots left",
+    capacityLabel: "8 volunteers needed",
+    eligibleAgeGroups: ["16-17", "18-plus"],
   },
   {
     id: "creative-club",
@@ -17,7 +18,8 @@ export const eventSessions: EventSession[] = [
     startsAt: "2026-08-15T14:00:00+08:00",
     endsAt: "2026-08-15T15:30:00+08:00",
     location: "Sheung Wan Community Studio",
-    capacityLabel: "6 volunteer spots left",
+    capacityLabel: "6 volunteers needed",
+    eligibleAgeGroups: ["14-15", "16-17", "18-plus"],
   },
   {
     id: "family-wellbeing",
@@ -26,6 +28,7 @@ export const eventSessions: EventSession[] = [
     startsAt: "2026-08-22T09:30:00+08:00",
     endsAt: "2026-08-22T11:00:00+08:00",
     location: "Kowloon Bay Youth Centre",
-    capacityLabel: "10 volunteer spots left",
+    capacityLabel: "10 volunteers needed",
+    eligibleAgeGroups: ["14-15", "16-17", "18-plus"],
   },
 ];

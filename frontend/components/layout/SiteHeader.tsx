@@ -182,7 +182,7 @@ export function SiteHeader() {
             <img
               src="/images/love21-logo.png"
               alt="Love 21 Foundation"
-              style={{ height: "168px", width: "auto" }}
+              className="h-20 w-auto sm:h-[168px]"
             />
           </Link>
           <MascotHeaderBadge />
@@ -210,7 +210,7 @@ export function SiteHeader() {
             // viewport — on a phone it would measure 375px while its children
             // overflowed it, and report a fit that isn't one.
             "flex w-max shrink-0 flex-col items-end gap-2",
-            !inlineNav && "pointer-events-none invisible absolute left-0 top-0",
+            !inlineNav && "pointer-events-none invisible fixed left-0 top-0",
           )}
         >
           <div className="flex items-center gap-3">
