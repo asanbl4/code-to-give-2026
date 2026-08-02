@@ -47,8 +47,9 @@ export function MascotHeaderBadge() {
         onClick={openFaq}
         aria-haspopup="dialog"
         aria-expanded={faqOpen}
+
         aria-label="Open Love 21 helper — quick links and chat"
-        className="block h-48 w-48 shrink-0 p-0 transition hover:scale-105"
+        className="block h-24 w-24 shrink-0 p-0 transition hover:scale-105 sm:h-48 sm:w-48"
       >
         {/*
           Scale stays small (0.55) — only the CSS container grew 3x
@@ -72,7 +73,7 @@ export function MascotHeaderBadge() {
         // overlapping them.
         <p
           aria-live="polite"
-          className="pointer-events-none absolute left-1/2 top-1 w-56 -translate-x-1/2 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold leading-snug text-ink shadow-lift ring-1 ring-edge"
+          className="pointer-events-none absolute left-1/2 top-1 hidden w-56 -translate-x-1/2 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold leading-snug text-ink shadow-lift ring-1 ring-edge sm:block"
         >
           {IDLE_CHATTER[chatterIndex].text}
         </p>

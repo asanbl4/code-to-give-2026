@@ -20,8 +20,11 @@ export function buildGoogleCalendarUrl(session: EventSession): string {
   const end = formatIcsTimestamp(session.endsAt);
 
   url.searchParams.set("action", "TEMPLATE");
-  url.searchParams.set("text", session.title);
-  url.searchParams.set("details", session.summary);
+  url.searchParams.set("text", `Reminder: ${session.title}`);
+  url.searchParams.set(
+    "details",
+    `${session.summary}\n\nVolunteer interest reminder only. This does not confirm a place. Love 21 will contact you after onboarding and eligibility checks.`,
+  );
   url.searchParams.set("location", session.location);
   url.searchParams.set("dates", `${start}/${end}`);
 
@@ -41,8 +44,9 @@ export function buildIcsFile(session: EventSession): { filename: string; content
       "CALSCALE:GREGORIAN",
       "BEGIN:VEVENT",
       `UID:${session.id}@code-to-give.local`,
-      `SUMMARY:${escapeIcsText(session.title)}`,
-      `DESCRIPTION:${escapeIcsText(session.summary)}`,
+      `SUMMARY:${escapeIcsText(`Reminder: ${session.title}`)}`,
+      "STATUS:TENTATIVE",
+      `DESCRIPTION:${escapeIcsText(`${session.summary}\n\nVolunteer interest reminder only. This does not confirm a place. Love 21 will contact you after onboarding and eligibility checks.`)}`,
       `LOCATION:${escapeIcsText(session.location)}`,
       `DTSTART:${start}`,
       `DTEND:${end}`,
