@@ -28,7 +28,7 @@ export function StoriesSection() {
         <InstagramGallery limit={12} />
 
         <div className="mt-6">
-          <Button href="/news-stories" variant="secondary">
+          <Button href="/stories" variant="secondary">
             See all stories →
           </Button>
         </div>
