@@ -134,7 +134,7 @@ const ChromosomeCharacter = forwardRef<ChromosomeCharacterHandle, ChromosomeChar
       if (!group) return;
 
       // ---- Idle loop: bob, sway, breathe ----
-      if (runtime.idleEnabled && !runtime.reducedMotion) {
+      if (!runtime.reducedMotion) {
         group.position.y = position[1] + Math.sin(t * BOB_SPEED + phase) * BOB_AMPLITUDE;
         group.rotation.z = Math.sin(t * SWAY_SPEED + phase) * SWAY_AMPLITUDE;
         const breathe = 1 + Math.sin(t * BREATHE_SPEED + phase) * BREATHE_AMPLITUDE;
@@ -147,7 +147,7 @@ const ChromosomeCharacter = forwardRef<ChromosomeCharacterHandle, ChromosomeChar
 
       // ---- Blink (idle loop, so also skipped under reduced motion) ----
       const blink = blinkState.current;
-      if (!runtime.reducedMotion && runtime.idleEnabled && blink.blinkStart === null && t >= blink.nextBlinkAt) {
+      if (!runtime.reducedMotion && blink.blinkStart === null && t >= blink.nextBlinkAt) {
         blink.blinkStart = t;
       }
       let blinkFactor = 1;

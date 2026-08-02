@@ -15,7 +15,7 @@ import { IDLE_CHATTER, IDLE_CHATTER_INTERVAL_MS } from '../data';
 import { useMascot } from '../MascotContext';
 
 export function MascotHeaderBadge() {
-  const { phase, faqOpen, openFaq } = useMascot();
+  const { phase, faqOpen, openFaq, badgeRef } = useMascot();
   const cornerTrioRef = useRef<ChromosomeTrioHandle>(null);
   const [chatterIndex, setChatterIndex] = useState(0);
 
@@ -42,11 +42,13 @@ export function MascotHeaderBadge() {
   return (
     <div className={faqOpen ? 'invisible relative shrink-0' : 'relative shrink-0'}>
       <button
+        ref={badgeRef}
         type="button"
         onClick={openFaq}
         aria-haspopup="dialog"
         aria-expanded={faqOpen}
-        aria-label="Open Love 21 helper"
+
+        aria-label="Open Love 21 helper — quick links and chat"
         className="block h-24 w-24 shrink-0 p-0 transition hover:scale-105 sm:h-48 sm:w-48"
       >
         {/*

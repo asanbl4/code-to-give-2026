@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { Hand } from "lucide-react";
 import type { Participant, Photo } from "@/lib/api";
 
 type Props = {
@@ -164,15 +165,20 @@ export function TaggedPhoto({ photo, participantsById }: Props) {
         )}
       </div>
 
-      {photo.caption && (
-        <figcaption className="mt-3 text-ink-soft">{photo.caption}</figcaption>
-      )}
-      {photo.faces.length > 0 && (
-        <p className="mt-1 text-sm text-ink-soft">
-          {photo.faces.length === 1
-            ? "Tap the highlighted face to meet them."
-            : `Tap any of the ${photo.faces.length} highlighted faces.`}
-        </p>
+      {(photo.caption || photo.faces.length > 0) && (
+        <figcaption className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {photo.caption && <span className="leading-relaxed text-ink-soft">{photo.caption}</span>}
+          {photo.faces.length > 0 && (
+            /* A pill rather than a grey sentence: this is the instruction the
+               whole page depends on, and it was being read as a caption. */
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/20 bg-signal-soft px-3 py-1 text-xs font-bold uppercase tracking-wider text-signal-deep">
+              <Hand className="h-3.5 w-3.5 stroke-[2]" aria-hidden="true" />
+              {photo.faces.length === 1
+                ? "Tap the highlighted face"
+                : `Tap any of the ${photo.faces.length} highlighted faces`}
+            </span>
+          )}
+        </figcaption>
       )}
     </figure>
   );

@@ -29,6 +29,29 @@
   height: 680px;
   overflow: hidden;
   background: var(--color-surface);
+
+  /* Makes this the query container the face-tag geometry below measures
+     against. Safe to contain: the height is the fixed value right above and
+     the width comes from the block flow, so nothing here is sized by its
+     contents. */
+  container-type: size;
+
+  /*
+    The rectangle `background-size: cover` actually paints the photo into.
+
+    Face boxes are fractions of the whole photograph, so they only land on the
+    right faces if they are positioned against the whole photograph — cropped
+    edges included. Cover scales the image up until it covers both axes, which
+    for a 4:3 source is: whichever is larger, the frame's width or the height
+    scaled out to 4:3. Then it is centred, which is what the `50%` offsets in
+    the rules below undo.
+
+    Hardcoded to this photo's 2560x1920. A second tagged slide would need its
+    own ratio; there is one, so it does not.
+  */
+  --hero-photo-w: max(100cqw, 100cqh * 4 / 3);
+  --hero-photo-h: calc(var(--hero-photo-w) * 3 / 4);
+  --hero-card-w: min(22rem, 100cqw - 1.5rem);
 }
 
 .hero-carousel-track {
@@ -85,6 +108,104 @@
   font-weight: 700;
   line-height: 1.1;
   text-wrap: balance;
+}
+
+/*
+  The hardcoded face-tagging demo on the first slide. See
+  `components/HeroFaceTags.tsx` and `HERO_FACE_TAGS` in `data.ts`.
+
+  Sits after the overlay in the DOM so its markers take clicks: the overlay is
+  `inset: 0` and would otherwise swallow every tap meant for a face.
+*/
+.hero-face-layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  width: var(--hero-photo-w);
+  height: var(--hero-photo-h);
+  transform: translate(-50%, -50%);
+  /* The layer is deliberately larger than the frame — the parts of the photo
+     cover crops away are in here too. Only the markers should take pointer
+     events, never this box. */
+  pointer-events: none;
+}
+
+.hero-face-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  /* A face in a group photo is small; a tap target is not allowed to be.
+     44px is the WCAG target-size minimum, and because the marker is centred on
+     the face it grows around it rather than sliding off it. */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 3px solid rgb(255 255 255 / 0.85);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.06);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: hero-face-pulse 2.6s ease-in-out infinite;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.hero-face-marker:hover {
+  border-color: var(--color-highlight);
+  background: rgb(250 221 64 / 0.18);
+}
+
+.hero-face-marker--open {
+  border-color: var(--color-highlight);
+  background: rgb(250 221 64 / 0.22);
+  animation: none;
+}
+
+/* Nobody looks for a tappable face unless something moves. Killed wholesale by
+   the prefers-reduced-motion block in globals.css. */
+@keyframes hero-face-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(250 221 64 / 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgb(250 221 64 / 0);
+  }
+}
+
+/*
+  The story card.
+
+  A child of the slide rather than of the layer, so its `50%` offsets resolve
+  against the visible frame and the `clamp` can keep it on screen. `--face-cx`
+  and `--face-cy` are set inline by the component: the horizontal centre and
+  the bottom edge of the open face, as fractions of the photograph.
+*/
+.hero-face-card {
+  position: absolute;
+  z-index: 4;
+  width: var(--hero-card-w);
+  left: clamp(
+    calc(var(--hero-card-w) / 2 + 0.75rem),
+    calc(50% + (var(--face-cx) - 0.5) * var(--hero-photo-w)),
+    calc(100% - var(--hero-card-w) / 2 - 0.75rem)
+  );
+  top: calc(50% + (var(--face-cy) - 0.5) * var(--hero-photo-h) + 0.75rem);
+  transform: translateX(-50%);
+}
+
+.hero-face-hint {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.25rem;
+  z-index: 3;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.92);
+  padding: 0.4rem 0.9rem;
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
 }
 
 .hero-carousel-arrow {
@@ -159,5 +280,18 @@
 
   .hero-carousel-overlay {
     padding: 1.5rem;
+  }
+
+  /*
+    A card tethered to a face does not fit under a 500px-tall frame, so on a
+    phone it becomes a sheet pinned above the dots instead -- the same trade
+    `.tag-card` makes in globals.css, for the same reason. It covers the faces
+    while it is open; on a screen this size that is the better of the two
+    problems.
+  */
+  .hero-face-card {
+    left: 50%;
+    top: auto;
+    bottom: 4.25rem;
   }
 }

@@ -1,4 +1,5 @@
-// Mirrors backend/app/features/chatbot/models.py. Keep the two in sync.
+// The wire shapes mirror backend/app/features/chatbot/models.py. Keep the two
+// in sync. Everything below the divider is ours alone.
 
 export type Locale = "en" | "zh-Hant";
 
@@ -34,3 +35,27 @@ export interface ChatResponse {
 export type ChatResult =
   | { ok: true; response: ChatResponse }
   | { ok: false; error: string };
+
+// ---------------------------------------------------------------------------
+// UI-side types. Not part of the API contract.
+// ---------------------------------------------------------------------------
+
+/** One question and whatever came back for it — an answer, or a failure. */
+export interface Turn {
+  question: string;
+  response: ChatResponse | null;
+  error: string | null;
+}
+
+/** The chrome around the answers, per locale. Values live in `data.ts`. */
+export interface ChatStrings {
+  title: string;
+  you: string;
+  thinking: string;
+  savedAnswers: string;
+  failed: string;
+  contact: string;
+  greeting: string;
+  inputLabel: string;
+  send: string;
+}

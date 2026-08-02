@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, type Target, type Transition } from "motion/react";
 import { cn } from "@/lib/cn";
 import "./RotatingText.css";
@@ -13,10 +13,30 @@ import "./RotatingText.css";
  * were the bulk of the file. Add them back if a caller ever needs them.
  *
  * Two fixes to the original's motion, both explained in RotatingText.css: the
- * word now animates inside an `overflow: hidden` slot sized by a hidden copy of
- * the longest word. Before that the exiting characters flew up over the
- * headline and the box collapsed between words.
+ * word now animates inside an `overflow: hidden` slot sized by hidden copies of
+ * the words. Before that the exiting characters flew up over the headline and
+ * the box collapsed between words.
+ *
+ * ## Why this component knows about Google Translate
+ *
+ * The animation needs one `<span>` per character, and Google's page translator
+ * treats every one of those as a standalone word to translate. Measured: `o`
+ * became `這` / `Die` / `the`, `i` became `我` / `ich` / `in`, `e` became `和` /
+ * `Und` / `and`. So "play" rendered as "plaand" and "thrive" as "thr我在和",
+ * and the wider mangled text then overflowed the slot and got clipped.
+ *
+ * The animated characters and the sizer are therefore marked `translate="no"`,
+ * which puts them out of the translator's reach entirely. To keep the word
+ * translated anyway, the list is read back out of the screen-reader copy below,
+ * which is a single ordinary text node and so translates cleanly.
  */
+
+/**
+ * Comma, ideographic comma (CJK), and fullwidth comma — the separators Google
+ * returns for a comma-joined list depending on the target language. zh-TW comes
+ * back as "玩耍、烹飪、茁壯、貢獻", German as "spielen, kochen, gedeihen, beitragen".
+ */
+const LIST_SEPARATOR = /[,、，]\s*/;
 
 type StaggerFrom = "first" | "last" | "center" | "random";
 
@@ -57,16 +77,52 @@ export function RotatingText({
 }: RotatingTextProps) {
   const [index, setIndex] = useState(0);
 
-  const characters = useMemo(() => splitIntoCharacters(texts[index] ?? ""), [texts, index]);
+  // The words actually shown. Normally `texts`; once Google Translate has
+  // rewritten the screen-reader copy, the translated equivalents read back out
+  // of it. Null means "nothing usable yet", not "no words".
+  const [translated, setTranslated] = useState<string[] | null>(null);
+  const source = useRef<HTMLSpanElement>(null);
 
-  // Reserves the slot's width. Without it the box collapses to nothing in the
-  // frame between the old word unmounting and the new one mounting, and the
-  // whole headline shifts. Longest by character count is close enough — the
-  // sizer only has to be no narrower than the widest word.
-  const longest = useMemo(
-    () => texts.reduce((widest, text) => (text.length > widest.length ? text : widest), ""),
-    [texts],
-  );
+  useEffect(() => {
+    const node = source.current;
+    if (!node) return;
+
+    const read = () => {
+      const parts = (node.textContent ?? "")
+        .split(LIST_SEPARATOR)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      // A different count means the translation merged or split entries and the
+      // words can no longer be matched up positionally. Falling back to English
+      // is worse than a translated word but far better than a wrong one.
+      const next = parts.length === texts.length ? parts : null;
+
+      setTranslated((previous) => {
+        if (previous === null && next === null) return previous;
+        if (
+          previous !== null &&
+          next !== null &&
+          previous.length === next.length &&
+          previous.every((word, position) => word === next[position])
+        ) {
+          // Same words: bail out rather than hand React a new array every time
+          // the translator touches the subtree.
+          return previous;
+        }
+        return next;
+      });
+    };
+
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(node, { characterData: true, childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [texts]);
+
+  const words = translated ?? texts;
+
+  const characters = useMemo(() => splitIntoCharacters(words[index] ?? ""), [words, index]);
 
   const getStaggerDelay = useCallback(
     (position: number, total: number) => {
@@ -103,12 +159,31 @@ export function RotatingText({
         600ms ahead of what was actually on screen. "Ability to play, cook,
         thrive, contribute" is the sentence this heading means anyway.
       */}
-      <span className="text-rotate-sr-only">{texts.join(", ")}</span>
-      <span aria-hidden="true" className="text-rotate-sizer">
-        {longest}
+      <span ref={source} className="text-rotate-sr-only">
+        {texts.join(", ")}
       </span>
+
+      {/*
+        Reserves the slot. Every word is rendered, stacked in one grid cell, so
+        the slot is as wide as the widest word *as actually rendered* — a
+        translated word can be far wider than the longest English one (zh-TW
+        needed 303px where the English sizer reserved 180px), and picking a
+        single word by character count cannot see that. `translate="no"` because
+        this now holds words this component already translated.
+      */}
+      <span aria-hidden="true" translate="no" className="notranslate text-rotate-sizer">
+        {words.map((word, position) => (
+          <span key={position}>{word}</span>
+        ))}
+      </span>
+
       <AnimatePresence mode="wait" initial={false}>
-        <motion.span key={index} className="text-rotate-group" aria-hidden="true">
+        <motion.span
+          key={index}
+          className="notranslate text-rotate-group"
+          aria-hidden="true"
+          translate="no"
+        >
           {characters.map((character, position) => (
             <motion.span
               key={position}

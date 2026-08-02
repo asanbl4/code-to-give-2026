@@ -1,44 +1,51 @@
-import { Card, Section } from "@/components/ui";
-import { cn } from "@/lib/cn";
 import type { ProfileActivity } from "../types";
 
-export function RecentActivitySection({
-  activities,
-}: {
+interface RecentActivitySectionProps {
   activities: ReadonlyArray<ProfileActivity>;
-}) {
+}
+
+export function RecentActivitySection({ activities }: RecentActivitySectionProps) {
   return (
-    <Section
-      card
-      title="Recent activity"
-      description="Recent giving and volunteering activity linked to this supporter profile."
+    <section
+      aria-labelledby="recent-activity-heading"
+      className="rounded-[2rem] border border-edge bg-paper p-5 shadow-sm sm:p-6"
     >
-      <ul>
+      <h2 id="recent-activity-heading" className="text-2xl font-semibold text-ink">
+        Recent activity
+      </h2>
+      <p className="mt-3 text-sm leading-6 text-ink-soft">
+        Recent giving and volunteering activity linked to this supporter profile.
+      </p>
+
+      <ul className="mt-6 space-y-0">
         {activities.map((activity) => (
-          <li key={activity.id} className="relative border-l-2 border-edge pb-6 pl-6 last:pb-0">
-            <span className="absolute -left-[9px] top-0 flex h-4 w-4 rounded-full bg-paper ring-2 ring-edge">
-              <span
-                className={cn(
-                  "m-auto h-2 w-2 rounded-full",
-                  activity.kind === "donation" ? "bg-signal" : "bg-positive",
+          <li key={activity.id} className="relative grid gap-3 border-l-2 border-edge pb-5 pl-7 last:pb-0">
+            <span className={`absolute -left-[17px] top-0 flex h-8 w-8 rounded-full bg-paper ring-2 ${
+              activity.kind === "donation" ? "text-signal-deep ring-signal/25" : "text-positive ring-positive/40"
+            }`}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="m-auto h-4 w-4">
+                {activity.kind === "donation" ? (
+                  <path fill="currentColor" d="M12 21s-7-4.4-9.2-8.6C.9 8.8 3.3 5 7.2 5c2 0 3.6 1 4.8 2.5C13.2 6 14.8 5 16.8 5c3.9 0 6.3 3.8 4.4 7.4C19 16.6 12 21 12 21Z" />
+                ) : (
+                  <path fill="currentColor" d="M12 4a4 4 0 0 1 4 4v2h1a3 3 0 0 1 3 3v6h-2v-6a1 1 0 0 0-1-1h-1v2h-2V8a2 2 0 0 0-4 0v6H8v-2H7a1 1 0 0 0-1 1v6H4v-6a3 3 0 0 1 3-3h1V8a4 4 0 0 1 4-4Z" />
                 )}
-              />
+              </svg>
             </span>
-            <Card as="article" tone="surface">
+            <article className="rounded-2xl border border-edge bg-surface/70 p-4 transition duration-200 hover:bg-paper hover:shadow-sm motion-reduce:transition-none">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-soft">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">
                     {activity.kind}
                   </p>
-                  <h3 className="mt-2 font-display text-lg font-bold text-ink">{activity.title}</h3>
+                  <h3 className="mt-2 font-semibold text-ink">{activity.title}</h3>
                 </div>
-                <p className="font-bold text-ink-soft">{activity.dateLabel}</p>
+                <p className="text-sm font-medium text-ink-soft">{activity.dateLabel}</p>
               </div>
-              <p className="mt-3 leading-6 text-ink-soft">{activity.description}</p>
-            </Card>
+              <p className="mt-3 text-sm leading-6 text-ink-soft">{activity.description}</p>
+            </article>
           </li>
         ))}
       </ul>
-    </Section>
+    </section>
   );
 }

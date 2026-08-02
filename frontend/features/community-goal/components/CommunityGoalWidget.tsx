@@ -1,55 +1,28 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import { Button, Card, ProgressBar } from "@/components/ui";
 import { formatHkd } from "@/lib/format";
 import { communityGoalWidgetContent } from "../data";
-
-/** Breathing room between this card and whatever stacks on top of it. */
-const STACK_GAP_PX = 12;
 
 /**
  * The floating "community goal" card pinned to the bottom of the landing page.
  * Minimisable, because a fixed panel that cannot be dismissed is a trap on a
  * small screen.
  *
- * This card shares the bottom-right corner with the chat launcher, which lives
- * in the root layout and knows nothing about this page. So rather than the two
- * hard-coding offsets against each other, this one publishes the space it
- * occupies as `--corner-stack` on <html> and the launcher sits above it. The
- * measurement is live, so minimising the card drops the launcher back down
- * instead of leaving it floating over nothing.
+ * This card used to share the corner with the chat launcher and published its
+ * own height as `--corner-stack` so the launcher could sit above it. The
+ * assistant moved into the mascot's header overlay, so it has the corner to
+ * itself and that measurement machinery is gone. Anything new that floats here
+ * needs to negotiate with this card again.
  */
 export function CommunityGoalWidget() {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const titleId = useId();
   const content = communityGoalWidgetContent;
-  const shellRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const node = shellRef.current;
-    if (!node) return;
-
-    const root = document.documentElement;
-    const publish = () =>
-      root.style.setProperty("--corner-stack", `${node.offsetHeight + STACK_GAP_PX}px`);
-
-    publish();
-    const observer = new ResizeObserver(publish);
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-      // Leave nothing behind: every other route wants the launcher in the corner.
-      root.style.removeProperty("--corner-stack");
-    };
-  }, []);
 
   return (
-    <aside
-      ref={shellRef}
-      className="fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:right-6 sm:bottom-6"
-    >
+    <aside className="fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:right-6 sm:bottom-6">
       {isMinimized ? (
         <Button
           variant="secondary"
@@ -110,7 +83,7 @@ export function CommunityGoalWidget() {
             </p>
           </div>
 
-          <Button href="/donate" block className="mt-5">
+          <Button href="/donate" variant="donate" block className="mt-5">
             {content.ctaLabel}
           </Button>
 
