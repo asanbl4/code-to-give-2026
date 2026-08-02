@@ -1,15 +1,20 @@
 /**
  * The site's navigation, in one place, used by both the header and the footer.
  *
- * WARNING — some of these routes do not exist yet. `/who-we-are`,
- * `/what-we-do` and `/get-involved/quiz` all 404 today. They are left in place
- * because removing them was not part of this refactor's brief, but they are now
- * declared here rather than being retyped in four components, so deleting or
- * repointing them is a one-line change.
+ * WARNING — some of these routes do not exist yet. `/who-we-are` and
+ * `/what-we-do` both 404 today. They are left in place because removing them
+ * was not part of this refactor's brief, but they are now declared here rather
+ * than being retyped in four components, so deleting or repointing them is a
+ * one-line change.
  *
- * `/member-portal` used to be listed here too, as the hero's role picker's
- * "Alum / Member" destination. It never existed; that picker now sends members
- * to the login on the main love21foundation.com site — see features/landing/data.ts.
+ * Two dead routes that used to be listed here have been repointed rather than
+ * left to 404, and neither is referenced anywhere any more:
+ *
+ * - `/member-portal`, the hero role picker's "Alum / Member" destination. Now
+ *   the login on the main love21foundation.com site — see features/landing/data.ts.
+ * - `/get-involved/quiz`, the landing page's "take a short quiz" button. The
+ *   matching quiz is the top-level `/quiz` — see features/landing/components/
+ *   FinancialBanner.tsx.
  *
  * `/events` is a real, finished page that nothing in the navigation points at.
  */
