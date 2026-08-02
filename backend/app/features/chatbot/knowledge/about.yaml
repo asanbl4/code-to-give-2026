@@ -1,0 +1,76 @@
+# What Love 21 is and who it serves.
+# Every answer needs EN + 繁體中文 + both Easy Read variants and a source.
+# Numbers are {{ tokens }} from content/impact-stats.yaml -- never literals.
+
+- id: about-what-is-love21
+  tags: [about]
+  triggers_en:
+    - "what is Love 21"
+    - "what does Love 21 do"
+    - "tell me about this charity"
+    - "who are you"
+    - "what do you do"
+  triggers_zh:
+    - "甚麼是愛21"
+    - "愛21是做甚麼的"
+    - "這個機構是做甚麼的"
+  answer_en: >
+    Love 21 is a Hong Kong charity for the Down syndrome, autistic and
+    neurodiverse community. We run free sport, nutrition, family-support and
+    enrichment programmes — {{ activity_types }} types of activity,
+    {{ days_per_week }} days a week, supporting {{ families_supported }}
+    families.
+  answer_zh: >
+    愛21是一間香港慈善機構，服務唐氏綜合症、自閉症及神經多樣性社群。我們提供免費
+    的運動、營養、家庭支援及才能發展課程——共{{ activity_types }}種活動類型，
+    每週{{ days_per_week }}天開放，支援{{ families_supported }}個家庭。
+  easy_read_en: >
+    Love 21 is a charity in Hong Kong.
+    We run free classes for people with Down syndrome and autistic people.
+    We do sport, food and fun activities.
+  easy_read_zh: >
+    愛21是香港的慈善機構。
+    我們為唐氏綜合症人士和自閉症人士提供免費課程。
+    我們有運動、飲食和有趣的活動。
+  action:
+    label_en: "See our programmes"
+    label_zh: "查看我們的課程"
+    href: "/programmes"
+  followups: [about-who-can-join, volunteer-how-to-start]
+  source: client-provided
+
+- id: about-who-can-join
+  tags: [about, joining]
+  triggers_en:
+    - "who can join"
+    - "can my child join"
+    - "am I eligible"
+    - "is it only for Down syndrome"
+  triggers_zh:
+    - "誰可以參加"
+    - "我的孩子可以參加嗎"
+    - "是否只限唐氏綜合症人士"
+  answer_en: >
+    Our programmes are for people with Down syndrome, autistic people, and the
+    wider neurodiverse community, along with their families. Everything is free
+    to members. The best next step is to get in touch and tell us a little about
+    who would be joining.
+  answer_zh: >
+    我們的課程服務唐氏綜合症人士、自閉症人士及更廣泛的神經多樣性社群，以及他們的
+    家人。所有課程對成員均為免費。下一步最好是聯絡我們，簡單告訴我們參加者的情況。
+  easy_read_en: >
+    People with Down syndrome can join.
+    Autistic people can join.
+    Families can join too.
+    It is free.
+  easy_read_zh: >
+    唐氏綜合症人士可以參加。
+    自閉症人士可以參加。
+    家人也可以參加。
+    這是免費的。
+  action:
+    label_en: "Get in touch"
+    label_zh: "聯絡我們"
+    href: "/contact"
+  followups: [about-what-is-love21]
+  source: client-provided

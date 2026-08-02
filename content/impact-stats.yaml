@@ -1,0 +1,61 @@
+# Single source of truth for every number shown on the site (CONTEXT.md §4).
+# Four sources disagree; these are the client's deck figures, pending
+# reconciliation with staff (CONTEXT.md §9 question 1).
+#
+# `key` is what {{ tokens }} in the chatbot corpus reference.
+stats:
+  - key: families_supported
+    value: "680+"
+    label_en: "families supported"
+    label_zh: "個受支援家庭"
+    source: love21-deck-2026
+    as_of: "2026-07"
+    confidence: client-provided, pending reconciliation
+
+  - key: activities_per_month
+    value: "900+"
+    label_en: "activities every month"
+    label_zh: "每月活動"
+    source: love21-deck-2026
+    as_of: "2026-07"
+    confidence: client-provided, pending reconciliation
+
+  - key: activity_types
+    value: "90+"
+    label_en: "types of activity"
+    label_zh: "種活動類型"
+    source: love21-deck-2026
+    as_of: "2026-07"
+    confidence: client-provided, pending reconciliation
+
+  - key: volunteer_hours_per_month
+    value: "500+"
+    label_en: "volunteer hours a month"
+    label_zh: "每月義工時數"
+    source: love21-deck-2026
+    as_of: "2026-07"
+    confidence: client-provided, pending reconciliation
+
+  - key: days_per_week
+    value: "7"
+    label_en: "days a week"
+    label_zh: "每週開放日數"
+    source: love21-deck-2026
+    as_of: "2026-07"
+    confidence: client-provided, pending reconciliation
+
+  - key: hkd_per_class
+    value: "500"
+    label_en: "HK dollars funds one class"
+    label_zh: "港幣資助一堂課"
+    source: love21-fundraising-material
+    as_of: "2026-07"
+    confidence: client-provided
+
+  - key: class_capacity
+    value: "15"
+    label_en: "members per class"
+    label_zh: "每堂課成員人數"
+    source: love21-fundraising-material
+    as_of: "2026-07"
+    confidence: client-provided

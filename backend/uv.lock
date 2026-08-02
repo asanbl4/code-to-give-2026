@@ -51,12 +51,14 @@ dependencies = [
     { name = "pyjwt", extra = ["crypto"] },
     { name = "python-dotenv" },
     { name = "python-multipart" },
+    { name = "pyyaml" },
     { name = "supabase" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "anyio" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -71,12 +73,14 @@ requires-dist = [
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.9" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "python-multipart", specifier = ">=0.0.9" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "supabase", specifier = ">=2.11" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "anyio", specifier = ">=4.14.2" },
     { name = "pytest", specifier = ">=8" },
     { name = "ruff", specifier = ">=0.8" },
 ]

@@ -37,9 +37,11 @@
 
   /* The one accent that means "this is the action". Change --color-signal and
      the whole site follows; that is the entire point of routing every page
-     through these names instead of literal Tailwind palettes. */
-  --color-signal: #db2140;
-  --color-signal-deep: #b3122d;
+     through these names instead of literal Tailwind palettes.
+     Tuned to match the ChromosomeTrio mascot's own front-character red
+     (#C81E3D) so the two pieces of work read as one palette. */
+  --color-signal: #c81e3d;
+  --color-signal-deep: #9c1730;
   --color-signal-soft: #fdecef;
 
   /* A warmer berry treatment reserved for the donation CTA. */
@@ -67,6 +69,8 @@
   /* Two radii, so cards on different pages cannot drift apart. */
   --radius-card: 1.25rem;
   --radius-panel: 2rem;
+  /* Buttons: squared-off with a light round, not a pill. */
+  --radius-button: 0.625rem;
 
   --shadow-card: 0 1px 2px rgba(51, 51, 51, 0.08);
   --shadow-lift: 0 18px 45px -12px rgba(51, 51, 51, 0.3);
@@ -165,13 +169,16 @@ html:has(dialog[open]) {
   }
 }
 
-.handwritten-button {
+.donate-button {
   position: relative;
   isolation: isolate;
   font-family: var(--font-handwritten), var(--font-atkinson), sans-serif;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.025em;
   border-radius: 52% 48% 51% 49% / 45% 52% 48% 55%;
+  background: var(--color-donate);
+  color: var(--color-paper);
+  box-shadow: 0 3px 0 var(--color-donate-deep);
   transform: rotate(-0.2deg);
   transition:
     color 160ms ease,
@@ -181,19 +188,16 @@ html:has(dialog[open]) {
     transform 160ms ease;
 }
 
-.handwritten-button:not(:disabled):hover {
+.donate-button:hover {
+  background: var(--color-donate-deep);
   transform: translateY(-1px) rotate(0.15deg);
 }
 
-.handwritten-button:not(:disabled):active {
+.donate-button:active {
   transform: translateY(1px) rotate(-0.1deg);
 }
 
-.handwritten-button--filled {
-  box-shadow: 0 3px 0 var(--color-signal-deep);
-}
-
-.handwritten-button--filled::after {
+.donate-button::after {
   content: "";
   position: absolute;
   inset: 3px;
@@ -201,32 +205,6 @@ html:has(dialog[open]) {
   border-radius: inherit;
   opacity: 0.55;
   pointer-events: none;
-}
-
-.handwritten-button--outline {
-  box-shadow: 1px 2px 0 var(--color-surface-deep);
-}
-
-.handwritten-button--outline::after {
-  content: "";
-  position: absolute;
-  inset: 2px -2px -2px 1px;
-  border: 1px solid currentColor;
-  border-radius: inherit;
-  opacity: 0.12;
-  transform: rotate(0.6deg);
-  pointer-events: none;
-}
-
-.donate-button {
-  background: var(--color-donate);
-  color: var(--color-paper);
-  font-weight: 700;
-  box-shadow: 0 3px 0 var(--color-donate-deep);
-}
-
-.donate-button:hover {
-  background: var(--color-donate-deep);
 }
 
 .donate-button svg {
