@@ -182,7 +182,10 @@ export function SiteHeader() {
             <img
               src="/images/love21-logo.png"
               alt="Love 21 Foundation"
-              className="h-20 w-auto sm:h-[168px]"
+              // Kept just under the mascot badge's height (the other half of
+              // what sets the bar's height, in MascotHeaderBadge) so the
+              // wordmark and the mascot read as a pair rather than competing.
+              className="h-20 w-auto sm:h-[98px]"
             />
           </Link>
           <MascotHeaderBadge />
