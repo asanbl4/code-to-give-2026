@@ -1,0 +1,62 @@
+# What Love 21's members have done, and the News & Stories page that carries
+# it. Kept out of about.yaml (what the charity is, who can join) because this
+# is about the members themselves rather than the organisation.
+#
+# The answer describes the KIND of milestone and how a story gets published --
+# deliberately never a specific member's achievement. Naming one here would be
+# an unsourced claim about a real person, and consent is withdrawable at any
+# time: /stories reads from the database and drops a story the moment consent
+# goes, whereas a name written into this corpus would keep being said aloud by
+# the chatbot long after it came down. The button is the answer to "what did
+# they accomplish" -- send people to the live page, do not mirror it here.
+#
+# zh below is a first-pass draft, not a professional/native review -- flag for
+# someone fluent to check before this ships, same as mascot.yaml.
+
+- id: stories-member-milestones
+  tags: [about, stories, members]
+  triggers_en:
+    - "what did the members accomplish"
+    - "what have the members achieved"
+    - "member stories"
+    - "success stories"
+    - "what have people achieved at Love 21"
+    - "tell me about your members"
+    - "can I read member stories"
+  triggers_zh:
+    - "成員有甚麼成就"
+    - "成員故事"
+    - "有沒有成功故事"
+    - "介紹一下你們的成員"
+    - "我可以閱讀成員的故事嗎"
+  answer_en: >
+    Our members set their own goals across our sport, nutrition,
+    family-support and enrichment programmes, and the ones who want to share
+    what they have achieved write it up in their own words — with them, never
+    about them. You can read those milestones on our News & Stories page: tap
+    a highlighted face in any group photo and that member's story opens right
+    where they are standing. Every story there is shared with the member's
+    written permission.
+  answer_zh: >
+    我們的成員在運動、營養、家庭支援及才能發展課程中訂立自己的目標；願意分享成果
+    的成員會用自己的文字寫下他們的故事——與他們一起書寫，而不是代他們書寫。你可以
+    在「最新消息及故事」頁面閱讀這些里程碑：輕觸任何合照中有標示的臉孔，該成員的
+    故事就會在他們所站的位置展開。頁面上每個故事都經成員書面同意才會分享。
+  easy_read_en: >
+    Our members do sport, food and other classes.
+    Many of them are proud of what they have done.
+    They write their own stories in their own words.
+    You can read the stories on our News and Stories page.
+    Tap a face in a photo to meet that person.
+  easy_read_zh: >
+    我們的成員參加運動、飲食和其他課程。
+    很多成員為自己做到的事感到自豪。
+    他們用自己的文字寫下自己的故事。
+    你可以在「最新消息及故事」頁面閱讀這些故事。
+    輕觸相片中的臉孔，就可以認識那位成員。
+  action:
+    label_en: "Read our members' stories"
+    label_zh: "閱讀成員故事"
+    href: "/stories"
+  followups: [about-who-can-join, volunteer-how-to-start]
+  source: client-provided
