@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
-import { FLY_TO_CORNER_TRANSFORM } from '../flyAnimation';
+import { FLY_TO_CORNER_TRANSFORM, mascotStageClass } from '../overlay';
 import { INTRO_BEATS } from '../data';
 import { useMascot } from '../MascotContext';
 
@@ -35,10 +35,7 @@ export function MascotIntroOverlay() {
 
   return (
     <div
-      className={cn(
-        'fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 px-4 transition-colors duration-700',
-        flying ? 'pointer-events-none bg-transparent backdrop-blur-none' : 'bg-ink/45 backdrop-blur-sm',
-      )}
+      className={cn(mascotStageClass(!flying), 'flex-col gap-6 px-4')}
       role={flying ? undefined : 'dialog'}
       aria-label={flying ? undefined : 'Welcome to Love 21 Foundation'}
     >
