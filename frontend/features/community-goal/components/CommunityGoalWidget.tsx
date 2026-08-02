@@ -21,7 +21,7 @@ const STACK_GAP_PX = 12;
  * instead of leaving it floating over nothing.
  */
 export function CommunityGoalWidget() {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const titleId = useId();
   const content = communityGoalWidgetContent;
   const shellRef = useRef<HTMLElement>(null);
