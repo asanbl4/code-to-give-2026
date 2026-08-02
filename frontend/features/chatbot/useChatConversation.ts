@@ -13,6 +13,23 @@ interface ChatConversation {
 }
 
 /**
+ * Traditional Chinese, however `features/i18n` spells it.
+ *
+ * The backend answers in two locales; the language picker offers about forty,
+ * as Google Translate codes, and writes the chosen one to `<html lang>`. It
+ * says `zh-TW` where this feature says `zh-Hant`, so match on the script rather
+ * than the exact tag — otherwise choosing 繁體中文 quietly falls through to the
+ * English corpus and machine-translates it, when staff-written Chinese was
+ * sitting right there. That matters most for the refusal entries, where the
+ * wording is deliberate.
+ *
+ * Simplified (`zh-CN`, `zh-Hans`) and bare `zh` are intentionally not matched:
+ * the corpus has no Simplified text, so English-then-translated is the honest
+ * fallback.
+ */
+const TRADITIONAL_CHINESE = /^zh-(Hant|TW|HK|MO)/i;
+
+/**
  * One conversation: the turns so far, and how to add to them.
  *
  * Extracted from the old floating launcher so the state does not belong to any
@@ -27,11 +44,12 @@ export function useChatConversation(): ChatConversation {
   const [easyRead, setEasyRead] = useState(false);
 
   // Inherit the site's language and Easy Read setting rather than owning our
-  // own. The accessibility toolbar (CONTEXT §6.1) sets these on <html>.
+  // own. The accessibility toolbar (CONTEXT §6.1) and the i18n language picker
+  // both write to <html>, so watching it is how this stays in step with either.
   useEffect(() => {
     const root = document.documentElement;
     const read = () => {
-      setLocale(root.lang === "zh-Hant" ? "zh-Hant" : "en");
+      setLocale(TRADITIONAL_CHINESE.test(root.lang) ? "zh-Hant" : "en");
       setEasyRead(root.dataset.easyRead === "true");
     };
     read();
