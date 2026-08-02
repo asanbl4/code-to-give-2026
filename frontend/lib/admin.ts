@@ -49,6 +49,43 @@ export type AdminPhoto = {
   faces: AdminFace[];
 };
 
+/** One day on the traffic charts. */
+export type AnalyticsDayPoint = {
+  day: string;
+  visits: number;
+  page_views: number;
+};
+
+/** A ranked row: a page, an interaction, or a device class. */
+export type AnalyticsKeyCount = {
+  key: string;
+  events: number;
+  visits: number;
+  /** Mean visible seconds per page view. Null for anything but a page. */
+  avg_seconds: number | null;
+};
+
+/**
+ * `visits`, not "unique visitors" — a session id dies with the browser tab, so
+ * the same person tomorrow is a second visit. The backend names it honestly and
+ * so does the dashboard.
+ */
+export type AnalyticsSummary = {
+  days: number;
+  start_day: string;
+  end_day: string;
+  visits: number;
+  page_views: number;
+  avg_seconds: number | null;
+  busiest_day: string | null;
+  previous_visits: number;
+  previous_page_views: number;
+  per_day: AnalyticsDayPoint[];
+  top_pages: AnalyticsKeyCount[];
+  top_events: AnalyticsKeyCount[];
+  devices: AnalyticsKeyCount[];
+};
+
 export class AdminError extends Error {
   constructor(
     message: string,
@@ -158,4 +195,7 @@ export const admin = {
 
   /** Throw away a detection box. Rejecting one keeps it; this does not. */
   deleteFace: (id: string) => request<void>(`/api/admin/faces/${id}`, { method: "DELETE" }),
+
+  analyticsSummary: (days: number) =>
+    request<AnalyticsSummary>(`/api/admin/analytics/summary?days=${days}`),
 };

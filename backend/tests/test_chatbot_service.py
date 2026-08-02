@@ -113,7 +113,7 @@ async def test_a_low_scoring_question_still_reaches_the_model(monkeypatch, fake_
 async def test_refusal_entries_are_not_given_to_the_model_as_context(
     monkeypatch, fake_ollama
 ) -> None:
-    """"Call 999 in an emergency" must not be quotable material for a donation
+    """ "Call 999 in an emergency" must not be quotable material for a donation
     question -- the safeguarding check owns those questions outright."""
     _force_score(monkeypatch, "donate-what-500-funds", 0.92)
 
@@ -149,9 +149,7 @@ async def test_a_self_harm_question_never_reaches_the_model(monkeypatch, fake_ol
 
 
 @pytest.mark.anyio
-async def test_a_refusal_below_the_top_does_not_hijack_the_answer(
-    monkeypatch, fake_ollama
-) -> None:
+async def test_a_refusal_below_the_top_does_not_hijack_the_answer(monkeypatch, fake_ollama) -> None:
     """Only the TOP match can refuse.
 
     Scanning the whole ranked list was tried and shipped a real bug: some
@@ -179,7 +177,7 @@ async def test_a_refusal_below_the_top_does_not_hijack_the_answer(
 async def test_a_compound_question_with_a_medical_half_still_refuses(
     monkeypatch, fake_ollama
 ) -> None:
-    """"what do you do and is my child autistic" ranks refuse-medical-advice
+    """ "what do you do and is my child autistic" ranks refuse-medical-advice
     top at 0.851, so top-only checking still catches it."""
     _force_score(monkeypatch, "refuse-medical-advice", 0.851)
 
@@ -319,9 +317,7 @@ async def test_easy_read_reaches_the_prompt(monkeypatch, fake_ollama) -> None:
     no curated text being returned verbatim any more."""
     _force_score(monkeypatch, "donate-what-500-funds", 0.92)
 
-    await service.answer_question(
-        ChatRequest(question="where does my money go", easy_read=True)
-    )
+    await service.answer_question(ChatRequest(question="where does my money go", easy_read=True))
 
     _system, user = fake_ollama.generate_calls[0]
     assert "HK$500 pays for one class." in user

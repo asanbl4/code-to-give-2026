@@ -21,6 +21,7 @@ import type {
 import { DonationProgress } from "./DonationProgress";
 import { DonationReview } from "./DonationReview";
 import { DonationSummary } from "./DonationSummary";
+import { track } from "@/features/analytics";
 import { DonationThankYou } from "./DonationThankYou";
 
 function formatHkd(amount: number): string {
@@ -250,6 +251,10 @@ export function DonationExperience() {
   }
 
   function updatePresetAmount(presetAmount: PresetAmount) {
+    // The chosen figure is not recorded, only that a choice was made. Which
+    // preset a visitor picked would be interesting; it is also the beginning of
+    // a profile, and this table holds none.
+    track("donate_amount_selected");
     setSelection((current) => ({ ...current, amountMode: "preset", presetAmount }));
   }
 
@@ -280,6 +285,9 @@ export function DonationExperience() {
   }
 
   function handleComplete() {
+    // Reaching the thank-you step. This flow does not take payment, so this
+    // counts intent to give, not money received -- do not read it as revenue.
+    track("donate_completed");
     setStep("thank-you");
     focusHeading(thankYouHeadingRef);
   }

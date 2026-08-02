@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Button } from "@/components/ui";
+import { track } from "@/features/analytics";
 import type { ChatStrings } from "../types";
 
 interface ChatComposerProps {
@@ -29,6 +30,11 @@ export function ChatComposer({ pending, strings, onAsk }: ChatComposerProps) {
       onSubmit={(event) => {
         event.preventDefault();
         if (!draft.trim() || pending) return;
+        // The question itself is never recorded — only that one was asked.
+        // What a parent types into a chatbot on a Down syndrome charity's site
+        // can be extraordinarily sensitive, and a count answers "is anyone
+        // using this" without holding any of it.
+        track("chatbot_message_sent");
         onAsk(draft);
         setDraft("");
       }}

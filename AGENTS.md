@@ -245,6 +245,49 @@ fabrication so far has been on a topic with no entry behind it, so coverage is
 the mitigation, not prompt wording: a stricter prompt was tried and made it
 worse. This is a deliberate trade made on 2026-08-01, not an oversight.
 
+## Analytics
+
+Anonymous traffic counting. `POST /api/analytics/events` (public) ingests;
+`GET /api/admin/analytics/summary?days=` (staff) reports; `/admin/analytics`
+draws it. Design doc: `docs/superpowers/specs/2026-08-02-analytics-design.md`.
+
+**Nothing here identifies a visitor** — no IP, no user id, no cookie. A
+`session_id` is a random uuid in `sessionStorage` and dies with the tab. That is
+why the dashboard says *visits*, not "unique visitors": the same person tomorrow
+is a second session, so summing daily sessions counts visits and nothing
+stronger can honestly be claimed.
+
+`analytics_events` and `analytics_daily` have **RLS enabled with no policies at
+all**. Deliberate, and the opposite of a missing policy: the publishable key is
+in the browser bundle, so a permissive insert policy would let anyone forge rows
+and a select policy would publish the traffic log. Both directions go through
+the API with the service role instead, which is why the ingest endpoint
+validates every field itself.
+
+`<AnalyticsTracker />` is mounted in `PageShell`, and that placement is the
+whole staff-traffic exclusion — `/admin/*` and the auth screens don't use the
+shell. Don't add a path blocklist; keep the boundary where it is.
+
+Four things that will cost time if you forget them:
+
+- **The event allowlist is duplicated** in `frontend/features/analytics/events.ts`
+  and `backend/app/features/analytics/events.py`. Adding an event means both,
+  plus exactly one `track()` call site. An entry with no caller reads as "nobody
+  does this" rather than "nobody wired this up".
+- **`revoke execute ... from anon, authenticated` does nothing.** Postgres grants
+  `EXECUTE` to `PUBLIC` on every new function and both roles inherit it. It has
+  to be `revoke ... from public`. This was shipped wrong once — see migration
+  `20260802101500`.
+- **Days are Hong Kong days.** `current_date` is UTC on Supabase, which would run
+  a "day" from 08:00 to 08:00 local and split an evening in two.
+- **Dev counts are inflated.** StrictMode double-invokes the tracker's effect and
+  Fast Refresh remounts it on every save, so editing the site generates page
+  views. Production mounts once.
+
+`analytics_rollup(day)` is idempotent; the dashboard re-runs it for today on
+every load, and `pg_cron` (`analytics-nightly`, 16:30 UTC) settles yesterday and
+prunes raw events past 90 days.
+
 ## Tests
 
 `uv run pytest` from `backend/`. They run offline — `FakeDb` in

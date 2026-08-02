@@ -33,6 +33,7 @@ class FakeQuery:
         self.table_name = table
         self.filters: list[tuple[str, Any]] = []
         self.in_filters: list[tuple[str, list[Any]]] = []
+        self.range_filters: list[tuple[str, str, Any]] = []
         self.orders: list[tuple[str, bool]] = []
         self.limit_value: int | None = None
         self.written: list[dict[str, Any]] | dict[str, Any] | None = None
@@ -43,6 +44,14 @@ class FakeQuery:
 
     def eq(self, column: str, value: Any) -> "FakeQuery":
         self.filters.append((column, value))
+        return self
+
+    def gte(self, column: str, value: Any) -> "FakeQuery":
+        self.range_filters.append((column, "gte", value))
+        return self
+
+    def lte(self, column: str, value: Any) -> "FakeQuery":
+        self.range_filters.append((column, "lte", value))
         return self
 
     def in_(self, column: str, values: list[Any]) -> "FakeQuery":
@@ -84,6 +93,15 @@ class FakeQuery:
             for row in self._rows
             if all(row.get(column) == value for column, value in self.filters)
             and all(row.get(column) in values for column, values in self.in_filters)
+            and all(
+                # Compared as strings, which is what PostgREST puts on the wire
+                # and what the analytics rows hold for `day` -- ISO dates sort
+                # correctly either way.
+                (str(row.get(column)) >= str(value))
+                if operator == "gte"
+                else (str(row.get(column)) <= str(value))
+                for column, operator, value in self.range_filters
+            )
         ]
         if self.operation == "update":
             rows = [{**row, **(self.written or {})} for row in rows]
@@ -93,23 +111,27 @@ class FakeQuery:
 
 
 class FakeResponse:
-    def __init__(self, data: list[dict[str, Any]]) -> None:
+    def __init__(self, data: Any) -> None:
+        # Rows for a table query, but whatever the function returned for an rpc.
         self.data = data
 
 
 class FakeRpc:
-    def __init__(self, rows: list[dict[str, Any]]) -> None:
-        self._rows = rows
+    def __init__(self, result: Any) -> None:
+        self._result = result
 
     def execute(self) -> "FakeResponse":
-        return FakeResponse(self._rows)
+        return FakeResponse(self._result)
 
 
 class FakeDb:
     def __init__(
         self,
         rows_by_table: dict[str, list[dict[str, Any]]],
-        rpc_results: dict[str, list[dict[str, Any]]] | None = None,
+        # Not `list[dict]`: a set-returning function gives rows, but a scalar one
+        # like `analytics_today()` gives PostgREST a bare value, and `.data` is
+        # then that value rather than a list containing it.
+        rpc_results: dict[str, Any] | None = None,
     ) -> None:
         self._rows_by_table = rows_by_table
         self._rpc_results = rpc_results or {}

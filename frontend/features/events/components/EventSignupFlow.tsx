@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card } from "@/components/ui";
+import { track } from "@/features/analytics";
 import { formatTimestamp } from "@/lib/format";
 import { buildGoogleCalendarUrl, buildIcsFile } from "../calendar";
 import type { EventSession, EventSignupResult } from "../types";
@@ -81,7 +82,14 @@ export function EventSignupFlow({ session }: { session: EventSession }) {
   if (!isOpen) {
     return (
       <div className="mt-6">
-        <Button onClick={() => setIsOpen(true)}>Sign up</Button>
+        <Button
+          onClick={() => {
+            track("event_signup_started");
+            setIsOpen(true);
+          }}
+        >
+          Sign up
+        </Button>
       </div>
     );
   }

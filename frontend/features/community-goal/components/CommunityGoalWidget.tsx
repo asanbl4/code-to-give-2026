@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Button, Card, ProgressBar } from "@/components/ui";
+import { track } from "@/features/analytics";
 import { formatHkd } from "@/lib/format";
 import { communityGoalWidgetContent } from "../data";
 
@@ -83,7 +84,13 @@ export function CommunityGoalWidget() {
             </p>
           </div>
 
-          <Button href="/donate" variant="donate" block className="mt-5">
+          <Button
+            href="/donate"
+            variant="donate"
+            block
+            className="mt-5"
+            onClick={() => track("community_goal_contributed")}
+          >
             {content.ctaLabel}
           </Button>
 

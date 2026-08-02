@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { AnalyticsTracker } from "@/features/analytics";
 import { MascotProvider } from "@/features/mascot/MascotContext";
 import { MascotFaqOverlay } from "@/features/mascot/components/MascotFaqOverlay";
 import { MascotIntroOverlay } from "@/features/mascot/components/MascotIntroOverlay";
@@ -29,6 +30,10 @@ const WIDTHS = {
  * layout, so the Love 21 mascot (its header badge in SiteHeader, its intro
  * overlay below) rides along on every real content page but stays off the
  * bare admin/auth screens that don't use PageShell.
+ *
+ * `AnalyticsTracker` is here for the same reason and gets the same benefit:
+ * staff doing consent admin are not visitors, and mounting the tracker at this
+ * boundary excludes them without anyone maintaining a list of paths to ignore.
  */
 export function PageShell({ children, width = "wide", className }: PageShellProps) {
   return (
@@ -43,6 +48,7 @@ export function PageShell({ children, width = "wide", className }: PageShellProp
       </div>
       <MascotIntroOverlay />
       <MascotFaqOverlay />
+      <AnalyticsTracker />
     </MascotProvider>
   );
 }

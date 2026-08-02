@@ -21,6 +21,14 @@ export function SiteFooter() {
         <p className="mt-2 text-sm text-ink-soft">
           © {new Date().getFullYear()} Love 21 Foundation, Hong Kong
         </p>
+        {/* Said plainly, and said even though nothing here is personal data
+            under the PDPO — no IP address, no account, no cookie, nothing that
+            outlives the tab. A charity asking families to trust it with a great
+            deal more than a page view should not be quietly counting them. */}
+        <p className="mt-2 text-sm text-ink-soft">
+          We count anonymous page visits to see which pages help. No personal
+          data is collected.
+        </p>
       </div>
     </footer>
   );
