@@ -8,6 +8,7 @@
 // overlay and the header badge agree on when the intro is (or isn't) active.
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
 import { FLY_TO_CORNER_TRANSFORM } from '../flyAnimation';
@@ -83,16 +84,17 @@ export function MascotIntroOverlay() {
           </p>
 
           {currentBeat.cta && (
-            <button
-              type="button"
+            <Button
+              variant="donate"
+              size="lg"
               onClick={() => {
                 finishIntro();
                 router.push(currentBeat.cta!.href);
               }}
-              className="rounded-full bg-signal px-7 py-3 text-lg font-bold text-white shadow-lift transition hover:bg-signal-deep"
+              className="rounded-full shadow-lift"
             >
               {currentBeat.cta.label}
-            </button>
+            </Button>
           )}
         </>
       )}

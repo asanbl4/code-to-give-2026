@@ -45,8 +45,8 @@
   --color-signal-soft: #fdecef;
 
   /* A warmer berry treatment reserved for the donation CTA. */
-  --color-donate: #c72d5c;
-  --color-donate-deep: #a91f48;
+  --color-donate: #ec4899;
+  --color-donate-deep: #be185d;
 
   /* Attention without alarm: pending review, earned badges, things to notice. */
   --color-highlight: #fadd40;
@@ -120,6 +120,26 @@ dialog::backdrop {
    scrolling underneath. */
 html:has(dialog[open]) {
   overflow: hidden;
+}
+
+/* Child-drawn edge decorations for public pages. This lives outside <main>,
+   so the art stays fixed while content scrolls and remains out of admin. */
+.page-doodle-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/images/handdrawn-page-doodles.png");
+  background-position: center 12rem;
+  background-repeat: no-repeat;
+  background-size: 135vw auto;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  .page-doodle-backdrop {
+    background-size: clamp(80rem, 112vw, 120rem) auto;
+  }
 }
 
 /*

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger" | "donate";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -14,6 +14,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "handwritten-button--quiet text-ink-soft hover:bg-surface hover:text-ink",
   danger:
     "handwritten-button--outline border-2 border-danger bg-paper text-danger hover:bg-danger-soft",
+  donate: "bg-donate text-white hover:bg-donate-deep",
 };
 
 const SIZES: Record<ButtonSize, string> = {

@@ -141,7 +141,12 @@ export function SiteHeader() {
                 {link.label}
               </Button>
             ))}
-            <Button href="/donate" size="lg" className="donate-button ml-2">
+            <Button
+              href="/donate"
+              variant="donate"
+              size="lg"
+              className="donate-button ml-2"
+            >
               Donate
               <Heart aria-hidden="true" size={22} strokeWidth={2.8} />
             </Button>
@@ -171,6 +176,7 @@ export function SiteHeader() {
             ))}
             <Button
               href="/donate"
+              variant="donate"
               size="lg"
               className="donate-button"
               onClick={() => setMenuOpen(false)}
