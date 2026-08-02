@@ -1,7 +1,10 @@
-import { Tag } from "@/components/ui";
-import { cn } from "@/lib/cn";
-import { formatHkd } from "@/lib/format";
-import type { LeaderboardEntry, RecognitionCategory, VolunteerLeaderboardEntry } from "../types";
+import type { GivingLeaderboardEntry, RecognitionCategory, VolunteerLeaderboardEntry } from "../types";
+
+type LeaderboardEntry = VolunteerLeaderboardEntry | GivingLeaderboardEntry;
+
+function formatHkd(amount: number): string {
+  return `HK$${amount.toLocaleString("en-HK")}`;
+}
 
 function isVolunteerEntry(entry: LeaderboardEntry): entry is VolunteerLeaderboardEntry {
   return entry.category === "volunteer";
@@ -14,52 +17,74 @@ interface LeaderboardRowProps {
 }
 
 export function LeaderboardRow({ category, entry, labelPrefix = "Rank" }: LeaderboardRowProps) {
-  const metrics = isVolunteerEntry(entry)
-    ? [
-        { label: "Volunteer hours", value: entry.volunteerHours },
-        { label: "Activities", value: entry.activitiesAttended },
-      ]
-    : [
-        { label: "Giving total", value: formatHkd(entry.donationTotalHkd) },
-        { label: "Contributions", value: entry.contributionCount },
-      ];
+  const accentClasses =
+    category === "volunteer"
+      ? "border-teal-200 bg-teal-50/60"
+      : "border-orange-200 bg-orange-50/60";
 
   return (
     <li
-      className={cn(
-        "rounded-card border-2 p-4",
-        entry.isCurrentProfile
-          ? category === "volunteer"
-            ? "border-positive bg-positive-soft"
-            : "border-signal bg-signal-soft"
-          : "border-edge bg-paper",
-      )}
+      className={`rounded-2xl border px-3 py-2.5 transition duration-200 hover:-translate-y-0.5 hover:shadow-sm motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+        entry.isCurrentProfile ? `border-2 ${accentClasses}` : "border-zinc-200 bg-white"
+      }`}
     >
-      <div className="grid gap-3 sm:grid-cols-[6rem_minmax(0,1fr)_8rem_8rem] sm:items-center">
+      <div className="grid gap-3 text-sm sm:grid-cols-[5rem_minmax(0,1fr)_7rem_7rem] sm:items-center">
         <div>
-          <span className="block text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">
+          <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
             {labelPrefix}
           </span>
-          <span className="mt-1 block font-bold text-ink">Rank {entry.rank}</span>
+          <span className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 font-semibold text-zinc-950">
+            Rank {entry.rank}
+          </span>
         </div>
 
         <div>
-          <p className="font-bold text-ink">{entry.displayName}</p>
+          <p className="font-semibold text-zinc-950">{entry.displayName}</p>
           <div className="mt-1 flex flex-wrap gap-2">
-            {entry.isAnonymous && <Tag tone="quiet">Anonymous display</Tag>}
-            {entry.isCurrentProfile && <Tag tone="outline">Your profile</Tag>}
+            {entry.isAnonymous && (
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">
+                Anonymous display
+              </span>
+            )}
+            {entry.isCurrentProfile && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-zinc-950 ring-1 ring-zinc-300">
+                Your profile
+              </span>
+            )}
           </div>
-          {entry.supportInterest && (
-            <p className="mt-2 text-sm text-ink-soft">Interest: {entry.supportInterest}</p>
-          )}
         </div>
 
-        {metrics.map((metric) => (
-          <div key={metric.label}>
-            <span className="block text-sm text-ink-soft">{metric.label}</span>
-            <span className="mt-1 block font-bold text-ink">{metric.value}</span>
-          </div>
-        ))}
+        {isVolunteerEntry(entry) ? (
+          <>
+            <div>
+              <span className="block text-xs text-zinc-500">Volunteer hours</span>
+              <span className="mt-1 block font-semibold text-zinc-950">
+                {entry.volunteerHours}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-zinc-500">Activities</span>
+              <span className="mt-1 block font-semibold text-zinc-950">
+                {entry.activitiesAttended}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <span className="block text-xs text-zinc-500">Giving total</span>
+              <span className="mt-1 block font-semibold text-zinc-950">
+                {formatHkd(entry.donationTotalHkd)}
+              </span>
+            </div>
+            <div>
+              <span className="block text-xs text-zinc-500">Contributions</span>
+              <span className="mt-1 block font-semibold text-zinc-950">
+                {entry.contributionCount}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </li>
   );

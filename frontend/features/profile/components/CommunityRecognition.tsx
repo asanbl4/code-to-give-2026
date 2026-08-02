@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Card, Section, TabPanel, Tabs, type TabDefinition } from "@/components/ui";
+import { useRef, useState } from "react";
 import type { CommunityRecognitionData, RecognitionCategory } from "../types";
 import { LeaderboardList } from "./LeaderboardList";
+import { RecognitionTabs } from "./RecognitionTabs";
 
-const RECOGNITION_TABS: ReadonlyArray<TabDefinition<RecognitionCategory>> = [
+const RECOGNITION_TABS: ReadonlyArray<{
+  value: RecognitionCategory;
+  label: string;
+  description: string;
+}> = [
   {
     value: "volunteer",
     label: "Volunteer Champions",
@@ -18,46 +22,61 @@ const RECOGNITION_TABS: ReadonlyArray<TabDefinition<RecognitionCategory>> = [
   },
 ];
 
-export function CommunityRecognition({
-  recognition,
-}: {
+interface CommunityRecognitionProps {
   recognition: CommunityRecognitionData;
-}) {
-  const [activeCategory, setActiveCategory] = useState<RecognitionCategory>("volunteer");
+}
 
-  const entriesFor = (category: RecognitionCategory) =>
-    category === "volunteer" ? recognition.volunteerChampions : recognition.givingSupporters;
+export function CommunityRecognition({ recognition }: CommunityRecognitionProps) {
+  const [activeCategory, setActiveCategory] = useState<RecognitionCategory>("volunteer");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const activeEntries =
+    activeCategory === "volunteer"
+      ? recognition.volunteerChampions
+      : recognition.givingSupporters;
 
   return (
-    <Section
-      card
-      eyebrow="Community appreciation"
-      title="Community Recognition"
-      description="Recognition is optional. Every gift and every hour of support matters, regardless of size."
-      aside={
-        <Card tone="surface" className="lg:max-w-xs">
-          <p className="text-ink-soft">
-            Giving recognition can be shown anonymously. Every contribution matters, whether someone
-            gives time, funds, skills, or encouragement.
-          </p>
-        </Card>
-      }
+    <section
+      aria-labelledby="community-recognition-heading"
+      className="rounded-[2rem] border border-purple-100 bg-white p-5 shadow-sm sm:p-6"
     >
-      <Tabs
-        label="Community recognition categories"
-        idPrefix="recognition"
-        tabs={RECOGNITION_TABS}
-        value={activeCategory}
-        onChange={setActiveCategory}
-      />
+      <p className="inline-flex rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-purple-800">
+        Demo recognition data
+      </p>
+      <h2
+        id="community-recognition-heading"
+        className="mt-3 text-2xl font-semibold text-zinc-950"
+      >
+        Community Recognition
+      </h2>
 
       <div className="mt-6">
-        {RECOGNITION_TABS.map((tab) => (
-          <TabPanel key={tab.value} idPrefix="recognition" value={tab.value} active={activeCategory}>
-            <LeaderboardList category={tab.value} entries={entriesFor(tab.value)} />
-          </TabPanel>
-        ))}
+        <RecognitionTabs
+          activeCategory={activeCategory}
+          tabs={RECOGNITION_TABS}
+          tabRefs={tabRefs}
+          onChange={setActiveCategory}
+        />
       </div>
-    </Section>
+
+      {RECOGNITION_TABS.map((tab) => {
+        const selected = activeCategory === tab.value;
+
+        return (
+          <div
+            key={tab.value}
+            id={`recognition-panel-${tab.value}`}
+            role="tabpanel"
+            aria-labelledby={`recognition-tab-${tab.value}`}
+            hidden={!selected}
+            tabIndex={0}
+            className="mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          >
+            {selected && (
+              <LeaderboardList category={activeCategory} entries={activeEntries} />
+            )}
+          </div>
+        );
+      })}
+    </section>
   );
 }

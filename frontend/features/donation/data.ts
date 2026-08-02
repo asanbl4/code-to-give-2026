@@ -59,56 +59,47 @@ export const INTEREST_AREAS: ReadonlyArray<DonationInterestOption> = [
     value: "where-needed-most",
     label: "Where Needed Most",
     description: "Let Love 21 identify the area of greatest current need.",
-    icon: "shieldPin",
   },
   {
     value: "sports",
     label: "Sports",
     description: "Express interest in inclusive sport and movement activities.",
-    icon: "ball",
   },
   {
     value: "nutrition",
     label: "Nutrition",
     description: "Express interest in food education and nutrition support.",
-    icon: "nutrition",
   },
   {
     value: "family-support",
     label: "Family Support",
     description: "Express interest in support for families and carers.",
-    icon: "family",
   },
   {
     value: "employment-and-life-skills",
     label: "Employment and Life Skills",
     description: "Express interest in training for work and everyday confidence.",
-    icon: "briefcase",
   },
 ];
 
 export const TRUST_TRANSPARENCY_ITEMS: ReadonlyArray<TrustTransparencyItem> = [
   {
     title: "Financial transparency",
-    icon: "receipt",
     description:
       "In a real donation flow, Love 21 would link to confirmed financial reporting or charity information for supporters to review.",
   },
   {
     title: "Secure giving",
-    icon: "shieldCheck",
     description:
       "This demo does not process payments. A live version would use an approved payment provider for secure transaction handling.",
   },
   {
     title: "Privacy",
-    icon: "lock",
     description:
       "This prototype does not collect names, contact details, card details, cookies, analytics, or persistent supporter data.",
   },
   {
     title: "Charity information",
-    icon: "layers",
     description:
       "A production page should include verified Love 21 charity details and any required local fundraising disclosures.",
   },
