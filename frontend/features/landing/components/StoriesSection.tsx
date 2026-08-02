@@ -16,7 +16,7 @@ export function StoriesSection() {
         </div>
 
         <div className="mt-6">
-          <Button href="/news-stories" variant="secondary">
+          <Button href="/stories" variant="secondary">
             See all stories →
           </Button>
         </div>

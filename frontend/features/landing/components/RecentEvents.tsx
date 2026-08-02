@@ -21,7 +21,7 @@ export function RecentEvents() {
         </ul>
 
         <div className="mt-6">
-          <Button href="/news-stories" variant="secondary">
+          <Button href="/stories" variant="secondary">
             Read more
           </Button>
         </div>

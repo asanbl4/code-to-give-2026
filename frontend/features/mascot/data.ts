@@ -71,7 +71,7 @@ export interface MascotFaq {
 
 // Only routes that actually exist today — see components/layout/navigation.ts
 // in the main repo for the full list of routes still pending (/who-we-are,
-// /what-we-do, /news-stories all 404 as of this writing). The donation quiz
+// /what-we-do, /stories all 404 as of this writing). The donation quiz
 // mentioned in the "not sure which cause" line doesn't exist yet either —
 // this links straight to /donate until that's built.
 export const MASCOT_FAQS: readonly MascotFaq[] = [
