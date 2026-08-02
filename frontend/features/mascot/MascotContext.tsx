@@ -5,8 +5,8 @@
 // all need to agree on the same state: the full-screen intro overlay, the
 // small header badge, and the FAQ assistant overlay — see
 // MascotIntroOverlay.tsx, MascotHeaderBadge.tsx, MascotFaqOverlay.tsx.
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { FLY_DURATION_MS } from './flyAnimation';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { FLY_DURATION_MS } from './overlay';
 import { INTRO_BEATS, MASCOT_SESSION_KEY } from './data';
 
 // 'intro-exit' is a distinct phase (not just a local animation flag) so
@@ -29,6 +29,12 @@ interface MascotContextValue {
   faqOpen: boolean;
   openFaq: () => void;
   closeFaq: () => void;
+  /** The header badge button, so the overlay can hand focus back to whatever
+   *  opened it when it closes. A keyboard user must not be dumped at the top
+   *  of the page. Set by MascotHeaderBadge; the two never render in the same
+   *  tree position, so a ref through the shared context is the only handle
+   *  either has on the other. */
+  badgeRef: RefObject<HTMLButtonElement | null>;
 }
 
 const MascotContext = createContext<MascotContextValue | null>(null);
@@ -44,6 +50,7 @@ export function MascotProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<MascotPhase>('loading');
   const [beatIndex, setBeatIndex] = useState(0);
   const [faqOpen, setFaqOpen] = useState(false);
+  const badgeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const alreadySeen = window.sessionStorage.getItem(MASCOT_SESSION_KEY);
@@ -95,6 +102,7 @@ export function MascotProvider({ children }: { children: ReactNode }) {
         faqOpen,
         openFaq: () => setFaqOpen(true),
         closeFaq: () => setFaqOpen(false),
+        badgeRef,
       }}
     >
       {children}

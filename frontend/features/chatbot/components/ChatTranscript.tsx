@@ -1,26 +1,15 @@
 "use client";
 
-import type { ChatResponse } from "../types";
+import { CONTACT_EMAIL } from "@/components/layout/navigation";
+import type { ChatStrings, Turn } from "../types";
 import { ChatAvatar } from "./ChatAvatar";
-
-export interface Turn {
-  question: string;
-  response: ChatResponse | null;
-  error: string | null;
-}
 
 interface ChatTranscriptProps {
   turns: Turn[];
   pending: boolean;
   /** Shown before the first question. */
   greeting: string;
-  strings: {
-    you: string;
-    thinking: string;
-    savedAnswers: string;
-    failed: string;
-    contact: string;
-  };
+  strings: ChatStrings;
 }
 
 /**
@@ -42,7 +31,7 @@ export function ChatTranscript({ turns, pending, greeting, strings }: ChatTransc
       {turns.length === 0 && (
         <div className="flex items-start gap-3">
           <ChatAvatar />
-          <p className="rounded-2xl rounded-tl-sm bg-zinc-100 px-4 py-3 text-[0.95rem] leading-relaxed text-zinc-900">
+          <p className="rounded-2xl rounded-tl-sm bg-surface px-4 py-3 text-[0.95rem] leading-relaxed text-ink">
             {greeting}
           </p>
         </div>
@@ -51,7 +40,7 @@ export function ChatTranscript({ turns, pending, greeting, strings }: ChatTransc
       <div aria-live="polite" aria-atomic="true" className="flex flex-col gap-5">
         {turns.map((turn, position) => (
           <div key={`${position}-${turn.question}`} className="flex flex-col gap-3">
-            <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-50">
+            <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-signal px-4 py-2 text-sm font-bold text-white">
               <span className="sr-only">{strings.you} </span>
               {turn.question}
             </p>
@@ -59,11 +48,17 @@ export function ChatTranscript({ turns, pending, greeting, strings }: ChatTransc
             {turn.error !== null && (
               <div className="flex items-start gap-3">
                 <ChatAvatar />
-                <div className="rounded-2xl rounded-tl-sm border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  <p>{strings.failed}</p>
+                {/* Errors are a pale danger-soft panel with bold danger text,
+                    never a solid fill — that treatment is what tells them apart
+                    from the brand crimson. See globals.css. */}
+                <div
+                  role="alert"
+                  className="rounded-2xl rounded-tl-sm bg-danger-soft px-4 py-3 text-sm text-danger"
+                >
+                  <p className="font-bold">{strings.failed}</p>
                   <a
-                    href="/contact"
-                    className="mt-2 inline-block font-medium underline underline-offset-2"
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="mt-2 inline-block font-bold underline underline-offset-2"
                   >
                     {strings.contact}
                   </a>
@@ -74,22 +69,22 @@ export function ChatTranscript({ turns, pending, greeting, strings }: ChatTransc
             {turn.response !== null && (
               <div className="flex items-start gap-3">
                 <ChatAvatar />
-                <div className="min-w-0 rounded-2xl rounded-tl-sm bg-zinc-100 px-4 py-3">
-                  <p className="whitespace-pre-line text-[0.95rem] leading-relaxed text-zinc-900">
+                <div className="min-w-0 rounded-2xl rounded-tl-sm bg-surface px-4 py-3">
+                  <p className="whitespace-pre-line text-[0.95rem] leading-relaxed text-ink">
                     {turn.response.answer}
                   </p>
 
                   {turn.response.action !== null && (
                     <a
                       href={turn.response.action.href}
-                      className="mt-3 inline-block min-h-[2.75rem] rounded-full bg-zinc-900 px-5 py-3 text-sm font-semibold text-zinc-50 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                      className="mt-3 inline-flex min-h-11 items-center rounded-[var(--radius-button)] bg-signal px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-signal-deep"
                     >
                       {turn.response.action.label}
                     </a>
                   )}
 
                   {turn.response.route === "fallback" && (
-                    <p className="mt-3 text-xs text-zinc-600">{strings.savedAnswers}</p>
+                    <p className="mt-3 text-xs text-ink-soft">{strings.savedAnswers}</p>
                   )}
                 </div>
               </div>
@@ -100,7 +95,7 @@ export function ChatTranscript({ turns, pending, greeting, strings }: ChatTransc
         {pending && (
           <div className="flex items-start gap-3">
             <ChatAvatar />
-            <p className="rounded-2xl rounded-tl-sm bg-zinc-100 px-4 py-3 text-sm text-zinc-600">
+            <p className="rounded-2xl rounded-tl-sm bg-surface px-4 py-3 text-sm text-ink-soft">
               {strings.thinking}
             </p>
           </div>

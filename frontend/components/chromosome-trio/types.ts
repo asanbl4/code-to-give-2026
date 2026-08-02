@@ -17,29 +17,20 @@ export interface ChromosomeTrioHandle {
    * once and the character then returns to the idle loop automatically.
    */
   playAction: (characterIndex: ChromosomeIndex, actionName: ChromosomeActionName) => void;
-  /**
-   * Smoothly animates the whole trio group to a new position (and optional
-   * scale) over `duration` seconds. Useful for scroll-linked or scripted
-   * movement driven from outside the component.
-   */
-  moveTo: (position: [number, number, number], duration?: number, scale?: number) => void;
   /** Swaps the face of a character between a few simple expression states. */
   setExpression: (characterIndex: ChromosomeIndex, expression: ChromosomeExpression) => void;
-  /** Freezes the built-in idle loop (bob/sway/blink/breathe) in place. */
-  pauseIdle: () => void;
-  /** Resumes the built-in idle loop from where it left off. */
-  resumeIdle: () => void;
 }
 
 export interface ChromosomeTrioProps {
-  /** Uniform scale applied to the whole trio group. Default: 1. */
+  /**
+   * Uniform scale applied to the whole trio group. Default: 1.
+   *
+   * The trio always fills its container and the camera's horizontal field of
+   * view follows the container's aspect ratio, so this is how a caller trades
+   * framing against clipping — a square box clips the outer two characters
+   * above ~0.75. Size the container in CSS; use this to fit.
+   */
   scale?: number;
-  /** World-space position of the whole trio group. Default: [0, 0, 0]. */
-  position?: [number, number, number];
-  /** Whether the built-in idle loop autoplays on mount. Default: true. */
-  autoIdle?: boolean;
-  /** Optional className passed to the outer wrapper div (for sizing/layout). */
-  className?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,9 +40,10 @@ export interface ChromosomeTrioProps {
 // two component files.
 // ---------------------------------------------------------------------------
 
-/** Mutable, read-each-frame flags a character consults during its idle loop. */
+/** Mutable, read-each-frame flags a character consults during its idle loop.
+ *  A ref rather than props, so a change takes effect on the next frame instead
+ *  of waiting on a React re-render. */
 export interface ChromosomeRuntimeState {
-  idleEnabled: boolean;
   reducedMotion: boolean;
 }
 

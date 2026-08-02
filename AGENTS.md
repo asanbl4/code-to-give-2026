@@ -108,6 +108,16 @@ Use `127.0.0.1`, not `localhost`, in `NEXT_PUBLIC_API_URL`. Node may resolve
 `localhost` to `::1`, which uvicorn does not bind by default; you get a
 connection refused that looks like the backend is down when it isn't.
 
+That is for the API only. **Browse the dev server at `http://localhost:3000`,
+not `http://127.0.0.1:3000`.** Next 16 blocks cross-origin requests to
+`/_next/*` dev resources, and it treats `127.0.0.1` as a different host from the
+`localhost` it serves itself as — so the page server-renders and looks fine
+while no client JavaScript ever hydrates. Nothing is interactive, no `<canvas>`
+mounts, and there is no console error to explain it; the only clue is a
+`Blocked cross-origin request` line in `frontend/.next/dev/logs/next-development.log`.
+Add `allowedDevOrigins: ['127.0.0.1']` to `next.config.ts` if you need the
+other spelling.
+
 `NEXT_PUBLIC_` is a real prefix with real consequences — those values are inlined
 into the browser bundle. Never put a secret behind one.
 
@@ -195,6 +205,17 @@ question → embed, rank against the corpus
 
 `route` is `generated` (normal), `refused` (medical or self-harm — staff wording,
 verbatim) or `fallback` (Ollama unreachable, nearest curated entry).
+
+**Where it lives in the UI.** Inside the mascot, not in a corner. Tapping the
+chromosome trio in the header opens `MascotFaqOverlay`, whose panel holds both
+halves of "how can I help": the quick links that navigate, and the chat that
+answers. There is no floating launcher any more — one helper, not two competing
+for the bottom-right corner, which is also where the community-goal widget
+lives. The conversation state is `features/chatbot/useChatConversation`, the
+bilingual labels are in its `data.ts`, and the pieces (`ChatTranscript`,
+`ChatComposer`, `MascotQuickLinks`) are composed by the overlay rather than
+owning any chrome of their own. Because `PageShell` renders the mascot, the
+assistant is on every content page and absent from the bare admin/auth screens.
 
 Setup: `ollama pull bge-m3 && ollama pull qwen3:1.7b`, then
 `uv run python -m app.features.chatbot.build_index`. **Rebuild the index after
