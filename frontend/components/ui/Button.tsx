@@ -21,7 +21,7 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full text-center font-bold " +
+  "inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] text-center font-bold " +
   "transition-colors disabled:pointer-events-none disabled:opacity-45";
 
 interface Shared {

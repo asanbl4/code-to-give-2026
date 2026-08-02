@@ -37,9 +37,11 @@
 
   /* The one accent that means "this is the action". Change --color-signal and
      the whole site follows; that is the entire point of routing every page
-     through these names instead of literal Tailwind palettes. */
-  --color-signal: #db2140;
-  --color-signal-deep: #b3122d;
+     through these names instead of literal Tailwind palettes.
+     Tuned to match the ChromosomeTrio mascot's own front-character red
+     (#C81E3D) so the two pieces of work read as one palette. */
+  --color-signal: #c81e3d;
+  --color-signal-deep: #9c1730;
   --color-signal-soft: #fdecef;
 
   /* Attention without alarm: pending review, earned badges, things to notice. */
@@ -63,6 +65,8 @@
   /* Two radii, so cards on different pages cannot drift apart. */
   --radius-card: 1.25rem;
   --radius-panel: 2rem;
+  /* Buttons: squared-off with a light round, not a pill. */
+  --radius-button: 0.625rem;
 
   --shadow-card: 0 1px 2px rgba(51, 51, 51, 0.08);
   --shadow-lift: 0 18px 45px -12px rgba(51, 51, 51, 0.3);
