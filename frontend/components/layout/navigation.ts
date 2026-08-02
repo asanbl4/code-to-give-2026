@@ -1,15 +1,17 @@
 /**
  * The site's navigation, in one place, used by both the header and the footer.
  *
- * WARNING — four of these routes do not exist yet. `/who-we-are`,
- * `/what-we-do`, `/stories` and `/get-involved/quiz` all 404 today, and so
- * does `/member-portal` in the hero's role picker. They are left in place
+ * WARNING — some of these routes do not exist yet. `/who-we-are`,
+ * `/what-we-do` and `/get-involved/quiz` all 404 today. They are left in place
  * because removing them was not part of this refactor's brief, but they are now
  * declared here rather than being retyped in four components, so deleting or
  * repointing them is a one-line change.
  *
- * Meanwhile `/stories` and `/events` are real, finished pages that nothing in
- * the navigation points at.
+ * `/member-portal` used to be listed here too, as the hero's role picker's
+ * "Alum / Member" destination. It never existed; that picker now sends members
+ * to the login on the main love21foundation.com site — see features/landing/data.ts.
+ *
+ * `/events` is a real, finished page that nothing in the navigation points at.
  */
 export interface NavLink {
   label: string;
