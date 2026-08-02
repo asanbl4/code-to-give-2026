@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui";
+import { LanguagePicker } from "@/features/i18n";
 import { MascotHeaderBadge } from "@/features/mascot/components/MascotHeaderBadge";
 import { cn } from "@/lib/cn";
 import Grainient from "@/components/vendor/Grainient/Grainient";
@@ -23,17 +24,46 @@ import { NAV_LINKS } from "./navigation";
  * grey-border pill look.
  *
  * Right side is two stacked rows, not one: a small utility row (log in /
- * register, language toggle) sits above the main nav row, using the vertical
+ * register, language picker) sits above the main nav row, using the vertical
  * room the 192px mascot badge already forces the bar to have — this does
  * NOT grow the header, both rows together are still shorter than the badge.
  *
- * Nav (and the utility row) only go inline at 2xl — logo + mascot badge
- * alone need ~550px, so anything narrower falls back to the "Menu" dropdown
- * rather than the two colliding (see MascotHeaderBadge overlap fix).
+ * ## Why the "Menu" fallback is measured rather than a breakpoint
+ *
+ * This used to collapse to a dropdown below `2xl` (1536px), which was a guess
+ * made against the widest the bar could ever be. The bar is nowhere near that
+ * wide in practice — logo and mascot come to ~475px and the nav rail to ~850px
+ * — so every laptop between roughly 1400 and 1536px got the phone treatment for
+ * no reason.
+ *
+ * A smaller hardcoded breakpoint would just move the guess. So the header
+ * measures instead: if the brand block and the nav rail both fit across the
+ * bar, the nav goes inline; if they don't, it collapses. That is the condition
+ * the breakpoint was standing in for all along, and it keeps holding when the
+ * inputs change — a fifth nav link, a longer label, a bigger mascot, or the
+ * language picker switching the page to German and making every word longer.
+ *
+ * The rail stays mounted while collapsed (`invisible absolute`, so it keeps
+ * reporting a natural width, and `inert` so it is not tabbable or read out).
+ * Measuring something that isn't in the DOM is not possible, and re-measuring
+ * only after showing it is how you get a flicker loop.
  */
 const NAV_LINK_CLASSES =
   "whitespace-nowrap rounded-lg border-2 border-signal px-6 py-3 text-lg font-bold text-ink " +
   "transition-colors hover:bg-signal hover:text-white";
+
+/** `gap-4` between the brand block and the nav rail, in pixels. */
+const SHELL_GAP = 16;
+
+/**
+ * Breathing room demanded on top of a bare fit. Without it the nav goes inline
+ * at the exact pixel it stops overflowing, which looks cramped and sits one
+ * rounding error away from flipping back.
+ */
+const SLACK = 12;
+
+/** `useLayoutEffect` warns when React renders this on the server. */
+const useMeasureEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 function HeartIcon() {
   return (
@@ -50,43 +80,74 @@ function HeartIcon() {
   );
 }
 
-// UI-only for now: there's no i18n/locale routing set up in this repo (single
-// English tree under app/), so this just toggles which label looks active —
-// it doesn't translate anything yet. Wire it up to real locale routes before
-// this goes live.
-function LanguageToggle() {
-  const [lang, setLang] = useState<"en" | "zh">("en");
-
-  return (
-    <div className="flex overflow-hidden rounded-md border border-edge text-sm font-bold" role="group" aria-label="Language">
-      <button
-        type="button"
-        onClick={() => setLang("en")}
-        aria-pressed={lang === "en"}
-        className={cn("px-2.5 py-1", lang === "en" ? "bg-signal text-white" : "text-ink-soft hover:bg-surface")}
-      >
-        EN
-      </button>
-      <button
-        type="button"
-        onClick={() => setLang("zh")}
-        aria-pressed={lang === "zh"}
-        className={cn("px-2.5 py-1", lang === "zh" ? "bg-signal text-white" : "text-ink-soft hover:bg-surface")}
-      >
-        繁
-      </button>
-    </div>
-  );
-}
-
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Starts collapsed so the server-rendered markup is the narrow one: a phone
+  // briefly showing "Menu" before hydration is nothing, a phone briefly
+  // showing an 850px nav rail is a horizontal scrollbar.
+  const [inlineNav, setInlineNav] = useState(false);
+  const shell = useRef<HTMLDivElement>(null);
+  const brand = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLDivElement>(null);
+
+  const measure = useCallback(() => {
+    const shellEl = shell.current;
+    const brandEl = brand.current;
+    const railEl = rail.current;
+    if (!shellEl || !brandEl || !railEl) return;
+
+    const styles = getComputedStyle(shellEl);
+    const available =
+      shellEl.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+    const needed = brandEl.offsetWidth + railEl.offsetWidth + SHELL_GAP;
+    const fits = needed + SLACK <= available;
+
+    setInlineNav(fits);
+    // Widening the window back into the inline nav while the dropdown is open
+    // would leave a second copy of the same links floating over the page.
+    if (fits) setMenuOpen(false);
+  }, []);
+
+  useMeasureEffect(() => {
+    const targets = [shell.current, brand.current, rail.current];
+    if (targets.some((target) => target === null)) return;
+
+    measure();
+
+    // Deferred a frame: a ResizeObserver callback that resizes something is how
+    // you get "ResizeObserver loop completed with undelivered notifications" in
+    // the console, and this one always does — flipping the nav changes the
+    // layout of everything it observes.
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    });
+    for (const target of targets) observer.observe(target!);
+
+    // Web fonts land after first paint and change every label's width. The
+    // observers above catch that too, but only once something reflows.
+    document.fonts?.ready.then(measure).catch(() => {});
+
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [measure]);
+
+  // No `overflow-hidden` on the <header>, deliberately. It used to be there to
+  // keep the Grainient inside the bar, but it also clipped anything hanging
+  // *below* the bar — the language menu and the "Menu" dropdown were cut off at
+  // the header's bottom edge, which reads as the hero image sitting on top of
+  // them. The clip now lives on the Grainient wrapper, the only thing that ever
+  // needed it.
   return (
-    <header className="sticky top-0 z-30 overflow-hidden bg-white shadow-card">
+    <header className="sticky top-0 z-30 bg-white shadow-card">
       {/* Purely decorative — aria-hidden, pointer-events none, absolutely
-          positioned so it never affects layout or interaction. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          positioned so it never affects layout or interaction. `overflow-hidden`
+          so the canvas stays within the bar. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <Grainient
           color1="#FFFFFF"
           color2="#F5F3EE"
@@ -102,8 +163,14 @@ export function SiteHeader() {
         />
       </div>
 
-      <div className="relative mx-auto flex w-full items-center justify-between gap-4 px-5 py-2 sm:px-8">
-        <div className="flex min-w-0 items-center gap-2">
+      <div
+        ref={shell}
+        className="relative mx-auto flex w-full items-center justify-between gap-4 px-5 py-2 sm:px-8"
+      >
+        {/* `shrink-0`, not `min-w-0`: this block is what the measurement reads,
+            and a box flex has been allowed to squeeze reports a width the nav
+            would not actually have room beside. */}
+        <div ref={brand} className="flex shrink-0 items-center gap-2">
           <Link href="/" aria-label="Love 21 Foundation home" className="shrink-0">
             {/* Plain <img>, not next/image — the Tailwind height class was not
                 visibly taking effect through next/image's own sizing.
@@ -120,22 +187,36 @@ export function SiteHeader() {
           <MascotHeaderBadge />
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-expanded={menuOpen}
-          aria-controls="site-nav"
-          className="min-h-11 rounded-full border-2 border-edge px-5 text-lg font-bold text-ink 2xl:hidden"
-        >
-          Menu
-        </button>
+        {!inlineNav && (
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-controls="site-nav"
+            className="min-h-11 shrink-0 rounded-full border-2 border-edge px-5 text-lg font-bold text-ink"
+          >
+            Menu
+          </button>
+        )}
 
-        <div className="hidden flex-col items-end gap-2 2xl:flex">
+        <div
+          ref={rail}
+          inert={!inlineNav}
+          className={cn(
+            // `w-max` in both states, so the width this reports is the width
+            // the content actually wants. Collapsed, this box is absolutely
+            // positioned and would otherwise be shrink-to-fit against the
+            // viewport — on a phone it would measure 375px while its children
+            // overflowed it, and report a fit that isn't one.
+            "flex w-max shrink-0 flex-col items-end gap-2",
+            !inlineNav && "pointer-events-none invisible absolute left-0 top-0",
+          )}
+        >
           <div className="flex items-center gap-3">
             <Button href="/profile" variant="quiet" size="sm">
               Log in / Register
             </Button>
-            <LanguageToggle />
+            <LanguagePicker />
           </div>
 
           <nav aria-label="Main" className="flex items-center gap-2">
@@ -157,13 +238,13 @@ export function SiteHeader() {
           </nav>
         </div>
 
-        {/* Mobile/narrow fallback: the same links, stacked, in a floating
-            card — separate from the <nav> above since that one only mounts
-            at 2xl and this is the opposite. */}
-        {menuOpen && (
+        {/* Narrow fallback: the same links, stacked, in a floating card —
+            separate from the rail above, which is hidden whenever this exists. */}
+        {menuOpen && !inlineNav && (
           <nav
+            id="site-nav"
             aria-label="Main"
-            className="absolute inset-x-4 top-20 z-40 flex flex-col gap-2 rounded-card bg-paper p-4 shadow-lift ring-1 ring-edge 2xl:hidden"
+            className="absolute inset-x-4 top-20 z-40 flex flex-col gap-2 rounded-card bg-paper p-4 shadow-lift ring-1 ring-edge"
           >
             {NAV_LINKS.map((link) => (
               <Link
@@ -189,7 +270,7 @@ export function SiteHeader() {
               <Button href="/profile" variant="quiet" size="sm" onClick={() => setMenuOpen(false)}>
                 Log in / Register
               </Button>
-              <LanguageToggle />
+              <LanguagePicker />
             </div>
           </nav>
         )}
