@@ -45,31 +45,31 @@ export function DonationImpactSection({
     <section
       ref={sectionRef}
       aria-labelledby="donation-impact-heading"
-      className="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-[2rem] border border-edge bg-paper p-5 shadow-sm sm:p-6"
     >
-      <h2 id="donation-impact-heading" className="text-2xl font-semibold text-zinc-950">
+      <h2 id="donation-impact-heading" className="text-2xl font-semibold text-ink">
         Donation impact
       </h2>
 
       <div className="mt-4 grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)]">
-        <article className="rounded-2xl border border-orange-100 bg-orange-50 p-4">
-          <h3 className="font-semibold text-zinc-950">Contribution summary</h3>
+        <article className="rounded-2xl border border-edge bg-signal-soft p-4">
+          <h3 className="font-semibold text-ink">Contribution summary</h3>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">One-time total</dt>
-              <dd className="font-semibold text-zinc-950">
+              <dt className="text-ink-soft">One-time total</dt>
+              <dd className="font-semibold text-ink">
                 {formatHkd(contributionSummary.oneTimeTotalHkd)}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">Monthly total</dt>
-              <dd className="font-semibold text-zinc-950">
+              <dt className="text-ink-soft">Monthly total</dt>
+              <dd className="font-semibold text-ink">
                 {formatHkd(contributionSummary.monthlyTotalHkd)}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-600">Monthly entries</dt>
-              <dd className="font-semibold text-zinc-950">
+              <dt className="text-ink-soft">Monthly entries</dt>
+              <dd className="font-semibold text-ink">
                 {contributionSummary.monthlyCount}
               </dd>
             </div>
@@ -78,24 +78,24 @@ export function DonationImpactSection({
 
         <div className="space-y-3">
           {donations.map((donation) => (
-            <article key={donation.id} className="rounded-2xl border border-zinc-200 bg-white p-3">
+            <article key={donation.id} className="rounded-2xl border border-edge bg-paper p-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <h3 className="font-semibold text-zinc-950">
+                <h3 className="font-semibold text-ink">
                   {donation.programmeInterest}
                 </h3>
-                <p className="font-semibold text-zinc-950">{formatHkd(donation.amountHkd)}</p>
+                <p className="font-semibold text-ink">{formatHkd(donation.amountHkd)}</p>
               </div>
-              <p className="mt-2 text-sm capitalize text-zinc-600">
+              <p className="mt-2 text-sm capitalize text-ink-soft">
                 {donation.contributionType.replace("-", " ")} contribution
               </p>
               <div className="mt-3" aria-label={`${donation.programmeInterest} total ${formatHkd(donation.amountHkd)}`}>
-                <div className="flex items-center justify-between gap-3 text-xs text-zinc-600">
+                <div className="flex items-center justify-between gap-3 text-xs text-ink-soft">
                   <span>Programme-interest total</span>
                   <span>{formatHkd(donation.amountHkd)}</span>
                 </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full bg-orange-100">
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-signal-soft">
                   <div
-                    className="h-3 rounded-full bg-orange-500 transition-[width] duration-300 ease-out motion-reduce:transition-none"
+                    className="h-3 rounded-full bg-signal transition-[width] duration-300 ease-out motion-reduce:transition-none"
                     style={{
                       width: barsVisible
                         ? `${Math.max(12, (donation.amountHkd / maxDonation) * 100)}%`

@@ -6,12 +6,12 @@ interface MilestonesSectionProps {
 
 function getBadgeClasses(tone: SupporterBadge["tone"]): string {
   if (tone === "volunteer") {
-    return "border-teal-200 bg-teal-50 text-teal-900";
+    return "border-positive/40 bg-positive-soft text-positive";
   }
   if (tone === "community") {
-    return "border-purple-200 bg-purple-50 text-purple-900";
+    return "border-highlight/60 bg-highlight-soft text-ink";
   }
-  return "border-orange-200 bg-orange-50 text-orange-900";
+  return "border-signal/25 bg-signal-soft text-signal-deep";
 }
 
 function getBadgePath(tone: SupporterBadge["tone"]): string {
@@ -28,9 +28,9 @@ export function MilestonesSection({ badges }: MilestonesSectionProps) {
   return (
     <section
       aria-labelledby="milestones-heading"
-      className="rounded-[2rem] border border-purple-100 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-[2rem] border border-highlight/40 bg-paper p-5 shadow-sm sm:p-6"
     >
-      <h2 id="milestones-heading" className="text-2xl font-semibold text-zinc-950">
+      <h2 id="milestones-heading" className="text-2xl font-semibold text-ink">
         Milestones and badges
       </h2>
 
@@ -39,10 +39,10 @@ export function MilestonesSection({ badges }: MilestonesSectionProps) {
           <li
             key={badge.id}
             aria-label={`${badge.label}, earned badge. ${badge.description}`}
-            className={`rounded-2xl border p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-sm focus-within:ring-2 focus-within:ring-purple-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${getBadgeClasses(badge.tone)}`}
+            className={`rounded-2xl border p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-sm motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${getBadgeClasses(badge.tone)}`}
           >
             <div className="flex items-start gap-3">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-paper/80">
                 <svg aria-hidden="true" viewBox="0 0 32 32" className="h-8 w-8">
                   <path fill="currentColor" d={getBadgePath(badge.tone)} />
                 </svg>

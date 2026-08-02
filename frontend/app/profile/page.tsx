@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import { PageShell } from "@/components/layout";
 import { DEMO_SUPPORTER_PROFILE } from "@/features/profile/data";
 import { CommunityRecognition } from "@/features/profile/components/CommunityRecognition";
 import { DonationImpactSection } from "@/features/profile/components/DonationImpactSection";
@@ -14,75 +14,61 @@ import { ShareImpact } from "@/features/profile/components/ShareImpact";
 import { VolunteerImpactSection } from "@/features/profile/components/VolunteerImpactSection";
 
 export const metadata: Metadata = {
-  title: "Impact Profile — Love 21 Foundation",
+  title: "Impact Profile",
   description: "A demo supporter impact profile for Love 21 Foundation.",
 };
 
+/**
+ * The header comes from `PageShell`, not from a `<SiteHeader />` placed here:
+ * the header renders `MascotHeaderBadge`, whose `useMascot()` throws outside
+ * the `MascotProvider` that `PageShell` sets up. It brings the footer too, and
+ * with it the "back to home" this page used to carry twice in its own bar.
+ *
+ * `width="full"` because the photographic backdrop runs edge to edge; the
+ * container inside keeps the content at the site's usual measure.
+ */
 export default function ProfilePage() {
   const profile = DEMO_SUPPORTER_PROFILE;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-zinc-950 font-sans text-zinc-950">
-      <Image
-        src="/images/love-21-football-activity.jpeg"
-        alt=""
-        fill
-        priority
-        aria-hidden="true"
-        sizes="100vw"
-        className="fixed inset-0 z-0 scale-110 object-cover blur-sm"
-      />
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 bg-zinc-950/55 backdrop-blur-[2px]"
-      />
+    <PageShell width="full">
+      <div className="relative isolate overflow-hidden bg-ink text-ink">
+        {/* Scoped to this block rather than `fixed` to the viewport, so the
+            photo stays behind the profile instead of sliding under the site
+            header and footer. */}
+        <Image
+          src="/images/love-21-football-activity.jpeg"
+          alt=""
+          fill
+          priority
+          aria-hidden="true"
+          sizes="100vw"
+          className="scale-110 object-cover blur-sm"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-ink/60 backdrop-blur-[2px]" />
 
-      <header className="relative z-10 border-b border-white/20 bg-white/15 px-5 py-4 text-white shadow-sm backdrop-blur-xl sm:px-8">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3">
-          <Link
-            href="/"
-            className="text-base font-semibold text-white drop-shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-          >
-            Love 21 Foundation
-          </Link>
-          <nav aria-label="Profile page links" className="flex flex-wrap gap-2">
-            <Link
-              href="/donate"
-              className="rounded-full border border-white/45 bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow-sm backdrop-blur transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none"
-            >
-              Back to donate
-            </Link>
-            <Link
-              href="/"
-              className="rounded-full border border-white/45 bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow-sm backdrop-blur transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none"
-            >
-              Back to home
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-7 px-5 py-8 sm:px-8 sm:py-10">
-        <ProfileHeader profile={profile} />
-        <ImpactSummaryCards metrics={profile.summary} />
-        <CommunityRecognition recognition={profile.communityRecognition} />
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
-          <DonationImpactSection
-            donations={profile.donations}
-            contributionSummary={profile.contributionSummary}
-          />
-          <VolunteerImpactSection volunteer={profile.volunteer} />
-        </div>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <RecentActivitySection activities={profile.recentActivity} />
-          <div className="space-y-6">
-            <MilestonesSection badges={profile.badges} />
-            <NextMilestone milestone={profile.nextMilestone} />
+        <div className="relative z-10 mx-auto w-full max-w-6xl space-y-7 px-5 py-10 sm:px-8 sm:py-14">
+          <ProfileHeader profile={profile} />
+          <ImpactSummaryCards metrics={profile.summary} />
+          <CommunityRecognition recognition={profile.communityRecognition} />
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
+            <DonationImpactSection
+              donations={profile.donations}
+              contributionSummary={profile.contributionSummary}
+            />
+            <VolunteerImpactSection volunteer={profile.volunteer} />
           </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <RecentActivitySection activities={profile.recentActivity} />
+            <div className="space-y-6">
+              <MilestonesSection badges={profile.badges} />
+              <NextMilestone milestone={profile.nextMilestone} />
+            </div>
+          </div>
+          <ShareImpact summary={profile.shareSummary} />
+          <PrivacyAccountNote />
         </div>
-        <ShareImpact summary={profile.shareSummary} />
-        <PrivacyAccountNote />
       </div>
-    </main>
+    </PageShell>
   );
 }

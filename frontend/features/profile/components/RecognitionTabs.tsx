@@ -38,7 +38,7 @@ export function RecognitionTabs({
     <div
       role="tablist"
       aria-label="Community recognition categories"
-      className="grid gap-2 rounded-2xl bg-zinc-100 p-2 sm:grid-cols-2"
+      className="grid gap-2 rounded-2xl bg-surface-deep p-2 sm:grid-cols-2"
     >
       {tabs.map((tab, index) => {
         const selected = activeCategory === tab.value;
@@ -57,10 +57,10 @@ export function RecognitionTabs({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
-            className={`rounded-xl px-4 py-3 text-left text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-700 motion-reduce:transition-none ${
+            className={`rounded-xl px-4 py-3 text-left text-sm transition motion-reduce:transition-none ${
               selected
-                ? "bg-white text-zinc-950 shadow-sm ring-1 ring-purple-200"
-                : "text-zinc-600 hover:bg-white/70"
+                ? "bg-paper text-ink shadow-sm ring-1 ring-highlight/60"
+                : "text-ink-soft hover:bg-paper/70"
             }`}
           >
             <span className="block font-semibold">{tab.label}</span>

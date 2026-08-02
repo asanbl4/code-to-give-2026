@@ -37,14 +37,14 @@ export function CommunityRecognition({ recognition }: CommunityRecognitionProps)
   return (
     <section
       aria-labelledby="community-recognition-heading"
-      className="rounded-[2rem] border border-purple-100 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-[2rem] border border-highlight/40 bg-paper p-5 shadow-sm sm:p-6"
     >
-      <p className="inline-flex rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-purple-800">
+      <p className="inline-flex rounded-full border border-highlight/60 bg-highlight-soft px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-ink">
         Demo recognition data
       </p>
       <h2
         id="community-recognition-heading"
-        className="mt-3 text-2xl font-semibold text-zinc-950"
+        className="mt-3 text-2xl font-semibold text-ink"
       >
         Community Recognition
       </h2>
@@ -69,7 +69,7 @@ export function CommunityRecognition({ recognition }: CommunityRecognitionProps)
             aria-labelledby={`recognition-tab-${tab.value}`}
             hidden={!selected}
             tabIndex={0}
-            className="mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+            className="mt-6"
           >
             {selected && (
               <LeaderboardList category={activeCategory} entries={activeEntries} />

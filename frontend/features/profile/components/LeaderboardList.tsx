@@ -28,22 +28,22 @@ export function LeaderboardList({ category, entries }: LeaderboardListProps) {
       </ol>
       <CurrentUserPosition category={category} entry={currentProfileOutsideTopThree} />
 
-      <div className="rounded-2xl border border-purple-100 bg-purple-50/50 p-4">
+      <div className="rounded-2xl border border-highlight/40 bg-highlight-soft/50 p-4">
         <button
           type="button"
           aria-expanded={expanded}
           aria-controls={fullListId}
           onClick={() => setExpanded((current) => !current)}
-          className="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-700"
+          className="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-ink"
         >
           <span>View full recognition list</span>
-          <span className="rounded-full bg-white px-3 py-1 text-xs text-purple-800 ring-1 ring-purple-100">
+          <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink ring-1 ring-highlight/40">
             {entries.length} entries
           </span>
         </button>
         {expanded && (
           <div id={fullListId}>
-            <p className="mt-3 text-sm leading-6 text-zinc-600">
+            <p className="mt-3 text-sm leading-6 text-ink-soft">
               Demonstration recognition data is shown for review. Recognition remains
               optional and can include anonymous display.
             </p>

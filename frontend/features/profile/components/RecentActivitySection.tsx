@@ -8,20 +8,20 @@ export function RecentActivitySection({ activities }: RecentActivitySectionProps
   return (
     <section
       aria-labelledby="recent-activity-heading"
-      className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-[2rem] border border-edge bg-paper p-5 shadow-sm sm:p-6"
     >
-      <h2 id="recent-activity-heading" className="text-2xl font-semibold text-zinc-950">
+      <h2 id="recent-activity-heading" className="text-2xl font-semibold text-ink">
         Recent activity
       </h2>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
+      <p className="mt-3 text-sm leading-6 text-ink-soft">
         Recent giving and volunteering activity linked to this supporter profile.
       </p>
 
       <ul className="mt-6 space-y-0">
         {activities.map((activity) => (
-          <li key={activity.id} className="relative grid gap-3 border-l-2 border-zinc-200 pb-5 pl-7 last:pb-0">
-            <span className={`absolute -left-[17px] top-0 flex h-8 w-8 rounded-full bg-white ring-2 ${
-              activity.kind === "donation" ? "text-orange-700 ring-orange-200" : "text-teal-700 ring-teal-200"
+          <li key={activity.id} className="relative grid gap-3 border-l-2 border-edge pb-5 pl-7 last:pb-0">
+            <span className={`absolute -left-[17px] top-0 flex h-8 w-8 rounded-full bg-paper ring-2 ${
+              activity.kind === "donation" ? "text-signal-deep ring-signal/25" : "text-positive ring-positive/40"
             }`}>
               <svg aria-hidden="true" viewBox="0 0 24 24" className="m-auto h-4 w-4">
                 {activity.kind === "donation" ? (
@@ -31,17 +31,17 @@ export function RecentActivitySection({ activities }: RecentActivitySectionProps
                 )}
               </svg>
             </span>
-            <article className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition duration-200 hover:bg-white hover:shadow-sm motion-reduce:transition-none">
+            <article className="rounded-2xl border border-edge bg-surface/70 p-4 transition duration-200 hover:bg-paper hover:shadow-sm motion-reduce:transition-none">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">
                     {activity.kind}
                   </p>
-                  <h3 className="mt-2 font-semibold text-zinc-950">{activity.title}</h3>
+                  <h3 className="mt-2 font-semibold text-ink">{activity.title}</h3>
                 </div>
-                <p className="text-sm font-medium text-zinc-600">{activity.dateLabel}</p>
+                <p className="text-sm font-medium text-ink-soft">{activity.dateLabel}</p>
               </div>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">{activity.description}</p>
+              <p className="mt-3 text-sm leading-6 text-ink-soft">{activity.description}</p>
             </article>
           </li>
         ))}
