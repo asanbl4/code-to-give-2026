@@ -224,6 +224,7 @@ export function MascotFaqOverlay() {
                 menu again. Nothing is destroyed by asking a question. */}
             <MascotQuickLinks
               onSelect={selectFaq}
+              onAsk={(question) => void ask(question)}
               onReplayIntro={() => {
                 closeFaq();
                 replayIntro();
