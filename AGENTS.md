@@ -36,8 +36,11 @@ Both must be running for the page to render anything but an error.
 | `backend/app/auth.py` | JWT verification (authentication) and the staff-role gate (authorization). |
 | `backend/app/routers/` | One module per resource. |
 | `backend/app/schemas/` | Pydantic models for what crosses the API boundary. |
+| `backend/app/features/<name>/` | Self-contained features: `chatbot/`, `instagram/`. Register the router in `main.py`. |
+| `backend/app/features/chatbot/knowledge/` | The corpus. Content, no code — staff edit this. |
 | `backend/tests/` | pytest, offline. `FakeDb` stands in for PostgREST. |
 | `backend/pyproject.toml` | Dependencies, ruff and pytest config. |
+| `content/impact-stats.yaml` | Every number on the site, with a source. Referenced as `{{ tokens }}`. |
 | `supabase/migrations/` | Schema history. One `.sql` file per applied migration. |
 | `frontend/app/` | **Routes only.** A `page.tsx` composes primitives and feature components; it does not define them. |
 | `frontend/components/ui/` | The design system. Button, Card, Section, Field, RadioCard, Tabs, ProgressBar, StatCard, Tag, Toggle, Icon, PageIntro. |
@@ -176,6 +179,50 @@ Two gotchas that cost real time:
 Recognition only ever *suggests*. Everything an upload creates is `status =
 'suggested'`, and RLS never exposes those. A human confirms each tag; that is
 the safeguard, not a UI nicety.
+
+## Chatbot
+
+`POST /api/chat` → `answer`, `route`, `sources`, `action`, `followups`, `locale`.
+Everything runs against a local Ollama; nothing leaves the machine.
+
+```
+question → embed, rank against the corpus
+   → is the TOP match a refusal entry, at or above CHATBOT_REFUSAL_CONFIDENCE?
+        yes → serve that entry verbatim. The model is never called.
+        no  → hand the model every non-refusal entry + the question
+   → model dead, slow or empty? serve the nearest curated entry instead
+```
+
+`route` is `generated` (normal), `refused` (medical or self-harm — staff wording,
+verbatim) or `fallback` (Ollama unreachable, nearest curated entry).
+
+Setup: `ollama pull bge-m3 && ollama pull qwen3:1.7b`, then
+`uv run python -m app.features.chatbot.build_index`. **Rebuild the index after
+editing any `knowledge/*.yaml`** — a test fails if you forget.
+`CHATBOT_ENABLED=false` 503s the endpoint and drops the launcher, so a teammate
+without Ollama still gets a working site.
+
+Four things that cost real time:
+
+- **Only the top match may refuse.** Scanning the ranked list for any refusal
+  above the floor was tried and shipped a bug: some refusal scores above 0.55
+  for almost any question, so "how can I help" answered "call 999".
+- **`think: false` is a trap.** It does not stop qwen3 reasoning, it stops Ollama
+  *separating* it, so chain-of-thought lands in `message.content`. Omit it.
+- **`ollama ps` must list both models at once.** On a 4GB GPU, qwen3:**4b**
+  (3.5GB) + bge-m3 (0.66GB) evict each other and every answer degrades to
+  `fallback`. qwen3:**1.7b** (~1.4GB) fits.
+- **Numbers are never typed into the corpus.** Write `{{ hkd_per_class }}` and
+  the value comes from `content/impact-stats.yaml`. An unknown token stops the
+  app booting, which is the point.
+
+**The model writes text visitors read, so it can state things the corpus does
+not contain.** Measured on the shipped config, it told a parent their son "can
+join regardless of age" and a visitor they "can visit Love 21's programmes to
+see classes" — neither is in the corpus, and both concern access. Every
+fabrication so far has been on a topic with no entry behind it, so coverage is
+the mitigation, not prompt wording: a stricter prompt was tried and made it
+worse. This is a deliberate trade made on 2026-08-01, not an oversight.
 
 ## Tests
 

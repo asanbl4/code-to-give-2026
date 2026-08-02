@@ -217,6 +217,12 @@ def client(fake_db: FakeDb) -> Any:
 
 
 @pytest.fixture
+def anyio_backend() -> str:
+    """Async tests run on asyncio only; we have no trio dependency."""
+    return "asyncio"
+
+
+@pytest.fixture
 def admin_client() -> Any:
     """Build a TestClient for a caller who is already staff.
 

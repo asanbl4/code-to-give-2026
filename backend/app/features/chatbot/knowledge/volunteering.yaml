@@ -1,0 +1,64 @@
+# Volunteering.
+#
+# DELIBERATELY THIN. CONTEXT.md 9.7 lists "the real list of volunteer roles,
+# with real time commitments" as blocked on Love 21 staff, and 12 forbids
+# inventing facts about a real charity. So this entry answers "how do I start?"
+# and nothing else.
+#
+# What it asserts: that Love 21 welcomes volunteers, and that the way in is to
+# get in touch. Both are true of the current site, which carries a volunteer
+# form today.
+#
+# What it deliberately does NOT say, because no one has confirmed it:
+#   - role names, or what a volunteer actually does day to day
+#   - time commitments, shift lengths or minimum terms
+#   - whether training is provided
+#   - minimum age, or any screening or vetting requirement
+#   - anything specific to corporate/CSR groups beyond "talk to us"
+#   - HandsOn Hong Kong / Time Auction routing (CONTEXT 5.1.4) -- real, but
+#     the current arrangement needs confirming before we send people there
+#
+# Replace `source: pending-staff-confirmation` once staff have signed this off,
+# and split into per-role entries when 9.7 comes back answered.
+
+- id: volunteer-how-to-start
+  tags: [volunteering, joining]
+  triggers_en:
+    - "how can I help"
+    - "how do I volunteer"
+    - "I want to volunteer"
+    - "can I help out"
+    - "do you take volunteers"
+    - "how do I get involved"
+    - "do you take corporate volunteers"
+    - "can I bring my company team to help"
+  triggers_zh:
+    - "我可以怎樣幫忙"
+    - "我想做義工"
+    - "如何成為義工"
+    - "你們接受義工嗎"
+    - "我可以參與嗎"
+    - "公司團隊可以一起參與嗎"
+  answer_en: >
+    We would love your help — Love 21's programmes run with volunteers working
+    alongside our staff. The best first step is to get in touch and tell us a
+    little about yourself and how much time you have. Someone from the team
+    will talk you through what is needed at the moment.
+  answer_zh: >
+    我們非常歡迎你的幫忙——愛21的課程由職員和義工一起支持。最好的第一步是聯絡
+    我們，簡單介紹一下你自己，以及你可以付出多少時間。我們的同事會告訴你目前
+    有甚麼需要。
+  easy_read_en: >
+    You can help Love 21 as a volunteer.
+    Please contact us and say hello.
+    We will tell you how you can help.
+  easy_read_zh: >
+    你可以成為愛21的義工。
+    請聯絡我們，跟我們說聲你好。
+    我們會告訴你可以怎樣幫忙。
+  action:
+    label_en: "Get in touch"
+    label_zh: "聯絡我們"
+    href: "/contact"
+  followups: [about-what-is-love21]
+  source: pending-staff-confirmation
