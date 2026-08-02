@@ -102,20 +102,37 @@ export function MascotHeaderBadge() {
       </button>
 
       {!faqOpen && (
-        // Anchored inside the badge's own box (not translated past its top
-        // edge): this badge sits at the very top of the page, so a bubble
-        // positioned fully above it would be clipped by the viewport itself,
-        // not just page content. Scale 0.55 leaves plenty of empty canvas
-        // above the characters' heads for a bubble to sit in without
-        // overlapping them.
+        // BESIDE the mascot, not on top of it. This used to sit at `left-0
+        // top-1`, inside the badge's own box, on the theory that scale 0.55
+        // leaves empty canvas above the characters' heads. It does not leave
+        // enough: the longest chatter line wraps to three lines and covers the
+        // badge outright, so the mascot was hidden behind its own speech.
+        //
+        // Rightwards, because that is the only side with room. The wordmark is
+        // hard against the badge's left edge (8px away), which is what an
+        // earlier centred version landed on top of.
         <p
           aria-live="polite"
-          // Anchored to the badge's left edge, not centred on it. Centring
-          // worked while the badge was 192px and could absorb the overhang; at
-          // 112px the bubble is twice the badge's width and its left half
-          // landed on top of the wordmark. Rightwards is empty bar in every
-          // layout — the nav is measured and moves out of the way.
-          className="pointer-events-none absolute left-0 top-1 hidden w-56 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold leading-snug text-ink shadow-lift ring-1 ring-edge sm:block"
+          className={cn(
+            'pointer-events-none absolute left-full top-1/2 ml-3 hidden -translate-y-1/2 sm:block',
+            'w-max max-w-56 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold',
+            'leading-snug text-ink shadow-lift ring-1 ring-edge',
+            // Sized to the line rather than fixed at w-56, so "Tap me!" is a
+            // small bubble instead of a mostly-empty banner; the long
+            // chromosome line wraps inside max-w-56 as before.
+            //
+            // Hidden in one band of widths. Below ~1035px the nav has
+            // collapsed to "Menu" and the bar beside the badge is wide open;
+            // above ~1255px the inline nav has been pushed far enough right to
+            // clear a 224px bubble. Between the two the rail sits as close as
+            // 16px from the badge and there is simply nowhere to put this.
+            //
+            // Those numbers are the header's own arithmetic (brand 280 + rail
+            // 663 + gaps + px-8), so a longer-worded nav — another language,
+            // a fifth link — moves them. If that starts to bite, the honest
+            // fix is the one SiteHeader already uses: measure, don't guess.
+            'min-[1035px]:max-[1254px]:hidden',
+          )}
         >
           {IDLE_CHATTER[chatterIndex].text}
         </p>
