@@ -171,6 +171,10 @@ export function MascotFaqOverlay() {
     // on-screen position. React batches this with the setClosing update
     // below into one re-render, so there's no frame where `closing` is true
     // but closeTransform is still stale/null.
+    //
+    // That position also has to survive the re-render, or the glide lands
+    // somewhere this measurement never described. It does because the panel
+    // below fades rather than unmounting — see its comment.
     setCloseTransform(computeFlyTransform(boxRef.current, badgeRef.current));
     setClosing(true);
     restoreFocusRef.current = true;
@@ -238,48 +242,74 @@ export function MascotFaqOverlay() {
         <ChromosomeTrio ref={trioRef} scale={0.75} />
       </div>
 
-      {!atCorner && (
-        <div
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Love 21 helper"
-          tabIndex={-1}
-          className="flex w-full min-h-0 max-w-md flex-1 flex-col overflow-hidden rounded-card bg-paper shadow-lift outline-none md:h-[32rem] md:max-h-[85vh] md:flex-none"
-        >
-          <header className="flex items-center justify-between gap-3 border-b border-edge px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <ChatAvatar size={10} />
-              <h2 className="truncate font-display text-lg font-bold text-ink">How can I help?</h2>
-            </div>
-            <Button variant="quiet" size="sm" onClick={requestClose}>
-              {/* Text, not an X glyph: non-negotiable #4 forbids icon-only controls. */}
-              Close
-            </Button>
-          </header>
+      {/* Faded out while the trio is mid-glide, NOT unmounted — the layout
+          space stays claimed the whole time this overlay is up.
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
-            {/* The quick links stay mounted once a conversation starts rather
-                than being swapped out for the transcript — they scroll up out
-                of view on their own, and scrolling back is how you get the
-                menu again. Nothing is destroyed by asking a question. */}
-            <MascotQuickLinks
-              onSelect={selectFaq}
-              onAsk={(question) => void ask(question)}
-              onReplayIntro={() => {
-                closeFaq();
-                replayIntro();
-              }}
-            />
+          This panel is a flex sibling of the box above, so removing it
+          re-centres that box across the freed width: 236px to the right at a
+          desktop size (half the 448px panel plus half the 24px gap), and
+          vertically on a phone, where the stage stacks. That shift is instant
+          — it is a layout change, not a transform — while the box's own
+          transform transition is what carries the glide.
 
-            <hr className="my-4 border-edge" />
+          Unmounting it therefore broke the minimise twice over. requestClose
+          measures the box against the badge while the panel is still up, then
+          the same commit removed the panel: the trio jumped 236px sideways as
+          the glide began, glided to a point 236px off the badge, and snapped
+          onto the badge only when this overlay unmounted 700ms later and the
+          real one reappeared. Opening had the same shift mirrored — the glide
+          started half a panel to the left of the badge instead of on it.
 
-            <ChatTranscript turns={turns} pending={pending} greeting={strings.greeting} strings={strings} />
+          Holding the space keeps the box's rest position fixed from mount to
+          unmount, which is what both measurements already assumed.
+
+          `inert`, not just `opacity-0`: transparent content still takes focus
+          and is still read out. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Love 21 helper"
+        tabIndex={-1}
+        inert={atCorner}
+        className={cn(
+          'flex w-full min-h-0 max-w-md flex-1 flex-col overflow-hidden rounded-card bg-paper shadow-lift outline-none',
+          'transition-opacity duration-700 ease-in-out md:h-[32rem] md:max-h-[85vh] md:flex-none',
+          atCorner && 'opacity-0',
+        )}
+      >
+        <header className="flex items-center justify-between gap-3 border-b border-edge px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <ChatAvatar size={10} />
+            <h2 className="truncate font-display text-lg font-bold text-ink">How can I help?</h2>
           </div>
+          <Button variant="quiet" size="sm" onClick={requestClose}>
+            {/* Text, not an X glyph: non-negotiable #4 forbids icon-only controls. */}
+            Close
+          </Button>
+        </header>
 
-          <ChatComposer pending={pending} strings={strings} onAsk={(question) => void ask(question)} />
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+          {/* The quick links stay mounted once a conversation starts rather
+              than being swapped out for the transcript — they scroll up out
+              of view on their own, and scrolling back is how you get the
+              menu again. Nothing is destroyed by asking a question. */}
+          <MascotQuickLinks
+            onSelect={selectFaq}
+            onAsk={(question) => void ask(question)}
+            onReplayIntro={() => {
+              closeFaq();
+              replayIntro();
+            }}
+          />
+
+          <hr className="my-4 border-edge" />
+
+          <ChatTranscript turns={turns} pending={pending} greeting={strings.greeting} strings={strings} />
         </div>
-      )}
+
+        <ChatComposer pending={pending} strings={strings} onAsk={(question) => void ask(question)} />
+      </div>
     </div>
   );
 }

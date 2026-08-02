@@ -95,32 +95,48 @@ export function MascotIntroOverlay() {
         <ChromosomeTrio ref={introTrioRef} scale={1.2} />
       </div>
 
-      {!flying && (
-        <>
-          {/* aria-live so screen reader users get the script too, not just
-              the visual caption swap. */}
-          <p
-            aria-live="polite"
-            className="max-w-md rounded-card bg-white px-6 py-4 text-center text-xl font-bold text-ink shadow-lift"
-          >
-            {currentBeat.text}
-          </p>
+      {/* Wrapped and faded while flying, NOT unmounted. These sit below the
+          box in a centred flex column, so dropping them out of the layout
+          re-centres the box over the freed height — it fell 80px the instant
+          the fly-out began, a jump no transition covers because it is a
+          layout change rather than a transform. Keeping the space claimed
+          lets the box leave from exactly where it was sitting.
 
-          {currentBeat.cta && (
-            <Button
-              variant="donate"
-              size="lg"
-              onClick={() => {
-                finishIntro();
-                router.push(currentBeat.cta!.href);
-              }}
-              className="rounded-full shadow-lift"
-            >
-              {currentBeat.cta.label}
-            </Button>
-          )}
-        </>
-      )}
+          The same defect, sideways, is why the FAQ overlay's panel fades
+          instead of unmounting; its comment has the longer version.
+
+          `inert` so a fading, unclickable caption and CTA are not still
+          tabbable on the way out. */}
+      <div
+        inert={flying}
+        className={cn(
+          'flex flex-col items-center gap-6 transition-opacity duration-700 ease-in-out',
+          flying && 'opacity-0',
+        )}
+      >
+        {/* aria-live so screen reader users get the script too, not just
+            the visual caption swap. */}
+        <p
+          aria-live="polite"
+          className="max-w-md rounded-card bg-white px-6 py-4 text-center text-xl font-bold text-ink shadow-lift"
+        >
+          {currentBeat.text}
+        </p>
+
+        {currentBeat.cta && (
+          <Button
+            variant="donate"
+            size="lg"
+            onClick={() => {
+              finishIntro();
+              router.push(currentBeat.cta!.href);
+            }}
+            className="rounded-full shadow-lift"
+          >
+            {currentBeat.cta.label}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
