@@ -17,55 +17,55 @@ export function DonationReview({
   return (
     <section
       aria-labelledby="donation-review-heading"
-      className="rounded-[2rem] border border-orange-100 bg-white p-6 shadow-sm sm:p-8"
+      className="rounded-[2rem] border border-edge bg-white p-6 shadow-sm sm:p-8"
     >
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
+      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-signal-deep">
         Review
       </p>
       <h2
         ref={headingRef}
         id="donation-review-heading"
         tabIndex={-1}
-        className="mt-3 text-2xl font-semibold text-zinc-950 outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+        className="mt-3 text-2xl font-semibold text-ink"
       >
         Review your donation selection
       </h2>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-soft">
         Check your selections before moving to the demo confirmation. No payment
         details or personal information are requested.
       </p>
 
       <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-2">
-        <div className="rounded-2xl bg-zinc-50 p-4">
-          <dt className="text-zinc-500">Frequency</dt>
-          <dd className="mt-1 font-semibold text-zinc-950">{details.frequencyLabel}</dd>
+        <div className="rounded-2xl bg-surface p-4">
+          <dt className="text-ink-soft">Frequency</dt>
+          <dd className="mt-1 font-semibold text-ink">{details.frequencyLabel}</dd>
         </div>
-        <div className="rounded-2xl bg-zinc-50 p-4">
-          <dt className="text-zinc-500">Amount</dt>
-          <dd className="mt-1 font-semibold text-zinc-950">{details.amountLabel}</dd>
+        <div className="rounded-2xl bg-surface p-4">
+          <dt className="text-ink-soft">Amount</dt>
+          <dd className="mt-1 font-semibold text-ink">{details.amountLabel}</dd>
         </div>
         {details.monthlyTotalLabel && (
-          <div className="rounded-2xl bg-zinc-50 p-4">
-            <dt className="text-zinc-500">12-month total</dt>
-            <dd className="mt-1 font-semibold text-zinc-950">
+          <div className="rounded-2xl bg-surface p-4">
+            <dt className="text-ink-soft">12-month total</dt>
+            <dd className="mt-1 font-semibold text-ink">
               {details.monthlyTotalLabel}
             </dd>
           </div>
         )}
-        <div className="rounded-2xl bg-zinc-50 p-4">
-          <dt className="text-zinc-500">Support interest</dt>
-          <dd className="mt-1 font-semibold text-zinc-950">{details.interestLabel}</dd>
+        <div className="rounded-2xl bg-surface p-4">
+          <dt className="text-ink-soft">Support interest</dt>
+          <dd className="mt-1 font-semibold text-ink">{details.interestLabel}</dd>
         </div>
       </dl>
 
-      <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm leading-6 text-zinc-800">
+      <div className="mt-6 rounded-2xl border border-signal/25 bg-signal-soft p-4 text-sm leading-6 text-ink">
         <p>
           This is a hackathon prototype. Completing this step will show a confirmation
           state only; it will not process a real donation.
         </p>
         {details.impactStatement && (
           <p className="mt-3">
-            <span className="font-semibold text-zinc-950">Verified impact: </span>
+            <span className="font-semibold text-ink">Verified impact: </span>
             {details.impactStatement}
           </p>
         )}
@@ -75,14 +75,14 @@ export function DonationReview({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-800 transition hover:border-orange-300 hover:bg-orange-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 motion-reduce:transition-none"
+          className="rounded-full border border-edge px-5 py-3 text-sm font-semibold text-ink transition hover:border-signal hover:bg-signal-soft motion-reduce:transition-none"
         >
           Back to edit
         </button>
         <button
           type="button"
           onClick={onComplete}
-          className="rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          className="rounded-full bg-signal px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-signal-deep motion-reduce:transition-none motion-reduce:hover:translate-y-0"
         >
           Complete donation
         </button>

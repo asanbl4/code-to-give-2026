@@ -109,10 +109,10 @@ function RadioCard({
   return (
     <label
       htmlFor={id}
-      className={`group relative flex min-h-12 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+      className={`group relative flex min-h-12 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
         checked
-          ? "border-orange-500 bg-orange-50 text-zinc-950 shadow-md"
-          : "border-zinc-200 bg-white text-zinc-950 hover:border-orange-300 hover:bg-orange-50/40"
+          ? "border-signal bg-signal-soft text-ink shadow-md"
+          : "border-edge bg-white text-ink hover:border-signal hover:bg-surface"
       }`}
     >
       <input
@@ -122,12 +122,12 @@ function RadioCard({
         value={value}
         checked={checked}
         onChange={onChange}
-        className="mt-1 h-4 w-4 accent-orange-600"
+        className="mt-1 h-4 w-4 accent-signal"
       />
       <span
         aria-hidden="true"
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-          checked ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"
+          checked ? "bg-signal text-white" : "bg-signal-soft text-signal"
         }`}
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5">
@@ -137,12 +137,12 @@ function RadioCard({
       <span>
         <span className="block font-semibold">{label}</span>
         {description && (
-          <span className="mt-1 block text-sm leading-5 text-zinc-600">
+          <span className="mt-1 block text-sm leading-5 text-ink-soft">
             {description}
           </span>
         )}
         {checked && (
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-orange-800 ring-1 ring-orange-200">
+          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-signal-deep ring-1 ring-signal/25">
             <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
               <path fill="currentColor" d="m8.2 13.6-3.4-3.4 1.4-1.4 2 2 5.6-5.6 1.4 1.4-7 7Z" />
             </svg>
@@ -158,7 +158,7 @@ function InterestIcon({ value }: { value: DonationInterest }) {
   const baseClass = "h-5 w-5";
 
   return (
-    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-orange-700 ring-1 ring-orange-100">
+    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-signal ring-1 ring-edge">
       <svg aria-hidden="true" viewBox="0 0 24 24" className={baseClass}>
         {value === "where-needed-most" && (
           <path fill="currentColor" d="M12 3 4 7v5c0 4.1 3.4 7.8 8 9 4.6-1.2 8-4.9 8-9V7l-8-4Zm0 5a3 3 0 0 1 3 3c0 2.2-3 5-3 5s-3-2.8-3-5a3 3 0 0 1 3-3Z" />
@@ -192,14 +192,14 @@ function AmountCard({ amount, checked, id, name, onChange }: AmountCardProps) {
   return (
     <label
       htmlFor={id}
-      className={`group relative flex min-h-28 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+      className={`group relative flex min-h-28 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
         checked
-          ? "border-orange-500 bg-orange-50 text-zinc-950 shadow-md"
-          : "border-zinc-200 bg-white text-zinc-950 hover:border-orange-300 hover:bg-orange-50/40"
+          ? "border-signal bg-signal-soft text-ink shadow-md"
+          : "border-edge bg-white text-ink hover:border-signal hover:bg-surface"
       }`}
     >
       {checked && (
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-orange-800 ring-1 ring-orange-200">
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-signal-deep ring-1 ring-signal/25">
           <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
             <path fill="currentColor" d="m8.2 13.6-3.4-3.4 1.4-1.4 2 2 5.6-5.6 1.4 1.4-7 7Z" />
           </svg>
@@ -213,16 +213,16 @@ function AmountCard({ amount, checked, id, name, onChange }: AmountCardProps) {
         value={amount.value}
         checked={checked}
         onChange={onChange}
-        className="mt-1 h-4 w-4 accent-orange-600"
+        className="mt-1 h-4 w-4 accent-signal"
       />
       <span>
-        <span className={`flex h-9 w-9 items-center justify-center rounded-full ${checked ? "bg-orange-600 text-white" : "bg-orange-100 text-orange-700"}`}>
+        <span className={`flex h-9 w-9 items-center justify-center rounded-full ${checked ? "bg-signal text-white" : "bg-signal-soft text-signal"}`}>
           <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
             <path fill="currentColor" d="M12 2 4 6v5.5C4 16 7.4 20 12 21.5 16.6 20 20 16 20 11.5V6l-8-4Zm0 5 1.4 2.8 3.1.5-2.3 2.2.6 3.1-2.8-1.5-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L12 7Z" />
           </svg>
         </span>
         <span className="mt-3 block text-2xl font-semibold">{amount.label}</span>
-        <span className="mt-2 block text-sm leading-5 text-zinc-600">
+        <span className="mt-2 block text-sm leading-5 text-ink-soft">
           {amount.impactStatement}
         </span>
       </span>
@@ -328,25 +328,25 @@ export function DonationExperience() {
         <form
           id={`${id}-donation-form`}
           onSubmit={handleReview}
-          className="rounded-[2rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-6 lg:p-7"
+          className="rounded-[2rem] border border-edge bg-white p-4 shadow-sm sm:p-6 lg:p-7"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-signal-deep">
             Donation selection
           </p>
           <h2
             ref={selectionHeadingRef}
             id="donation-selection-heading"
             tabIndex={-1}
-            className="mt-3 text-2xl font-semibold text-zinc-950 outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+            className="mt-3 text-2xl font-semibold text-ink"
           >
             Choose your gift
           </h2>
-          <p className="mt-3 text-sm leading-6 text-zinc-600">
+          <p className="mt-3 text-sm leading-6 text-ink-soft">
             Select a frequency, amount, and support interest before reviewing.
           </p>
 
           <fieldset className="mt-6">
-            <legend className="text-base font-semibold text-zinc-950">Donation frequency</legend>
+            <legend className="text-base font-semibold text-ink">Donation frequency</legend>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {DONATION_FREQUENCIES.map((frequency) => (
                 <RadioCard
@@ -364,7 +364,7 @@ export function DonationExperience() {
           </fieldset>
 
           <fieldset className="mt-6">
-            <legend className="text-base font-semibold text-zinc-950">Donation amount</legend>
+            <legend className="text-base font-semibold text-ink">Donation amount</legend>
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {PRESET_AMOUNTS.map((amount) => (
                 <AmountCard
@@ -394,12 +394,12 @@ export function DonationExperience() {
               <div className="mt-4 max-w-sm">
                 <label
                   htmlFor={`${id}-custom-amount`}
-                  className="block text-sm font-medium text-zinc-800"
+                  className="block text-sm font-medium text-ink"
                 >
                   Custom amount in HKD
                 </label>
-                <div className="mt-2 flex rounded-2xl border border-zinc-300 bg-white focus-within:border-amber-600 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-600">
-                  <span className="flex items-center border-r border-zinc-200 px-4 text-sm font-semibold text-zinc-600">
+                <div className="mt-2 flex rounded-2xl border border-edge bg-white focus-within:border-signal">
+                  <span className="flex items-center border-r border-edge px-4 text-sm font-semibold text-ink-soft">
                     HK$
                   </span>
                   <input
@@ -422,10 +422,10 @@ export function DonationExperience() {
                     aria-describedby={`${id}-custom-amount-help ${
                       shouldShowCustomAmountError ? `${id}-custom-amount-error` : ""
                     }`}
-                    className="min-w-0 flex-1 rounded-r-2xl px-4 py-3 text-base text-zinc-950 outline-none"
+                    className="min-w-0 flex-1 rounded-r-2xl px-4 py-3 text-base text-ink"
                   />
                 </div>
-                <p id={`${id}-custom-amount-help`} className="mt-2 text-sm text-zinc-500">
+                <p id={`${id}-custom-amount-help`} className="mt-2 text-sm text-ink-soft">
                   Use whole Hong Kong dollars only. Custom amounts do not show a custom
                   impact description.
                 </p>
@@ -433,7 +433,7 @@ export function DonationExperience() {
                   <p
                     id={`${id}-custom-amount-error`}
                     role="alert"
-                    className="mt-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+                    className="mt-2 rounded-xl border border-danger/40 bg-danger-soft px-3 py-2 text-sm font-medium text-danger"
                   >
                     {customAmountError}
                   </p>
@@ -443,7 +443,7 @@ export function DonationExperience() {
           </fieldset>
 
           <fieldset className="mt-6">
-            <legend className="text-base font-semibold text-zinc-950">
+            <legend className="text-base font-semibold text-ink">
               What would you like to support?
             </legend>
             <div className="mt-4 grid gap-3">
@@ -451,10 +451,10 @@ export function DonationExperience() {
                 <label
                   key={interest.value}
                   htmlFor={`${id}-interest-${interest.value}`}
-                  className={`relative flex min-h-12 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+                  className={`relative flex min-h-12 cursor-pointer gap-3 rounded-2xl border p-3 transition duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
                     selection.interest === interest.value
-                      ? "border-orange-500 bg-orange-50 text-zinc-950 shadow-md"
-                      : "border-zinc-200 bg-white text-zinc-950 hover:border-orange-300 hover:bg-orange-50/40"
+                      ? "border-signal bg-signal-soft text-ink shadow-md"
+                      : "border-edge bg-white text-ink hover:border-signal hover:bg-surface"
                   }`}
                 >
                   <input
@@ -464,13 +464,13 @@ export function DonationExperience() {
                     value={interest.value}
                     checked={selection.interest === interest.value}
                     onChange={() => updateInterest(interest.value)}
-                    className="mt-1 h-4 w-4 accent-orange-600"
+                    className="mt-1 h-4 w-4 accent-signal"
                   />
                   <InterestIcon value={interest.value} />
                   <span>
                     <span className="block font-semibold">{interest.label}</span>
                     {selection.interest === interest.value && (
-                      <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-orange-800 ring-1 ring-orange-200">
+                      <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-signal-deep ring-1 ring-signal/25">
                         <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
                           <path fill="currentColor" d="m8.2 13.6-3.4-3.4 1.4-1.4 2 2 5.6-5.6 1.4 1.4-7 7Z" />
                         </svg>
@@ -483,10 +483,10 @@ export function DonationExperience() {
             </div>
           </fieldset>
 
-          <div className="mt-6 flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-center sm:justify-end">
+          <div className="mt-6 flex flex-col gap-3 border-t border-edge pt-5 sm:flex-row sm:items-center sm:justify-end">
             <button
               type="submit"
-              className="rounded-full bg-zinc-950 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className="rounded-full bg-signal px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-signal-deep motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               Review donation
             </button>
@@ -500,20 +500,20 @@ export function DonationExperience() {
           />
         </div>
       </section>
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-orange-200 bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(24,24,27,0.12)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-signal/25 bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(24,24,27,0.12)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-zinc-950">
+            <p className="truncate text-sm font-semibold text-ink">
               {summaryDetails.amountLabel}
             </p>
-            <p className="truncate text-xs text-zinc-600">
+            <p className="truncate text-xs text-ink-soft">
               {summaryDetails.frequencyLabel} · {summaryDetails.interestLabel}
             </p>
           </div>
           <button
             type="submit"
             form={`${id}-donation-form`}
-            className="shrink-0 rounded-full bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="shrink-0 rounded-full bg-signal px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-signal-deep motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           >
             Review donation
           </button>
