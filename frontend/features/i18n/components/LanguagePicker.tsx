@@ -197,7 +197,16 @@ export function LanguagePicker({ className }: { className?: string }) {
                 }}
                 onMouseEnter={() => setActive(index)}
               >
-                <span dir={isRightToLeft(entry.code) ? "rtl" : "ltr"}>{entry.native}</span>
+                <span className="flex min-w-0 items-baseline gap-2">
+                  {/* Decoration only. A screen reader announcing "flag of India"
+                      six times adds nothing the native name has not said. */}
+                  <span aria-hidden="true" className="shrink-0">
+                    {entry.flag}
+                  </span>
+                  <span dir={isRightToLeft(entry.code) ? "rtl" : "ltr"} className="truncate">
+                    {entry.native}
+                  </span>
+                </span>
                 <span className="shrink-0 text-xs text-ink-soft">{entry.label}</span>
               </li>
             ))}
