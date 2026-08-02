@@ -7,7 +7,7 @@ from app.auth import CurrentUser, UserRoles
 from app.config import get_settings
 from app.features.chatbot.router import router as chatbot_router
 from app.features.instagram.router import router as instagram_router
-from app.routers import admin, participants, photos
+from app.routers import admin, participants, photos, volunteers
 
 settings = get_settings()
 
@@ -27,6 +27,8 @@ app.include_router(instagram_router)
 app.include_router(participants.router)
 app.include_router(photos.router)
 app.include_router(admin.router)
+app.include_router(volunteers.router)
+app.include_router(volunteers.admin_router)
 app.include_router(chatbot_router)
 
 
