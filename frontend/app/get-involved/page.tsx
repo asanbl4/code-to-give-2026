@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/layout";
-import { Button, Card, PageIntro } from "@/components/ui";
+import { Button, Card, PageIntro, type ButtonVariant } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Get Involved",
@@ -15,7 +15,7 @@ interface InvolvementRoute {
   bullets?: string[];
   cta?: string;
   href?: string;
-  variant?: "primary" | "secondary";
+  variant?: ButtonVariant;
 }
 
 const PRIMARY_ROUTES: readonly InvolvementRoute[] = [
@@ -26,7 +26,7 @@ const PRIMARY_ROUTES: readonly InvolvementRoute[] = [
       "Your financial contributions directly fund our sports classes, nutritional guidance programs, and counseling for our community members and their families.",
     cta: "Donate Now",
     href: "/donate",
-    variant: "primary",
+    variant: "donate",
   },
   {
     emoji: "🎁",

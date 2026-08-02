@@ -1,12 +1,13 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui";
+import Grainient from "@/components/vendor/Grainient/Grainient";
 import { LanguagePicker } from "@/features/i18n";
 import { MascotHeaderBadge } from "@/features/mascot/components/MascotHeaderBadge";
 import { cn } from "@/lib/cn";
-import Grainient from "@/components/vendor/Grainient/Grainient";
 import { NAV_LINKS } from "./navigation";
 
 /**
@@ -19,9 +20,8 @@ import { NAV_LINKS } from "./navigation";
  * yellow-orange one) so it reads as neutral rather than colouring the whole
  * top of every page.
  *
- * Nav links: red border, square-ish corners (rounded-lg, not rounded-full)
- * for contrast against the pale bar — a deliberate change from the softer
- * grey-border pill look.
+ * Nav links share the hand-drawn treatment with Donate, while Donate keeps a
+ * filled berry colour so the primary action remains visually distinct.
  *
  * Right side is two stacked rows, not one: a small utility row (log in /
  * register, language picker) sits above the main nav row, using the vertical
@@ -221,19 +221,24 @@ export function SiteHeader() {
 
           <nav aria-label="Main" className="flex items-center gap-2">
             {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className={NAV_LINK_CLASSES}>
+              <Button
+                key={link.href}
+                href={link.href}
+                variant="secondary"
+                size="lg"
+                className="nav-handwritten-button whitespace-nowrap"
+              >
                 {link.label}
-              </Link>
+              </Button>
             ))}
             <Button
               href="/donate"
-              variant="secondary"
+              variant="donate"
               size="lg"
-              className="ml-2"
-              style={{ backgroundColor: "#ec4899", borderColor: "#ec4899", color: "#fff" }}
+              className="donate-button ml-2"
             >
-              <HeartIcon />
               Donate
+              <Heart aria-hidden="true" size={22} strokeWidth={2.8} />
             </Button>
           </nav>
         </div>
@@ -247,24 +252,26 @@ export function SiteHeader() {
             className="absolute inset-x-4 top-20 z-40 flex flex-col gap-2 rounded-card bg-paper p-4 shadow-lift ring-1 ring-edge"
           >
             {NAV_LINKS.map((link) => (
-              <Link
+              <Button
                 key={link.href}
                 href={link.href}
+                variant="secondary"
+                size="lg"
                 onClick={() => setMenuOpen(false)}
-                className={NAV_LINK_CLASSES}
+                className="nav-handwritten-button"
               >
                 {link.label}
-              </Link>
+              </Button>
             ))}
             <Button
               href="/donate"
-              variant="secondary"
+              variant="donate"
               size="lg"
-              style={{ backgroundColor: "#ec4899", borderColor: "#ec4899", color: "#fff" }}
+              className="donate-button"
               onClick={() => setMenuOpen(false)}
             >
-              <HeartIcon />
               Donate
+              <Heart aria-hidden="true" size={22} strokeWidth={2.8} />
             </Button>
             <div className="mt-2 flex items-center gap-3 border-t border-edge pt-3">
               <Button href="/profile" variant="quiet" size="sm" onClick={() => setMenuOpen(false)}>

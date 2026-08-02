@@ -17,7 +17,7 @@ import { communityGoalWidgetContent } from "../data";
  * needs to negotiate with this card again.
  */
 export function CommunityGoalWidget() {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const titleId = useId();
   const content = communityGoalWidgetContent;
 
@@ -83,7 +83,7 @@ export function CommunityGoalWidget() {
             </p>
           </div>
 
-          <Button href="/donate" block className="mt-5">
+          <Button href="/donate" variant="donate" block className="mt-5">
             {content.ctaLabel}
           </Button>
 

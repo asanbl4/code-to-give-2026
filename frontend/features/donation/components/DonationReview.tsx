@@ -53,7 +53,9 @@ export function DonationReview({
         <Button variant="secondary" onClick={onBack}>
           Back to edit
         </Button>
-        <Button onClick={onComplete}>Complete prototype donation</Button>
+        <Button variant="donate" onClick={onComplete}>
+          Complete prototype donation
+        </Button>
       </div>
     </Card>
   );

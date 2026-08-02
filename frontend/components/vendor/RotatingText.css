@@ -8,7 +8,7 @@
      of sliding out of the word's own box. That is what made the animation look
      like it jumped too far up the page.
 
-  2. A hidden sizer holding the longest word. AnimatePresence in "wait" mode
+  2. A hidden sizer holding every word. AnimatePresence in "wait" mode
      unmounts the old word before mounting the new one, so for a moment there
      is nothing in flow. Reserving the width up front means the slot never
      collapses and re-expands between words.
@@ -23,9 +23,23 @@
   vertical-align: bottom;
 }
 
-/* Holds the space open, paints nothing. */
+/*
+  Holds the space open, paints nothing.
+
+  Every word is stacked into the same grid cell, so the box takes the width of
+  the widest one without any of them being measured in JS. A single word chosen
+  by character count used to stand in for "the widest", which is wrong the
+  moment the words are translated: CJK glyphs are roughly twice as wide per
+  character, so the shortest string can be the widest word on screen.
+*/
 .text-rotate-sizer {
   visibility: hidden;
+  display: grid;
+}
+
+.text-rotate-sizer > span {
+  grid-area: 1 / 1;
+  white-space: pre;
 }
 
 /* The animating word, laid over the sizer inside the padding box. */

@@ -33,9 +33,14 @@ const WIDTHS = {
 export function PageShell({ children, width = "wide", className }: PageShellProps) {
   return (
     <MascotProvider>
-      <SiteHeader />
-      <main className={cn("flex-1", WIDTHS[width], className)}>{children}</main>
-      <SiteFooter />
+      <div className="relative isolate flex min-h-screen flex-1 flex-col">
+        <div aria-hidden="true" className="page-doodle-backdrop" />
+        <SiteHeader />
+        <main className={cn("relative z-10 flex-1", WIDTHS[width], className)}>{children}</main>
+        <div className="relative z-10">
+          <SiteFooter />
+        </div>
+      </div>
       <MascotIntroOverlay />
       <MascotFaqOverlay />
     </MascotProvider>

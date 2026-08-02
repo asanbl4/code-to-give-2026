@@ -277,7 +277,7 @@ export function DonationExperience() {
 
           <div className="mt-8 flex flex-col gap-3 border-t border-edge pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-ink-soft">Next, review your selection before confirmation.</p>
-            <Button type="submit" size="lg">
+            <Button type="submit" variant="donate" size="lg">
               Review donation
             </Button>
           </div>

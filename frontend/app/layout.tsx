@@ -1,26 +1,29 @@
 import type { Metadata } from "next";
-import { Atkinson_Hyperlegible, Bricolage_Grotesque } from "next/font/google";
+import {
+  Atkinson_Hyperlegible,
+  Bricolage_Grotesque,
+  Patrick_Hand,
+} from "next/font/google";
 import { TranslateProvider } from "@/features/i18n";
 import "./globals.css";
 
-// Atkinson Hyperlegible was drawn by the Braille Institute to keep letterforms
-// distinguishable for low-vision readers. For a community that includes people
-// with Down syndrome and autism, that is a functional choice before a stylistic
-// one -- and it happens to look like nothing else.
 const atkinson = Atkinson_Hyperlegible({
   variable: "--font-atkinson",
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 
-// Open apertures and a lot of energy. Headings only.
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
-// `template` so each page contributes its own name; pages without a title fall
-// back to `default` rather than inheriting whichever page was written first.
+const patrickHand = Patrick_Hand({
+  variable: "--font-handwritten",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Love 21 Foundation",
@@ -38,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${atkinson.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${atkinson.variable} ${bricolage.variable} ${patrickHand.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {/* Wraps everything, so the chosen language survives navigation and the
