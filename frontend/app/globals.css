@@ -44,6 +44,10 @@
   --color-signal-deep: #9c1730;
   --color-signal-soft: #fdecef;
 
+  /* A warmer berry treatment reserved for the donation CTA. */
+  --color-donate: #ec4899;
+  --color-donate-deep: #be185d;
+
   /* Attention without alarm: pending review, earned badges, things to notice. */
   --color-highlight: #fadd40;
   --color-highlight-soft: #fef8dc;
@@ -116,6 +120,26 @@ dialog::backdrop {
    scrolling underneath. */
 html:has(dialog[open]) {
   overflow: hidden;
+}
+
+/* Child-drawn edge decorations for public pages. This lives outside <main>,
+   so the art stays fixed while content scrolls and remains out of admin. */
+.page-doodle-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/images/handdrawn-page-doodles.png");
+  background-position: center 12rem;
+  background-repeat: no-repeat;
+  background-size: 135vw auto;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  .page-doodle-backdrop {
+    background-size: clamp(80rem, 112vw, 120rem) auto;
+  }
 }
 
 /*
@@ -195,4 +219,79 @@ font[style] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.nav-handwritten-button,
+.donate-button {
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-handwritten), var(--font-atkinson), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  border-radius: 52% 48% 51% 49% / 45% 52% 48% 55%;
+  transform: rotate(-0.2deg);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.donate-button {
+  background: var(--color-donate);
+  color: var(--color-paper);
+  -webkit-text-stroke: 0.35px currentColor;
+  box-shadow: 0 4px 0 var(--color-donate-deep);
+}
+
+.nav-handwritten-button {
+  border-color: var(--color-signal);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  box-shadow: 1px 2px 0 var(--color-signal-soft);
+}
+
+.nav-handwritten-button:hover {
+  border-color: var(--color-signal);
+  background: var(--color-signal-soft);
+  color: var(--color-signal-deep);
+  transform: translateY(-1px) rotate(0.15deg);
+}
+
+.nav-handwritten-button:active {
+  transform: translateY(1px) rotate(-0.1deg);
+}
+
+.nav-handwritten-button::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed var(--color-signal);
+  border-radius: inherit;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.donate-button:hover {
+  background: var(--color-donate-deep);
+  transform: translateY(-1px) rotate(0.15deg);
+}
+
+.donate-button:active {
+  transform: translateY(1px) rotate(-0.1deg);
+}
+
+.donate-button::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed currentColor;
+  border-radius: inherit;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.donate-button svg {
+  transform: rotate(-8deg) scale(1.08);
 }

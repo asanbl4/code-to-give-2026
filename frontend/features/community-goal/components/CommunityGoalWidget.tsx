@@ -110,7 +110,7 @@ export function CommunityGoalWidget() {
             </p>
           </div>
 
-          <Button href="/donate" block className="mt-5">
+          <Button href="/donate" variant="donate" block className="mt-5">
             {content.ctaLabel}
           </Button>
 
