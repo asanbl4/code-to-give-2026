@@ -155,6 +155,38 @@ html:has(dialog[open]) {
   }
 }
 
+/*
+  Google Translate, de-branded.
+
+  `features/i18n` mounts Google's widget hidden and drives its `<select>` from
+  our own picker, but the widget still injects three things into the page that
+  it does not ask permission for. All three are suppressed here rather than in
+  the component, because they are styles on elements React does not own.
+
+  The `body { top: 0 }` rule is the important one: Google pushes the whole
+  document down by the height of its banner frame with an inline style, and
+  since our header is `position: sticky` that shifts it off the top of the
+  viewport and leaves a grey strip above it. `!important` is unavoidable — an
+  inline style is what we are beating.
+*/
+iframe.skiptranslate,
+.goog-te-banner-frame,
+.goog-te-gadget-icon {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+/* Google wraps every translated string in `<font>`, which resets colour and
+   would drop our tokens on the floor. */
+font[style] {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: inherit !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
