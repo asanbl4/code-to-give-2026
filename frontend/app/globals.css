@@ -42,6 +42,10 @@
   --color-signal-deep: #b3122d;
   --color-signal-soft: #fdecef;
 
+  /* A warmer berry treatment reserved for the donation CTA. */
+  --color-donate: #c72d5c;
+  --color-donate-deep: #a91f48;
+
   /* Attention without alarm: pending review, earned badges, things to notice. */
   --color-highlight: #fadd40;
   --color-highlight-soft: #fef8dc;
@@ -159,4 +163,72 @@ html:has(dialog[open]) {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.handwritten-button {
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-handwritten), var(--font-atkinson), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  border-radius: 52% 48% 51% 49% / 45% 52% 48% 55%;
+  transform: rotate(-0.2deg);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.handwritten-button:not(:disabled):hover {
+  transform: translateY(-1px) rotate(0.15deg);
+}
+
+.handwritten-button:not(:disabled):active {
+  transform: translateY(1px) rotate(-0.1deg);
+}
+
+.handwritten-button--filled {
+  box-shadow: 0 3px 0 var(--color-signal-deep);
+}
+
+.handwritten-button--filled::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed currentColor;
+  border-radius: inherit;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.handwritten-button--outline {
+  box-shadow: 1px 2px 0 var(--color-surface-deep);
+}
+
+.handwritten-button--outline::after {
+  content: "";
+  position: absolute;
+  inset: 2px -2px -2px 1px;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  opacity: 0.12;
+  transform: rotate(0.6deg);
+  pointer-events: none;
+}
+
+.donate-button {
+  background: var(--color-donate);
+  color: var(--color-paper);
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--color-donate-deep);
+}
+
+.donate-button:hover {
+  background: var(--color-donate-deep);
+}
+
+.donate-button svg {
+  transform: rotate(-8deg) scale(1.08);
 }

@@ -6,10 +6,14 @@ export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-signal text-white hover:bg-signal-deep",
-  secondary: "border-2 border-edge bg-paper text-ink hover:border-signal hover:bg-surface",
-  quiet: "text-ink-soft hover:bg-surface hover:text-ink",
-  danger: "border-2 border-danger bg-paper text-danger hover:bg-danger-soft",
+  primary:
+    "handwritten-button--filled bg-signal text-white hover:bg-signal-deep",
+  secondary:
+    "handwritten-button--outline border-2 border-edge bg-paper text-ink hover:border-signal hover:bg-surface",
+  quiet:
+    "handwritten-button--quiet text-ink-soft hover:bg-surface hover:text-ink",
+  danger:
+    "handwritten-button--outline border-2 border-danger bg-paper text-danger hover:bg-danger-soft",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -21,7 +25,7 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full text-center font-bold " +
+  "handwritten-button inline-flex items-center justify-center gap-2 rounded-full text-center " +
   "transition-colors disabled:pointer-events-none disabled:opacity-45";
 
 interface Shared {

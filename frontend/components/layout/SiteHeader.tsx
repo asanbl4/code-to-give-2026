@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -53,8 +54,14 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
-          <Button href="/donate" size="sm" className="md:ml-2" onClick={() => setMenuOpen(false)}>
+          <Button
+            href="/donate"
+            size="sm"
+            className="donate-button md:ml-2"
+            onClick={() => setMenuOpen(false)}
+          >
             Donate
+            <Heart aria-hidden="true" size={20} strokeWidth={2.8} />
           </Button>
         </nav>
       </div>
