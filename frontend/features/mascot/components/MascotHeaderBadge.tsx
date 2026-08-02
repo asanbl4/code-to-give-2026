@@ -7,8 +7,14 @@
 // Tapping it opens <MascotFaqOverlay />, which glides the trio to the middle
 // of the page as a tap-to-navigate FAQ assistant — this badge goes invisible
 // (but keeps its layout space, via `invisible`) for that overlay's duration
-// so there's only ever one live WebGL canvas for the mascot at a time. Only
-// renders once the intro has finished — see MascotContext for shared state.
+// so there's only ever one live WebGL canvas for the mascot at a time.
+//
+// Before phase 'corner' (i.e. during the intro), this renders an invisible,
+// canvas-less placeholder in the exact same spot instead of nothing — no
+// second live WebGL context, but `badgeRef` still points at a real, laid-out
+// element the whole time, so MascotIntroOverlay can measure this badge's
+// actual on-screen position for its fly-out trajectory instead of
+// approximating it.
 import { useEffect, useRef, useState } from 'react';
 import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
 import { IDLE_CHATTER, IDLE_CHATTER_INTERVAL_MS } from '../data';
@@ -37,7 +43,18 @@ export function MascotHeaderBadge() {
     return () => clearInterval(interval);
   }, [phase, faqOpen]);
 
-  if (phase !== 'corner') return null;
+  if (phase !== 'corner') {
+    return (
+      <button
+        ref={badgeRef}
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        disabled
+        className="invisible block h-48 w-48 shrink-0 p-0"
+      />
+    );
+  }
 
   return (
     <div className={faqOpen ? 'invisible relative shrink-0' : 'relative shrink-0'}>

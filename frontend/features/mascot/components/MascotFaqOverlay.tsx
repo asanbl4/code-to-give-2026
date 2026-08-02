@@ -11,7 +11,7 @@
 // The chat used to be a separate floating button in the bottom-right corner —
 // two competing helpers on one screen, one of which the community-goal widget
 // kept covering up. There is one now, and it is the mascot.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui';
@@ -21,9 +21,10 @@ import { ChatComposer } from '@/features/chatbot/components/ChatComposer';
 import { ChatTranscript } from '@/features/chatbot/components/ChatTranscript';
 import { useChatConversation } from '@/features/chatbot/useChatConversation';
 import {
+  computeFlyTransform,
+  computeSlideOffset,
   FLY_DURATION_MS,
-  FLY_TO_CORNER_TRANSFORM,
-  SLIDE_FROM_CORNER_TRANSFORM,
+  FLY_TO_CORNER_TRANSFORM_FALLBACK,
   mascotStageClass,
 } from '../overlay';
 import { useMascot } from '../MascotContext';
@@ -44,8 +45,26 @@ export function MascotFaqOverlay() {
   const router = useRouter();
   const { phase, faqOpen, closeFaq, replayIntro, badgeRef } = useMascot();
   const trioRef = useRef<ChromosomeTrioHandle>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Measured live against the real header badge instead of an approximate
+  // offset — see the fuller explanation on computeFlyTransform in
+  // overlay.ts, and the identical pattern in MascotIntroOverlay.
+  //
+  // openOffset: a layout effect (fires before the browser paints), so the
+  // box's first-ever frame already has the right transform — a regular
+  // effect would let the box flash at its rest position for one frame first.
+  // closeTransform: a regular effect is fine here since requestClose already
+  // measures synchronously before the state update that starts the CSS
+  // transition — there's no unstyled frame to flash.
+  const [openOffset, setOpenOffset] = useState<string | null>(null);
+  const [closeTransform, setCloseTransform] = useState<string | null>(null);
+
+  useLayoutEffect(() => {
+    if (!faqOpen) return;
+    setOpenOffset(computeSlideOffset(boxRef.current, badgeRef.current));
+  }, [faqOpen, badgeRef]);
   // Set when this overlay closes itself (Escape, Close, backdrop) rather than
   // navigating away, so focus goes back to whatever opened it.
   const restoreFocusRef = useRef(false);
@@ -146,6 +165,13 @@ export function MascotFaqOverlay() {
   if (phase !== 'corner' || !faqOpen) return null;
 
   function requestClose() {
+    // Measured now, synchronously, before setClosing(true) — at this exact
+    // moment the box is still at its rest (centred) position, unaffected by
+    // any transform, so this is the correct instant to read its real
+    // on-screen position. React batches this with the setClosing update
+    // below into one re-render, so there's no frame where `closing` is true
+    // but closeTransform is still stale/null.
+    setCloseTransform(computeFlyTransform(boxRef.current, badgeRef.current));
     setClosing(true);
     restoreFocusRef.current = true;
     setTimeout(() => {
@@ -155,6 +181,8 @@ export function MascotFaqOverlay() {
       // "already at the corner" instead of animating in on the next open.
       setClosing(false);
       setEntered(false);
+      setOpenOffset(null);
+      setCloseTransform(null);
     }, FLY_DURATION_MS);
   }
 
@@ -180,15 +208,28 @@ export function MascotFaqOverlay() {
       {/* Smaller on a phone: at 300px the trio plus a usable chat panel does
           not fit in a short viewport, and the panel is the part you came for. */}
       <div
+        ref={boxRef}
         className="h-[150px] w-[150px] shrink-0 p-0 transition-transform duration-700 ease-in-out md:h-[300px] md:w-[300px]"
         style={
           // Closing: scale+translate is safe here — the canvas has already
           // been mounted and correctly sized for a while by this point.
           // Opening (mount to first "entered" flip): translate-only — see
-          // the long comment on FLY_TO_CORNER_TRANSFORM in overlay.ts for
-          // why scaling this box before its first paint would otherwise
+          // the long comment on computeFlyTransform in overlay.ts for why
+          // scaling this box before its first paint would otherwise
           // permanently wreck the canvas's size.
-          closing ? { transform: FLY_TO_CORNER_TRANSFORM } : !entered ? { transform: SLIDE_FROM_CORNER_TRANSFORM } : undefined
+          //
+          // No transform at all when opening and openOffset hasn't been
+          // measured yet (rather than a fallback constant): that "no
+          // transform" frame is exactly what lets the useLayoutEffect above
+          // measure this box's true, untransformed rest position — applying
+          // any transform here first would make that measurement wrong.
+          // useLayoutEffect guarantees openOffset is set before the browser
+          // ever paints this frame, so there's nothing visible to flash.
+          closing
+            ? { transform: closeTransform ?? FLY_TO_CORNER_TRANSFORM_FALLBACK }
+            : !entered && openOffset
+              ? { transform: openOffset }
+              : undefined
         }
       >
         {/* scale 0.75 keeps this square container's framing safely within

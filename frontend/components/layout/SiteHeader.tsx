@@ -165,7 +165,7 @@ export function SiteHeader() {
 
       <div
         ref={shell}
-        className="relative mx-auto flex w-full items-center justify-between gap-4 px-5 py-2 sm:px-8"
+        className="relative mx-auto flex w-full items-center justify-between gap-4 px-5 py-1.5 sm:px-8"
       >
         {/* `shrink-0`, not `min-w-0`: this block is what the measurement reads,
             and a box flex has been allowed to squeeze reports a width the nav

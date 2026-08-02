@@ -6,19 +6,20 @@
 // glides toward the header (phase 'intro-exit') before handing off to
 // <MascotHeaderBadge />. Phase/timing lives in MascotContext so both this
 // overlay and the header badge agree on when the intro is (or isn't) active.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
-import { FLY_TO_CORNER_TRANSFORM, mascotStageClass } from '../overlay';
+import { computeFlyTransform, mascotStageClass } from '../overlay';
 import { INTRO_BEATS } from '../data';
 import { useMascot } from '../MascotContext';
 
 export function MascotIntroOverlay() {
   const router = useRouter();
-  const { phase, beatIndex, finishIntro } = useMascot();
+  const { phase, beatIndex, finishIntro, badgeRef } = useMascot();
   const introTrioRef = useRef<ChromosomeTrioHandle>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   // Fires the current beat's character actions/expressions whenever the
   // provider advances beatIndex (it owns the timers; this just reacts).
@@ -28,6 +29,29 @@ export function MascotIntroOverlay() {
       if (expression) introTrioRef.current?.setExpression(character, expression);
     });
   }, [beatIndex]);
+
+  // Measured once, the instant the exit begins: at that moment this box is
+  // still at its full-size, centred rest position, and the header badge
+  // (see MascotHeaderBadge — it renders an invisible placeholder there even
+  // during the intro, specifically so this measurement is possible) is
+  // sitting at its real on-screen spot. That single measurement is then
+  // just animated via the CSS transition below, since neither element moves
+  // again during the 700ms fly-out.
+  const [flyTransform, setFlyTransform] = useState<string | null>(null);
+  useEffect(() => {
+    // Deliberately setState-in-effect: this reads the real DOM layout of
+    // two elements (an external system, in the sense the rule cares about,
+    // not React state) and there's no other point in the render cycle where
+    // that measurement is valid — it must happen exactly when `phase`
+    // becomes 'intro-exit', before the box's own transform-driven CSS
+    // transition starts animating away from its rest position.
+    if (phase !== 'intro-exit') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFlyTransform(null);
+      return;
+    }
+    setFlyTransform(computeFlyTransform(boxRef.current, badgeRef.current));
+  }, [phase, badgeRef]);
 
   if (phase !== 'intro' && phase !== 'intro-exit') return null;
 
@@ -64,8 +88,9 @@ export function MascotIntroOverlay() {
         both to help that margin and because it read as a touch large.
       */}
       <div
+        ref={boxRef}
         className="h-[280px] w-[480px] p-0 transition-transform duration-700 ease-in-out sm:h-[420px] sm:w-[720px]"
-        style={flying ? { transform: FLY_TO_CORNER_TRANSFORM } : undefined}
+        style={flying && flyTransform ? { transform: flyTransform } : undefined}
       >
         <ChromosomeTrio ref={introTrioRef} scale={1.2} />
       </div>
