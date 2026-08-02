@@ -81,7 +81,12 @@ async def get_feed(limit: int = 12) -> InstagramFeed:
     try:
         posts = await _live_posts()
         return InstagramFeed(source="live", fetched_at=fetched_at, posts=posts[:limit])
-    except (httpx.HTTPError, client.InstagramAuthError, KeyError) as exc:
+    except (
+        httpx.HTTPError,
+        client.InstagramAuthError,
+        client.InstagramApiError,
+        KeyError,
+    ) as exc:
         # Never hard-fail the page: log and serve samples instead.
         logger.warning("Instagram live fetch failed, serving fixtures: %s", exc)
         return InstagramFeed(
