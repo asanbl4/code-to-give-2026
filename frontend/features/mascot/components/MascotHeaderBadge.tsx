@@ -17,8 +17,28 @@
 // approximating it.
 import { useEffect, useRef, useState } from 'react';
 import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
+import { cn } from '@/lib/cn';
 import { IDLE_CHATTER, IDLE_CHATTER_INTERVAL_MS } from '../data';
 import { useMascot } from '../MascotContext';
+
+/**
+ * The badge's box, shared by the live badge and the invisible placeholder
+ * that stands in for it before phase 'corner'. One constant because the two
+ * are not merely similar, they are the same box at two points in time:
+ * MascotIntroOverlay measures whichever one is mounted and flies the trio
+ * onto it, then this component swaps one for the other underneath it.
+ *
+ * They had drifted — the placeholder was still `h-48 w-48` from when the
+ * badge was 192px, so the intro shrank the trio onto a 192px target at one
+ * spot and handed off to a 112px badge 40px away, jolting on both counts.
+ * The taller placeholder was also propping the whole header open, so the bar
+ * itself snapped shorter when the intro ended.
+ *
+ * Still the tallest thing in the bar, so this is also what sets the header's
+ * height: 112px plus the shell's py-1.5, which is the 124px it measures. Its
+ * pair is the logo height in SiteHeader — change one and look at the other.
+ */
+const BADGE_BOX = 'h-24 w-24 shrink-0 p-0 sm:h-28 sm:w-28';
 
 export function MascotHeaderBadge() {
   const { phase, faqOpen, openFaq, badgeRef } = useMascot();
@@ -51,7 +71,7 @@ export function MascotHeaderBadge() {
         tabIndex={-1}
         aria-hidden="true"
         disabled
-        className="invisible block h-48 w-48 shrink-0 p-0"
+        className={cn('invisible block', BADGE_BOX)}
       />
     );
   }
@@ -66,10 +86,9 @@ export function MascotHeaderBadge() {
         aria-expanded={faqOpen}
 
         aria-label="Open Love 21 helper — quick links and chat"
-        // The badge is the tallest thing in the header, so this is what sets the
-        // bar's height: roughly this plus the shell's py-2. Its pair is the logo
-        // height in SiteHeader — change one and look at the other.
-        className="block h-24 w-24 shrink-0 p-0 transition hover:scale-105 sm:h-28 sm:w-28"
+        // Sized by BADGE_BOX above, alongside the placeholder that stands in
+        // for it during the intro. Read that comment before changing the size.
+        className={cn('block transition hover:scale-105', BADGE_BOX)}
       >
         {/*
           Scale stays 0.55 whatever the box measures. A camera's visible
