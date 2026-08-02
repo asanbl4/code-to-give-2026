@@ -238,3 +238,31 @@ export const RECENT_DONATIONS: readonly RecentDonation[] = [
   { name: "Marcus", area: "Central", amount: 200, emoji: "🙌" },
   { name: "Priya", area: "Sha Tin", amount: 1000, emoji: "✨" },
 ];
+
+export interface CorporatePartner {
+  name: string;
+  /** Expected path under public/images/partners/ — see CorporatePartners.tsx.
+   *  Drop the PNG in with this exact filename and the strip picks it up
+   *  automatically; until then it falls back to the text badge (the <img>
+   *  has an onError handler for exactly this — see PartnerBadge). */
+  logo: string;
+}
+
+// From "Our CSR Partners" (p.11) in the Love 21 2023-2024 Annual Report.
+export const CORPORATE_PARTNERS: readonly CorporatePartner[] = [
+  { name: "Bloomberg", logo: "/images/partners/bloomberg.png" },
+  { name: "10x10 HK", logo: "/images/partners/10x10-hk.png" },
+  { name: "Abrdn", logo: "/images/partners/abrdn.png" },
+  { name: "BlackRock", logo: "/images/partners/blackrock.png" },
+  { name: "Credit Suisse", logo: "/images/partners/credit-suisse.png" },
+  { name: "Hang Seng Bank", logo: "/images/partners/hang-seng-bank.png" },
+  { name: "Lululemon", logo: "/images/partners/lululemon.png" },
+  { name: "Standard Chartered", logo: "/images/partners/standard-chartered.png" },
+  { name: "EY", logo: "/images/partners/ey.png" },
+  { name: "Segantii", logo: "/images/partners/segantii.png" },
+  { name: "HSBC", logo: "/images/partners/hsbc.png" },
+  { name: "Clifford Chance", logo: "/images/partners/clifford-chance.png" },
+  { name: "Allegis", logo: "/images/partners/allegis.png" },
+  { name: "Yale Club", logo: "/images/partners/yale-club.png" },
+  { name: "Slaughter and May", logo: "/images/partners/slaughter-and-may.png" },
+];
