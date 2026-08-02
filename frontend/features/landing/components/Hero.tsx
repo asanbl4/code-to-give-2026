@@ -6,33 +6,51 @@ import { Button, SelectField } from "@/components/ui";
 import { RotatingText } from "@/components/vendor/RotatingText";
 import Grainient from "@/components/vendor/Grainient/Grainient";
 import { cn } from "@/lib/cn";
-import { HERO_SLIDES, ROLE_ROUTES, ROTATING_WORDS } from "../data";
+import { HERO_FACE_SLIDE_ID, HERO_SLIDES, ROLE_ROUTES, ROTATING_WORDS } from "../data";
+import { HeroFaceTags } from "./HeroFaceTags";
 import "../landing.css";
 
 const SLIDE_INTERVAL = 5500;
+
+/**
+ * The tagged slide gets a much longer dwell. The whole point of it is that
+ * somebody notices a highlighted face, reaches for it, and reads a story;
+ * 5.5 seconds is not enough time to do the first of those, let alone all three.
+ */
+const TAGGED_SLIDE_INTERVAL = 30_000;
 
 export function Hero() {
   const router = useRouter();
   const [role, setRole] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
+  const [openFaceId, setOpenFaceId] = useState<string | null>(null);
 
-  const currentIsVideo = HERO_SLIDES[activeSlide].type === "video";
+  const current = HERO_SLIDES[activeSlide];
+  const currentIsVideo = current.type === "video";
+  const currentIsTagged = current.id === HERO_FACE_SLIDE_ID;
+  // Auto-advance pauses on a video slide -- nobody wants to be moved off a
+  // video they just started watching -- and while a face's story is open,
+  // which is the same argument.
+  const paused = currentIsVideo || openFaceId !== null;
 
   useEffect(() => {
-    // Auto-advance pauses on a video slide: nobody wants to be moved off a
-    // video they just started watching.
-    if (currentIsVideo) return;
+    if (paused) return;
 
     // Functional update, so the interval does not close over `activeSlide` and
     // does not need to be torn down and rebuilt on every single slide change.
     const id = setInterval(
-      () => setActiveSlide((current) => (current + 1) % HERO_SLIDES.length),
-      SLIDE_INTERVAL,
+      () => setActiveSlide((slide) => (slide + 1) % HERO_SLIDES.length),
+      currentIsTagged ? TAGGED_SLIDE_INTERVAL : SLIDE_INTERVAL,
     );
     return () => clearInterval(id);
-  }, [currentIsVideo]);
+  }, [paused, currentIsTagged]);
 
-  const goTo = (index: number) => setActiveSlide((index + HERO_SLIDES.length) % HERO_SLIDES.length);
+  const goTo = (index: number) => {
+    // A card left open on a slide nobody is looking at would keep the carousel
+    // paused for good.
+    setOpenFaceId(null);
+    setActiveSlide((index + HERO_SLIDES.length) % HERO_SLIDES.length);
+  };
 
   return (
     <>
@@ -74,6 +92,16 @@ export function Hero() {
                   Learn more
                 </Button>
               </div>
+
+              {/* After the overlay, deliberately: the overlay is `inset: 0` and
+                  would otherwise take every tap meant for a face. */}
+              {slide.id === HERO_FACE_SLIDE_ID && (
+                <HeroFaceTags
+                  active={index === activeSlide}
+                  openId={openFaceId}
+                  onOpen={setOpenFaceId}
+                />
+              )}
             </div>
           ))}
         </div>
