@@ -161,3 +161,34 @@
     padding: 1.5rem;
   }
 }
+
+/* Corporate partners strip (CorporatePartners.tsx): a CSS-only marquee, not
+   a JS animation loop — the track renders the partner list twice back to
+   back and scrolls exactly one list-width left, so the seam between the
+   second copy ending and the first copy restarting is invisible. */
+.partners-track {
+  display: flex;
+  width: max-content;
+  animation: partners-scroll 32s linear infinite;
+}
+
+.partners-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes partners-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* The track renders the list twice, so -50% is exactly one list-width —
+       the second copy ends up precisely where the first started. */
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partners-track {
+    animation: none;
+  }
+}

@@ -32,6 +32,7 @@ export function MascotFaqOverlay() {
   // starting there. `closing` reverses that for the glide-back-out.
   const [entered, setEntered] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
 
   useEffect(() => {
     if (!faqOpen) return;
@@ -66,13 +67,17 @@ export function MascotFaqOverlay() {
     }, FLY_DURATION_MS);
   }
 
-  function selectFaq(href: string) {
+  function selectFaq(faq: (typeof MASCOT_FAQS)[number]) {
+    if (faq.kind === 'answer') {
+      setExpandedQuestion((current) => (current === faq.question ? null : faq.question));
+      return;
+    }
     closeFaq();
     // Same reset as requestClose (see its comment) — matters here too since
     // an in-page anchor link (e.g. /#newsletter) can navigate without
     // unmounting this component, unlike a real route change.
     setEntered(false);
-    router.push(href);
+    router.push(faq.href);
   }
 
   const atCorner = closing || !entered;
@@ -84,13 +89,13 @@ export function MascotFaqOverlay() {
         atCorner ? 'pointer-events-none bg-transparent backdrop-blur-none' : 'bg-ink/45 backdrop-blur-sm',
       )}
       role="dialog"
-      aria-label="Love 21 helper"
+      aria-label="Trio 21"
     >
       {!atCorner && (
         <button
           type="button"
           onClick={requestClose}
-          aria-label="Close Love 21 helper"
+          aria-label="Close Trio 21"
           className="absolute right-5 top-5 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-ink shadow-lift hover:bg-white"
         >
           Close
@@ -124,11 +129,15 @@ export function MascotFaqOverlay() {
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={() => selectFaq(faq.href)}
+                  aria-expanded={faq.kind === 'answer' ? expandedQuestion === faq.question : undefined}
+                  onClick={() => selectFaq(faq)}
                   className="block w-full rounded-md px-3 py-2 text-left text-sm font-semibold text-ink hover:bg-surface"
                 >
                   {faq.question}
                 </button>
+                {faq.kind === 'answer' && expandedQuestion === faq.question && (
+                  <p className="mx-1 mb-1 rounded-md bg-surface px-3 py-2 text-sm text-ink-soft">{faq.answer}</p>
+                )}
               </li>
             ))}
           </ul>

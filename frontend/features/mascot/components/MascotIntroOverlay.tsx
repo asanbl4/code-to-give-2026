@@ -62,14 +62,15 @@ export function MascotIntroOverlay() {
         which does not fit inside a square viewport at this camera distance
         no matter how many CSS pixels that square is — the two outer
         (yellow) characters get clipped off the sides. A ~1.7:1 wide box
-        gives enough horizontal FOV to fit the whole trio with room to
-        spare at scale 1.35.
+        plus the wider 38° fov (see ChromosomeTrio.tsx) gives the whole trio
+        a comfortable margin at scale 1.2 — nudged down slightly from 1.35
+        both to help that margin and because it read as a touch large.
       */}
       <div
         className="h-[280px] w-[480px] p-0 transition-transform duration-700 ease-in-out sm:h-[420px] sm:w-[720px]"
         style={flying ? { transform: FLY_TO_CORNER_TRANSFORM } : undefined}
       >
-        <ChromosomeTrio ref={introTrioRef} scale={1.35} />
+        <ChromosomeTrio ref={introTrioRef} scale={1.2} />
       </div>
 
       {!flying && (

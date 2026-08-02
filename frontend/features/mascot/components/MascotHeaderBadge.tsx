@@ -46,7 +46,7 @@ export function MascotHeaderBadge() {
         onClick={openFaq}
         aria-haspopup="dialog"
         aria-expanded={faqOpen}
-        aria-label="Open Love 21 helper"
+        aria-label="Open Trio 21"
         className="block h-48 w-48 shrink-0 p-0 transition hover:scale-105"
       >
         {/*

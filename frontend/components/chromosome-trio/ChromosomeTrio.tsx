@@ -146,7 +146,13 @@ const ChromosomeTrio = forwardRef<ChromosomeTrioHandle, ChromosomeTrioProps>(
         <Canvas
           gl={{ alpha: true, antialias: true }}
           dpr={[1, 2]}
-          camera={{ position: [0, 0, 8], fov: 32 }}
+          // fov 38 (was 32): the intro overlay was still clipping the outer
+          // (yellow) characters at its scale even in a wide 1.7:1 box — a
+          // perspective camera's visible width depends on distance/fov/aspect,
+          // not the container's pixel size (see MascotIntroOverlay's comment
+          // for the full explanation). Widening the fov gives every consumer
+          // more headroom without needing to touch each one's own scale.
+          camera={{ position: [0, 0, 8], fov: 38 }}
           style={{ background: 'transparent' }}
         >
           <ambientLight intensity={0.65} />
