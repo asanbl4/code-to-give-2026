@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card } from "@/components/ui";
+import { track } from "@/features/analytics";
 import { formatTimestamp } from "@/lib/format";
 import { buildGoogleCalendarUrl, buildIcsFile } from "../calendar";
 import type { EventSession, EventSignupResult } from "../types";

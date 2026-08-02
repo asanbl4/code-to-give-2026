@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PageShell } from "@/components/layout";
 import { Button, Card, PageIntro } from "@/components/ui";
+import { track } from "@/features/analytics";
 
 interface Question {
   id: number;
@@ -55,10 +56,16 @@ export default function QuizPage() {
     const updatedAnswers = [...selectedAnswers, matches];
     setSelectedAnswers(updatedAnswers);
 
+    // Answering the first question is starting, not loading the page. The gap
+    // between the two is the number worth knowing: it says whether the quiz
+    // looks worth beginning.
+    if (currentStep === 0) track("quiz_started");
+
     if (currentStep + 1 < QUIZ_QUESTIONS.length) {
       setCurrentStep(currentStep + 1);
     } else {
       setIsCompleted(true);
+      track("quiz_completed");
     }
   };
 

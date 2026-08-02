@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui";
 import Grainient from "@/components/vendor/Grainient/Grainient";
+import { track } from "@/features/analytics";
 import { LanguagePicker } from "@/features/i18n";
 import { MascotHeaderBadge } from "@/features/mascot/components/MascotHeaderBadge";
 import { cn } from "@/lib/cn";
@@ -226,6 +227,7 @@ export function SiteHeader() {
                 href={link.href}
                 variant="secondary"
                 size="lg"
+                onClick={() => track("nav_link_clicked")}
                 className="nav-handwritten-button whitespace-nowrap"
               >
                 {link.label}
@@ -235,6 +237,7 @@ export function SiteHeader() {
               href="/donate"
               variant="donate"
               size="lg"
+              onClick={() => track("donate_clicked")}
               className="donate-button ml-2"
             >
               Donate
@@ -257,7 +260,10 @@ export function SiteHeader() {
                 href={link.href}
                 variant="secondary"
                 size="lg"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => {
+                  track("nav_link_clicked");
+                  setMenuOpen(false);
+                }}
                 className="nav-handwritten-button"
               >
                 {link.label}
@@ -268,7 +274,10 @@ export function SiteHeader() {
               variant="donate"
               size="lg"
               className="donate-button"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => {
+                track("donate_clicked");
+                setMenuOpen(false);
+              }}
             >
               Donate
               <Heart aria-hidden="true" size={22} strokeWidth={2.8} />

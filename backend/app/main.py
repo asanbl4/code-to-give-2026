@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import CurrentUser, UserRoles
 from app.config import get_settings
+from app.features.analytics.router import admin_router as analytics_admin_router
+from app.features.analytics.router import router as analytics_router
 from app.features.chatbot.router import router as chatbot_router
 from app.features.instagram.router import router as instagram_router
 from app.routers import admin, participants, photos, volunteers
@@ -30,6 +32,10 @@ app.include_router(admin.router)
 app.include_router(volunteers.router)
 app.include_router(volunteers.admin_router)
 app.include_router(chatbot_router)
+# Public ingest and the staff-only report. Separate routers because they sit on
+# opposite sides of the auth gate; see the module docstring.
+app.include_router(analytics_router)
+app.include_router(analytics_admin_router)
 
 
 @app.get("/health")

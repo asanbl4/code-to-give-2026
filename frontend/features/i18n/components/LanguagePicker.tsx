@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import { track } from "@/features/analytics";
 import { LANGUAGES, findLanguage, isRightToLeft } from "../languages";
 import { useTranslate } from "../TranslateProvider";
 
@@ -92,6 +93,10 @@ export function LanguagePicker({ className }: { className?: string }) {
 
   const choose = (code: string) => {
     close();
+    // Which languages get chosen is the one number here that could change what
+    // the charity does — it argues for translating a page properly rather than
+    // leaving it to Google.
+    track("language_changed");
     setLanguage(code);
   };
 

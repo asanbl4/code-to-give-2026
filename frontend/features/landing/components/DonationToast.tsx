@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { track } from "@/features/analytics";
 import { cn } from "@/lib/cn";
 import { formatHkd } from "@/lib/format";
 import { RECENT_DONATIONS } from "../data";
@@ -42,7 +43,11 @@ export function DonationToast() {
         <p className="font-bold text-ink">
           {donation.name} from {donation.area} just donated {formatHkd(donation.amount)}
         </p>
-        <Link href="/donate" className="mt-1 inline-block font-bold text-signal hover:text-signal-deep">
+        <Link
+          href="/donate"
+          onClick={() => track("donate_clicked")}
+          className="mt-1 inline-block font-bold text-signal hover:text-signal-deep"
+        >
           Donate now →
         </Link>
       </div>

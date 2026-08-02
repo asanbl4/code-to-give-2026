@@ -6,6 +6,7 @@
 // small header badge, and the FAQ assistant overlay — see
 // MascotIntroOverlay.tsx, MascotHeaderBadge.tsx, MascotFaqOverlay.tsx.
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { track } from '@/features/analytics';
 import { FLY_DURATION_MS } from './overlay';
 import { INTRO_BEATS, MASCOT_SESSION_KEY } from './data';
 
@@ -100,7 +101,13 @@ export function MascotProvider({ children }: { children: ReactNode }) {
         finishIntro,
         replayIntro,
         faqOpen,
-        openFaq: () => setFaqOpen(true),
+        // Tracked here rather than at the badge, because the overlay is also
+        // opened from the quick links and from the intro — one call site at the
+        // state change catches every way in.
+        openFaq: () => {
+          track("mascot_opened");
+          setFaqOpen(true);
+        },
         closeFaq: () => setFaqOpen(false),
         badgeRef,
       }}
