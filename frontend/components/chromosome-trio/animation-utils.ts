@@ -1,5 +1,5 @@
-// Small, dependency-free easing/interpolation helpers shared by the
-// character idle/action logic and the trio's moveTo() tween.
+// Small, dependency-free easing/interpolation helpers shared by the character
+// idle/action logic and the arm geometry builder.
 
 export const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
 
