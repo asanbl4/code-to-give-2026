@@ -20,7 +20,7 @@ const QUIZ_QUESTIONS: readonly Question[] = [
     question: "What type of activity or environment do you feel most comfortable with?",
     options: [
       { text: "Physical activity, sports, or active community workouts", matches: ["Volunteer: Sports Coach", "Volunteer: Fitness Assistant"] },
-      { text: "Hands-on preparation, cooking, or sorting supplies", matches: ["Volunteer: Nutrition & Kitchen Assistant", "Donation Wishlist"] },
+      { text: "Hands-on preparation, cooking, or sorting supplies", matches: ["Volunteer: Nutrition & Kitchen Assistant"] },
       { text: "Working with youth, students, or giving presentations", matches: ["Education Programme: School Talk Presenter", "Volunteer: Workshop Mentor"] },
       { text: "Organizing events, rallying a network, or raising funds", matches: ["Raise Funds: Campaign Organizer", "Volunteer: Event Coordinator"] },
     ],
@@ -39,7 +39,7 @@ const QUIZ_QUESTIONS: readonly Question[] = [
     id: 3,
     question: "How much time are you able to commit to the Love 21 Foundation?",
     options: [
-      { text: "A one-time financial contribution or supply drop-off", matches: ["Make a Donation", "Donation Wishlist"] },
+      { text: "A one-time financial contribution", matches: ["Make a Donation"] },
       { text: "A self-paced online fundraising campaign over a few weeks", matches: ["Raise Funds: Campaign Organizer"] },
       { text: "A regular weekly or monthly recurring volunteer shift", matches: ["Volunteer: Sports Coach", "Volunteer: Nutrition & Kitchen Assistant"] },
       { text: "An occasional school or corporate workshop engagement", matches: ["Education Programme: School Talk Presenter"] },

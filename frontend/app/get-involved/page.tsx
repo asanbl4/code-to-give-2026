@@ -5,14 +5,13 @@ import { Button, Card, PageIntro, type ButtonVariant } from "@/components/ui";
 export const metadata: Metadata = {
   title: "Get Involved",
   description:
-    "Donate, give equipment, or volunteer with the Love 21 Foundation community in Hong Kong.",
+    "Donate or volunteer with the Love 21 Foundation community in Hong Kong.",
 };
 
 interface InvolvementRoute {
   emoji: string;
   title: string;
   description: string;
-  bullets?: string[];
   cta?: string;
   href?: string;
   variant?: ButtonVariant;
@@ -27,20 +26,6 @@ const PRIMARY_ROUTES: readonly InvolvementRoute[] = [
     cta: "Donate Now",
     href: "/donate",
     variant: "donate",
-  },
-  {
-    emoji: "🎁",
-    title: "Donation Wishlist",
-    description:
-      "Prefer to give essential supplies? Check out our active wishlist of needed equipment and items:",
-    bullets: [
-      "Sports Equipment (Basketballs, Yoga mats)",
-      "Nutritional ingredients & snacks",
-      "Art & workshop craft supplies",
-    ],
-    cta: "View Item Wishlist",
-    href: "/wishlist",
-    variant: "secondary",
   },
   {
     emoji: "🤝",
@@ -92,8 +77,8 @@ export default function GetInvolvedPage() {
         </div>
       </div>
 
-      {/* Top 3 Initial Cards */}
-      <ul className="grid gap-6 md:grid-cols-3">
+      {/* Primary ways to get involved */}
+      <ul className="grid gap-6 md:grid-cols-2">
         {PRIMARY_ROUTES.map((route) => (
           <li key={route.title} className="flex">
             <Card as="article" panel padding="lg" className="flex w-full flex-col">
@@ -105,13 +90,6 @@ export default function GetInvolvedPage() {
               </span>
               <h2 className="mt-6 font-display text-2xl font-bold text-ink">{route.title}</h2>
               <p className="mt-3 leading-relaxed text-ink-soft">{route.description}</p>
-              {route.bullets && (
-                <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
-                  {route.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              )}
               {route.cta && route.href && route.variant && (
                 <div className="mt-auto pt-6">
                   <Button href={route.href} variant={route.variant} block>
