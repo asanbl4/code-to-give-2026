@@ -2,7 +2,7 @@
 
 import { useId, useState, type FormEvent } from "react";
 import { Button, SelectField, TextField, TextareaField } from "@/components/ui";
-import { submitEventSignup } from "../signup";
+import { createVolunteerAccount, submitEventSignup } from "../signup";
 import type {
   EventSession,
   EventSignupResult,
@@ -76,17 +76,30 @@ export function EventSignupForm({ session, onSuccess }: EventSignupFormProps) {
         );
       }
 
+      const password = String(formData.get("password") ?? "");
+      const passwordConfirmation = String(formData.get("passwordConfirmation") ?? "");
+      if (password.length < 8) {
+        throw new Error("Choose a password with at least 8 characters");
+      }
+      if (password !== passwordConfirmation) {
+        throw new Error("The two passwords do not match");
+      }
+
+      const fullName = String(formData.get("fullName") ?? "");
+      const email = String(formData.get("email") ?? "");
+      const accessToken = await createVolunteerAccount(email, password, fullName);
+
       const result = await submitEventSignup({
         sessionId: session.id,
-        fullName: String(formData.get("fullName") ?? ""),
-        email: String(formData.get("email") ?? ""),
+        fullName,
+        email,
         phone: String(formData.get("phone") ?? ""),
         ageGroup: submittedAgeGroup,
         volunteerRole: submittedRole,
         interest,
         note: String(formData.get("note") ?? ""),
         processAcknowledged: formData.get("processAcknowledged") === "yes",
-      });
+      }, accessToken);
 
       form.reset();
       setAgeGroup("18-plus");
@@ -127,6 +140,30 @@ export function EventSignupForm({ session, onSuccess }: EventSignupFormProps) {
           label="Email"
           type="email"
           autoComplete="email"
+          required
+          disabled={isSubmitting}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          id={`${id}-password`}
+          name="password"
+          label="Create portal password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          required
+          disabled={isSubmitting}
+          help="At least 8 characters. This password goes directly to Supabase Auth."
+        />
+        <TextField
+          id={`${id}-password-confirmation`}
+          name="passwordConfirmation"
+          label="Confirm portal password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
           required
           disabled={isSubmitting}
         />

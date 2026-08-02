@@ -1,4 +1,4 @@
-import { Card, Tag } from "@/components/ui";
+import { Button, Card, Tag } from "@/components/ui";
 
 const ONBOARDING_STEPS = [
   {
@@ -52,6 +52,12 @@ export function VolunteerOnboardingOverview() {
       <p className="mt-6 rounded-card bg-highlight-soft px-4 py-3 text-sm leading-6 text-ink">
         Volunteers under 18 need a parent or guardian for the required in-person paperwork. Love 21 will explain the exact documents after reviewing your application.
       </p>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <Button href="/volunteer/login" variant="secondary" size="sm">
+          Volunteer portal sign in
+        </Button>
+        <p className="text-sm text-ink-soft">Use this after Love 21 sends your portal invitation.</p>
+      </div>
     </Card>
   );
 }

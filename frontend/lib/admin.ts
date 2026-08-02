@@ -81,8 +81,14 @@ export type AdminVolunteerApplication = {
   guardian_documents_verified: boolean;
   trial_status: "not_required" | "pending" | "passed" | "not_suitable";
   staff_notes: string;
+  auth_user_id: string | null;
   account_invited_at: string | null;
   approved_at: string | null;
+};
+
+export type VolunteerLinkResult = {
+  application: AdminVolunteerApplication;
+  delivery: "linked";
 };
 
 export class AdminError extends Error {
@@ -203,5 +209,10 @@ export const admin = {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+    }),
+
+  linkVolunteer: (id: string) =>
+    request<VolunteerLinkResult>(`/api/admin/volunteers/applications/${id}/link`, {
+      method: "POST",
     }),
 };

@@ -35,12 +35,29 @@ function ApplicationCard({
   const [notes, setNotes] = useState(application.staff_notes);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function update(body: Record<string, unknown>) {
     setSaving(true);
     setError(null);
+    setNotice(null);
     try {
       await admin.updateVolunteerApplication(application.application_id, body);
+      await onChanged();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function linkPortalAccount() {
+    setSaving(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await admin.linkVolunteer(application.application_id);
+      setNotice(`The password account for ${application.email} is linked to this application.`);
       await onChanged();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -99,7 +116,18 @@ function ApplicationCard({
         ) : (
           <Button variant="secondary" size="sm" disabled={saving || application.guardian_documents_verified} onClick={() => update({ guardian_documents_verified: true })}>Guardian documents verified</Button>
         )}
-        <Button variant="secondary" size="sm" disabled={saving || Boolean(application.account_invited_at)} onClick={() => update({ mark_account_invited: true })}>Mark account invite sent</Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={
+            saving ||
+            Boolean(application.auth_user_id) ||
+            !["under_review", "account_pending"].includes(application.status)
+          }
+          onClick={linkPortalAccount}
+        >
+          {application.auth_user_id ? "Portal account linked" : "Link portal account"}
+        </Button>
         {application.volunteer_role === "coach" && (
           <Button variant="secondary" size="sm" disabled={saving || application.trial_status === "passed"} onClick={() => update({ trial_status: "passed" })}>Trial passed</Button>
         )}
@@ -109,6 +137,7 @@ function ApplicationCard({
         <TextareaField id={`notes-${application.application_id}`} label="Private staff notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={2} fieldClassName="flex-1" disabled={saving} />
         <Button variant="quiet" onClick={() => update({ staff_notes: notes })} disabled={saving || notes === application.staff_notes}>Save notes</Button>
       </div>
+      {notice && <p aria-live="polite" className="mt-4 text-sm font-bold text-positive">{notice}</p>}
       <AdminError message={error} className="mt-4" />
     </Card>
   );

@@ -56,6 +56,9 @@ export function EventSignupFlow({ session }: { session: EventSession }) {
             <span className="font-bold text-ink">{result.applicationId}</span>.
           </p>
           <p className="mt-2 text-sm text-ink-soft">
+            Your volunteer portal account is ready. Use the email and password you just created to follow this application.
+          </p>
+          <p className="mt-2 text-sm text-ink-soft">
             Submitted on {formatTimestamp(result.submittedAt)}.
           </p>
 
@@ -111,6 +114,9 @@ export function EventSignupFlow({ session }: { session: EventSession }) {
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button href="/volunteer">
+              Open volunteer portal
+            </Button>
             <Button href={googleUrl} target="_blank" rel="noreferrer">
               Save to Google Calendar
             </Button>

@@ -1,7 +1,45 @@
 import { API_URL } from "@/lib/api";
+import { createClient } from "@/lib/supabase/client";
 import type { EventSignupInput, EventSignupResult } from "./types";
 
-export async function submitEventSignup(input: EventSignupInput): Promise<EventSignupResult> {
+export async function createVolunteerAccount(
+  email: string,
+  password: string,
+  fullName: string,
+): Promise<string> {
+  const supabase = createClient();
+  const address = email.trim().toLowerCase();
+
+  // A retry after a failed application submission should reuse the account
+  // rather than treating "already registered" as a dead end.
+  const existing = await supabase.auth.signInWithPassword({ email: address, password });
+  if (existing.data.session) return existing.data.session.access_token;
+
+  const { data, error } = await supabase.auth.signUp({
+    email: address,
+    password,
+    options: { data: { full_name: fullName.trim() } },
+  });
+
+  if (error) {
+    throw new Error(
+      error.status === 422 || error.status === 400
+        ? "An account already exists for this email, or the password does not meet the requirements. Sign in to the volunteer portal or use another email."
+        : error.message,
+    );
+  }
+  if (!data.session) {
+    throw new Error(
+      "Email confirmation is enabled in Supabase. Turn off Confirm email in Authentication settings so password accounts work without sending emails.",
+    );
+  }
+  return data.session.access_token;
+}
+
+export async function submitEventSignup(
+  input: EventSignupInput,
+  accessToken: string,
+): Promise<EventSignupResult> {
   if (!input.processAcknowledged) {
     throw new Error("The volunteer onboarding process must be acknowledged");
   }
@@ -12,7 +50,10 @@ export async function submitEventSignup(input: EventSignupInput): Promise<EventS
 
   const response = await fetch(`${API_URL}/api/volunteers/applications`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
     body: JSON.stringify({
       session_id: input.sessionId,
       full_name: input.fullName,

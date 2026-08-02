@@ -95,6 +95,28 @@ class VolunteerApplicationAdmin(VolunteerApplicationReceipt):
     updated_at: datetime
 
 
+class VolunteerApplicationSelf(VolunteerApplicationReceipt):
+    full_name: str
+    email: str
+    phone: str
+    interest: VolunteerInterest
+    status: ApplicationStatus
+    terms_acknowledged: bool
+    scrc_status: DocumentStatus
+    identity_verified: bool
+    guardian_documents_verified: bool
+    trial_status: TrialStatus
+    reviewed_at: datetime | None = None
+    account_invited_at: datetime | None = None
+    approved_at: datetime | None = None
+    updated_at: datetime
+
+
+class VolunteerLinkResult(BaseModel):
+    application: VolunteerApplicationAdmin
+    delivery: Literal["linked"]
+
+
 class VolunteerApplicationPatch(BaseModel):
     status: ApplicationStatus | None = None
     receipt_status: ReceiptStatus | None = None
@@ -104,5 +126,3 @@ class VolunteerApplicationPatch(BaseModel):
     guardian_documents_verified: bool | None = None
     trial_status: TrialStatus | None = None
     staff_notes: str | None = Field(default=None, max_length=5000)
-    auth_user_id: UUID | None = None
-    mark_account_invited: bool | None = None

@@ -8,9 +8,11 @@ import { createClient } from "@/lib/supabase/client";
 export function SignOutButton({
   children = "Sign out",
   variant = "quiet",
+  redirectTo = "/admin/login",
 }: {
   children?: ReactNode;
   variant?: "primary" | "secondary" | "quiet";
+  redirectTo?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -24,7 +26,7 @@ export function SignOutButton({
         await createClient().auth.signOut();
         // refresh() so the Server Components re-run and the layout guard sees
         // the cleared session; push() alone could serve a cached signed-in page.
-        router.push("/admin/login");
+        router.push(redirectTo);
         router.refresh();
       }}
     >
