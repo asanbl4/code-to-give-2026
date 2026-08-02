@@ -63,7 +63,10 @@ class Entry(BaseModel):
     #: Ids of other entries, offered as next questions.
     followups: list[str] = Field(default_factory=list)
 
-    #: client-provided | staff-confirmed | annual-report-2023-24
+    #: client-provided | staff-confirmed | annual-report-2023-24 | fact-checked
+    #: (fact-checked: a verifiable external fact -- e.g. the genetics of
+    #: trisomy 21 -- rather than anything about Love 21 itself, so it needs
+    #: neither client sign-off nor a staff confirmation)
     source: str
     #: True for medical/therapeutic/safeguarding handoffs. These short-circuit
     #: the model entirely -- see service.answer_question.
