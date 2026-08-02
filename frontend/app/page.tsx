@@ -1,6 +1,7 @@
 import { PageShell } from "@/components/layout";
 import { CommunityGoalWidget } from "@/features/community-goal/components/CommunityGoalWidget";
 import { EventsTeaser } from "@/features/events/components/EventsTeaser";
+import { CorporatePartners } from "@/features/landing/components/CorporatePartners";
 import { DonationToast } from "@/features/landing/components/DonationToast";
 import { FinancialBanner } from "@/features/landing/components/FinancialBanner";
 import { Hero } from "@/features/landing/components/Hero";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <StatsStrip />
       <FinancialBanner />
       <ProgrammesPreview />
+      <CorporatePartners />
       <StoriesSection />
       <EventsTeaser />
       <RecentEvents />

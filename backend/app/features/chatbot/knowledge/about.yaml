@@ -74,3 +74,39 @@
     href: "/contact"
   followups: [about-what-is-love21]
   source: client-provided
+
+# zh below is a first-pass draft, not a professional/native review — flag for
+# someone fluent to check before this ships. (The en content and the
+# underlying medical fact are solid: trisomy 21 is the standard, textbook
+# description of the genetic cause of Down syndrome.)
+- id: about-trio21-mascot
+  tags: [about, mascot]
+  triggers_en:
+    - "what is Trio 21"
+    - "who is Trio 21"
+    - "why is your mascot 3 chromosomes"
+    - "why chromosomes"
+    - "what does the mascot mean"
+  triggers_zh:
+    - "什麼是Trio 21"
+    - "吉祥物是什麼"
+    - "為什麼吉祥物是染色體"
+  answer_en: >
+    I'm Trio 21 — three chromosomes, because Down syndrome (trisomy 21)
+    happens when someone has an extra, third copy of chromosome 21 instead of
+    the usual two. That's also where "Love 21" gets its name!
+  answer_zh: >
+    我是Trio 21——三條染色體，因為唐氏綜合症（21三體症）是指某人擁有額外的
+    第三條21號染色體，而不是通常的兩條。這也是「愛21」名字的由來！
+  easy_read_en: >
+    I am Trio 21.
+    I have three chromosomes.
+    People with Down syndrome have an extra chromosome 21.
+    That is why my name has "21" in it.
+  easy_read_zh: >
+    我是Trio 21。
+    我有三條染色體。
+    唐氏綜合症人士有一條額外的21號染色體。
+    這就是我的名字有「21」的原因。
+  followups: [about-what-is-love21]
+  source: fact-checked
