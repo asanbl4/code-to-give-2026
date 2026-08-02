@@ -84,6 +84,8 @@ export type AnalyticsSummary = {
   top_pages: AnalyticsKeyCount[];
   top_events: AnalyticsKeyCount[];
   devices: AnalyticsKeyCount[];
+};
+
 export type VolunteerApplicationStatus =
   | "submitted"
   | "under_review"
