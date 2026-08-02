@@ -1,0 +1,101 @@
+'use client';
+
+// The Love 21 helper's first-visit welcome: a near-fullscreen, blurred-
+// backdrop sequence that plays through INTRO_BEATS (see ../data) once per
+// browser session. On the last beat it signs off, then visibly shrinks and
+// glides toward the header (phase 'intro-exit') before handing off to
+// <MascotHeaderBadge />. Phase/timing lives in MascotContext so both this
+// overlay and the header badge agree on when the intro is (or isn't) active.
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/cn';
+import { ChromosomeTrio, type ChromosomeTrioHandle } from '@/components/chromosome-trio';
+import { FLY_TO_CORNER_TRANSFORM } from '../flyAnimation';
+import { INTRO_BEATS } from '../data';
+import { useMascot } from '../MascotContext';
+
+export function MascotIntroOverlay() {
+  const router = useRouter();
+  const { phase, beatIndex, finishIntro } = useMascot();
+  const introTrioRef = useRef<ChromosomeTrioHandle>(null);
+
+  // Fires the current beat's character actions/expressions whenever the
+  // provider advances beatIndex (it owns the timers; this just reacts).
+  useEffect(() => {
+    INTRO_BEATS[beatIndex].actions?.forEach(({ character, action, expression }) => {
+      if (action) introTrioRef.current?.playAction(character, action);
+      if (expression) introTrioRef.current?.setExpression(character, expression);
+    });
+  }, [beatIndex]);
+
+  if (phase !== 'intro' && phase !== 'intro-exit') return null;
+
+  const flying = phase === 'intro-exit';
+  const currentBeat = INTRO_BEATS[beatIndex];
+
+  return (
+    <div
+      className={cn(
+        'fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 px-4 transition-colors duration-700',
+        flying ? 'pointer-events-none bg-transparent backdrop-blur-none' : 'bg-ink/45 backdrop-blur-sm',
+      )}
+      role={flying ? undefined : 'dialog'}
+      aria-label={flying ? undefined : 'Welcome to Love 21 Foundation'}
+    >
+      {!flying && (
+        <button
+          type="button"
+          onClick={finishIntro}
+          className="absolute right-5 top-5 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-ink shadow-lift hover:bg-white"
+        >
+          Skip
+        </button>
+      )}
+
+      {/*
+        Deliberately wide, not square: ChromosomeTrio's camera has a fixed
+        vertical FOV, so a perspective camera's HORIZONTAL field of view
+        (and therefore how much world-space width is actually visible)
+        grows with the container's aspect ratio, not its pixel size. All
+        three characters together are ~5.5 world units wide before scaling,
+        which does not fit inside a square viewport at this camera distance
+        no matter how many CSS pixels that square is — the two outer
+        (yellow) characters get clipped off the sides. A ~1.7:1 wide box
+        gives enough horizontal FOV to fit the whole trio with room to
+        spare at scale 1.35.
+      */}
+      <div
+        className="h-[280px] w-[480px] p-0 transition-transform duration-700 ease-in-out sm:h-[420px] sm:w-[720px]"
+        style={flying ? { transform: FLY_TO_CORNER_TRANSFORM } : undefined}
+      >
+        <ChromosomeTrio ref={introTrioRef} scale={1.35} />
+      </div>
+
+      {!flying && (
+        <>
+          {/* aria-live so screen reader users get the script too, not just
+              the visual caption swap. */}
+          <p
+            aria-live="polite"
+            className="max-w-md rounded-card bg-white px-6 py-4 text-center text-xl font-bold text-ink shadow-lift"
+          >
+            {currentBeat.text}
+          </p>
+
+          {currentBeat.cta && (
+            <button
+              type="button"
+              onClick={() => {
+                finishIntro();
+                router.push(currentBeat.cta!.href);
+              }}
+              className="rounded-full bg-signal px-7 py-3 text-lg font-bold text-white shadow-lift transition hover:bg-signal-deep"
+            >
+              {currentBeat.cta.label}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

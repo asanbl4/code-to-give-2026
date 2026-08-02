@@ -26,7 +26,7 @@
 
 .hero-carousel {
   position: relative;
-  height: 560px;
+  height: 680px;
   overflow: hidden;
   background: var(--color-surface);
 }
@@ -68,11 +68,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-end;
+  /* Left-middle, not bottom-left: bottom-left is where DonationToast
+     (fixed bottom-4 left-4) lives, and it was covering this caption. */
+  justify-content: center;
   gap: 1rem;
   padding: 2.5rem;
-  /* Readability scrim. The photographs vary; the caption must not. */
-  background: linear-gradient(to top, rgb(0 0 0 / 0.7), transparent 60%);
+  /* Readability scrim, now centered on the text instead of hugging the
+     bottom edge, since the caption itself moved to the middle. */
+  background: radial-gradient(ellipse 60% 70% at 15% 50%, rgb(0 0 0 / 0.65), transparent 70%);
 }
 
 .hero-carousel-caption {
@@ -151,7 +154,7 @@
 
 @media (max-width: 800px) {
   .hero-carousel {
-    height: 420px;
+    height: 500px;
   }
 
   .hero-carousel-overlay {

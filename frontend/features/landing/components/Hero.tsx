@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, SelectField } from "@/components/ui";
 import { RotatingText } from "@/components/vendor/RotatingText";
+import Grainient from "@/components/vendor/Grainient/Grainient";
 import { cn } from "@/lib/cn";
 import { HERO_SLIDES, ROLE_ROUTES, ROTATING_WORDS } from "../data";
 import "../landing.css";
@@ -111,7 +112,27 @@ export function Hero() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-4xl px-5 py-14 text-center sm:px-8">
+      <section className="relative mx-auto w-full max-w-4xl overflow-hidden px-5 py-14 text-center sm:px-8">
+        {/* Subtle, slow-moving gradient behind the hero text — pale enough
+            that dark ink text stays fully readable over it. Purely
+            decorative: aria-hidden, pointer-events none, sits behind the
+            content via -z-10. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-70">
+          <Grainient
+            color1="#FFF8F1"
+            color2="#FBE1E3"
+            color3="#FFF0CC"
+            timeSpeed={0.06}
+            warpFrequency={3}
+            warpAmplitude={25}
+            grainAmount={0.04}
+            contrast={1.05}
+            saturation={0.9}
+            zoom={1.3}
+            blendSoftness={0.15}
+          />
+        </div>
+
         <h1 className="flex flex-wrap items-center justify-center gap-x-3 font-display text-4xl font-bold leading-tight text-ink sm:text-6xl">
           <span>Ability to</span>
           <RotatingText
