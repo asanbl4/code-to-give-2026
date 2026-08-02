@@ -19,9 +19,8 @@ import { NAV_LINKS } from "./navigation";
  * yellow-orange one) so it reads as neutral rather than colouring the whole
  * top of every page.
  *
- * Nav links: red border, square-ish corners (rounded-lg, not rounded-full)
- * for contrast against the pale bar — a deliberate change from the softer
- * grey-border pill look.
+ * Nav links share the hand-drawn treatment with Donate, while Donate keeps a
+ * filled berry colour so the primary action remains visually distinct.
  *
  * Right side is two stacked rows, not one: a small utility row (log in /
  * register, language toggle) sits above the main nav row, using the vertical
@@ -32,10 +31,6 @@ import { NAV_LINKS } from "./navigation";
  * alone need ~550px, so anything narrower falls back to the "Menu" dropdown
  * rather than the two colliding (see MascotHeaderBadge overlap fix).
  */
-const NAV_LINK_CLASSES =
-  "whitespace-nowrap rounded-lg border-2 border-signal px-6 py-3 text-lg font-bold text-ink " +
-  "transition-colors hover:bg-signal hover:text-white";
-
 // UI-only for now: there's no i18n/locale routing set up in this repo (single
 // English tree under app/), so this just toggles which label looks active —
 // it doesn't translate anything yet. Wire it up to real locale routes before
@@ -136,9 +131,15 @@ export function SiteHeader() {
 
           <nav aria-label="Main" className="flex items-center gap-2">
             {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className={NAV_LINK_CLASSES}>
+              <Button
+                key={link.href}
+                href={link.href}
+                variant="secondary"
+                size="lg"
+                className="nav-handwritten-button whitespace-nowrap"
+              >
                 {link.label}
-              </Link>
+              </Button>
             ))}
             <Button href="/donate" size="lg" className="donate-button ml-2">
               Donate
@@ -157,14 +158,16 @@ export function SiteHeader() {
             className="absolute inset-x-4 top-20 z-40 flex flex-col gap-2 rounded-card bg-paper p-4 shadow-lift ring-1 ring-edge 2xl:hidden"
           >
             {NAV_LINKS.map((link) => (
-              <Link
+              <Button
                 key={link.href}
                 href={link.href}
+                variant="secondary"
+                size="lg"
                 onClick={() => setMenuOpen(false)}
-                className={NAV_LINK_CLASSES}
+                className="nav-handwritten-button"
               >
                 {link.label}
-              </Link>
+              </Button>
             ))}
             <Button
               href="/donate"
