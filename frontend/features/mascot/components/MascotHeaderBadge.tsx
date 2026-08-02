@@ -49,17 +49,18 @@ export function MascotHeaderBadge() {
         aria-expanded={faqOpen}
 
         aria-label="Open Love 21 helper — quick links and chat"
-        className="block h-24 w-24 shrink-0 p-0 transition hover:scale-105 sm:h-48 sm:w-48"
+        // The badge is the tallest thing in the header, so this is what sets the
+        // bar's height: roughly this plus the shell's py-2. Its pair is the logo
+        // height in SiteHeader — change one and look at the other.
+        className="block h-24 w-24 shrink-0 p-0 transition hover:scale-105 sm:h-28 sm:w-28"
       >
         {/*
-          Scale stays small (0.55) — only the CSS container grew 3x
-          (h-16/w-16 -> h-48/w-48). A camera's visible world-space width at a
-          given aspect ratio doesn't depend on the container's pixel size,
-          only on scale, so bumping scale here instead of (or in addition
-          to) the container would clip the outer characters the same way the
-          intro overlay was clipping — see the comment in
-          MascotIntroOverlay.tsx. Growing the container alone renders the
-          identical framing at 3x the physical size, safely.
+          Scale stays 0.55 whatever the box measures. A camera's visible
+          world-space width at a given aspect ratio doesn't depend on the
+          container's pixel size, only on scale, so resizing this square box
+          renders the identical framing larger or smaller, safely — whereas
+          bumping scale instead would clip the outer characters the way the
+          intro overlay used to. See the comment in MascotIntroOverlay.tsx.
         */}
         <ChromosomeTrio ref={cornerTrioRef} scale={0.55} />
       </button>
@@ -73,7 +74,12 @@ export function MascotHeaderBadge() {
         // overlapping them.
         <p
           aria-live="polite"
-          className="pointer-events-none absolute left-1/2 top-1 hidden w-56 -translate-x-1/2 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold leading-snug text-ink shadow-lift ring-1 ring-edge sm:block"
+          // Anchored to the badge's left edge, not centred on it. Centring
+          // worked while the badge was 192px and could absorb the overhang; at
+          // 112px the bubble is twice the badge's width and its left half
+          // landed on top of the wordmark. Rightwards is empty bar in every
+          // layout — the nav is measured and moves out of the way.
+          className="pointer-events-none absolute left-0 top-1 hidden w-56 rounded-2xl bg-white px-3 py-1.5 text-center text-xs font-bold leading-snug text-ink shadow-lift ring-1 ring-edge sm:block"
         >
           {IDLE_CHATTER[chatterIndex].text}
         </p>
